@@ -916,14 +916,15 @@ document.getElementById('defaultOutreach').addEventListener('change',async(e)=>{
 
 document.getElementById('syncNowBtn').addEventListener('click',async()=>{
 const dot=document.getElementById('syncDot');dot.classList.add('syncing');
+showToast('Syncing...','success');
 const url=await getSetting('scriptUrl');
 if(!url){showToast('No sync URL configured','warning');dot.classList.remove('syncing');return}
+try{
 let synced=0;
 const pending=await dbGet('pendingSync');
 for(const item of pending){
 try{await fetch(url,{method:'POST',body:JSON.stringify(item.payload),headers:{'Content-Type':'text/plain'}});await dbDelete('pendingSync',item.id);synced++}catch(e){break}
 }
-try{
 const r=await fetch(url+'?action=getMembers');
 const json=await r.json();
 if(json.success&&json.data){
@@ -932,9 +933,10 @@ for(const m of json.data)await dbPut('members',m);
 allMembers=json.data;
 updateCounter();
 }
-}catch(e){}
 await setSetting('lastSynced',new Date().toLocaleString());
-dot.classList.remove('syncing');showToast(`Synced! ${allMembers.length} members loaded`);loadSettings();renderAvatarGrid();
+showToast(`Synced! ${allMembers.length} members loaded`);loadSettings();renderAvatarGrid();
+}catch(e){showToast('Sync failed, try again','error')}
+finally{dot.classList.remove('syncing')}
 });
 
 document.getElementById('exportBtn').addEventListener('click',async()=>{
