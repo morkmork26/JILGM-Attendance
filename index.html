@@ -189,7 +189,10 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 <div id="qr-reader"></div>
 <div class="scan-line"></div>
 </div>
-<p style="text-align:center;margin-top:12px;font-size:13px;color:var(--text-secondary)">Point camera at member QR code</p>
+<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px">
+<p style="font-size:13px;color:var(--text-secondary);margin:0">Point camera at member QR code</p>
+<button class="btn btn-outline" style="padding:6px 12px;font-size:11px;border-radius:8px" onclick="flipCamera()">Flip Camera</button>
+</div>
 </div>
 
 <div id="modeTap" style="display:none">
@@ -497,13 +500,18 @@ if(mode==='tap')renderAvatarGrid();
 }
 document.querySelectorAll('.mode-pill').forEach(p=>p.addEventListener('click',()=>switchMode(p.dataset.mode)));
 
+let cameraFacing='environment';
 function startQR(){
 if(qrScanner)try{qrScanner.stop()}catch(e){}
 const el=document.getElementById('qr-reader');el.innerHTML='';
 qrScanner=new Html5Qrcode('qr-reader');
-qrScanner.start({facingMode:'environment'},{fps:10,qrbox:220},onQRScan,()=>{}).catch(()=>{
+qrScanner.start({facingMode:cameraFacing},{fps:10,qrbox:220},onQRScan,()=>{}).catch(()=>{
 el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);font-size:13px;padding:20px;text-align:center">Camera not available. Try Quick Tap or Search mode.</div>';
 });
+}
+function flipCamera(){
+cameraFacing=cameraFacing==='environment'?'user':'environment';
+startQR();
 }
 
 async function onQRScan(decoded){
