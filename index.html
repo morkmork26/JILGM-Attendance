@@ -451,10 +451,12 @@ allMembers=await dbGet('members');await loadTodayAttendance();updateCounter();re
 showToast('Demo data loaded (20 members, 8 weeks history)');
 }
 
+let toastTimer=null;
 function showToast(msg,type='success'){
 const t=document.getElementById('toast');const m=document.getElementById('toastMsg');
 m.textContent=msg;t.style.borderLeft=`3px solid var(--${type})`;
-t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);
+if(toastTimer)clearTimeout(toastTimer);
+t.classList.add('show');toastTimer=setTimeout(()=>{t.classList.remove('show');toastTimer=null},3000);
 }
 
 function playBeep(){
@@ -916,7 +918,6 @@ document.getElementById('defaultOutreach').addEventListener('change',async(e)=>{
 
 document.getElementById('syncNowBtn').addEventListener('click',async()=>{
 const dot=document.getElementById('syncDot');dot.classList.add('syncing');
-showToast('Syncing...','success');
 const url=await getSetting('scriptUrl');
 if(!url){showToast('No sync URL configured','warning');dot.classList.remove('syncing');return}
 try{
