@@ -17,7 +17,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 input,select,textarea{font-family:inherit;color:var(--text);background:transparent;border:none;outline:none;font-size:16px}
 .header{position:sticky;top:0;z-index:100;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--card-border)}
 .header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);opacity:0.4}
-.logo{font-size:16px;font-weight:700;background:linear-gradient(135deg,#d4a843,#f5d676,#c9952c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.3px}
+.logo{font-size:14px;font-weight:700;background:linear-gradient(135deg,#d4a843,#f5d676,#c9952c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.3px;white-space:nowrap}
 .header-date{font-size:13px;color:var(--text-secondary);font-weight:500}
 .header-right{display:flex;align-items:center;gap:10px}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--success)}
@@ -115,8 +115,8 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 .streak-dots .dot{width:12px;height:12px;border-radius:50%}
 .streak-dots .dot.present{background:var(--success)}
 .streak-dots .dot.absent{background:rgba(255,255,255,0.1)}
-.toast{position:fixed;bottom:calc(var(--nav-h) + 16px);left:50%;transform:translateX(-50%) translateY(100px);background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--card-border);border-radius:12px;padding:12px 20px;font-size:14px;font-weight:500;z-index:300;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);display:flex;align-items:center;gap:10px;max-width:90vw}
-.toast.show{transform:translateX(-50%) translateY(0)}
+.toast{position:fixed;bottom:calc(var(--nav-h) + 16px);left:50%;transform:translateX(-50%) translateY(100px);background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--card-border);border-radius:12px;padding:12px 20px;font-size:14px;font-weight:500;z-index:300;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1),opacity 0.3s;display:flex;align-items:center;gap:10px;max-width:90vw;opacity:0;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
 .toast .toast-progress{position:absolute;bottom:0;left:0;height:3px;border-radius:0 0 12px 12px;background:linear-gradient(90deg,var(--accent),var(--accent2));animation:toastProgress 3s linear forwards}
 @keyframes toastProgress{from{width:100%}to{width:0}}
 .qr-scanner{width:100%;max-width:300px;margin:0 auto;border-radius:var(--radius);overflow:hidden;position:relative;background:#000}
@@ -1033,6 +1033,17 @@ todayAttendance.push(rec);
 }}
 updateCounter();
 if(currentTab==='tabCheckin'&&currentMode==='tap')renderAvatarGrid();
+}}catch(e){}
+try{
+const r2=await fetch(url+'?action=getMembers');
+const json2=await r2.json();
+if(json2.success&&json2.data&&json2.data.length!==allMembers.length){
+await dbClear('members');
+for(const m of json2.data)await dbPut('members',m);
+allMembers=json2.data;
+updateCounter();
+if(currentTab==='tabCheckin'&&currentMode==='tap')renderAvatarGrid();
+if(currentTab==='tabMembers')renderMemberList();
 }}catch(e){}
 }
 setInterval(autoSync,60000);
