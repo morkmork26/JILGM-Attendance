@@ -627,7 +627,7 @@ document.getElementById('counterBadge').textContent=`${checked}/${total}`;
 async function renderAvatarGrid(){
 const ministry=document.getElementById('ministryFilter').value;
 const showAll=document.querySelector('#modeTap .toggle-pill.active').dataset.show==='all';
-let filtered=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&m.addedLocally);
+let filtered=allMembers.filter(m=>m.status==='active'||m.status==='Active');
 if(ministry)filtered=filtered.filter(m=>m.ministry===ministry);
 if(!showAll)filtered=filtered.filter(m=>!todayAttendance.find(a=>a.memberId===m.id));
 document.getElementById('tapCount').textContent=`Showing ${filtered.length} members`;
