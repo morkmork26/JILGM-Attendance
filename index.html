@@ -720,6 +720,10 @@ setTimeout(()=>{
 document.getElementById('closeModal').addEventListener('click',closeModal);
 if(type==='visitor')document.getElementById('saveVisitor').addEventListener('click',saveVisitor);
 if(type==='member'){
+getMinistries().then(list=>{
+const el=document.getElementById('memMinistry');
+el.innerHTML=`<option value="">Select Ministry</option>`+['None',...list].map(m=>`<option${data&&data.ministry===m?' selected':''}>${m}</option>`).join('');
+});
 document.getElementById('saveMember').addEventListener('click',()=>saveMember(data));
 document.getElementById('memPhotoBtn').addEventListener('click',()=>document.getElementById('memPhotoInput').click());
 }
@@ -738,6 +742,7 @@ playBeep();closeModal();showToast(`${name} added and checked in!`);updateCounter
 
 async function saveMember(existing){
 const name=document.getElementById('memName').value.trim();if(!name){showToast('Name is required','error');return}
+if(existing){const confirm=prompt(`To confirm edit, type "${existing.name}"`);if(!confirm||confirm.trim().toLowerCase()!==existing.name.toLowerCase()){showToast('Edit cancelled','warning');return}}
 const classCheckboxes=document.querySelectorAll('#memClassesContainer input[type=checkbox]:checked');
 const classes=Array.from(classCheckboxes).map(cb=>cb.value);
 const member={id:existing?existing.id:'m'+Date.now(),name,outreach:document.getElementById('memOutreach').value,address:document.getElementById('memAddress').value.trim(),email:document.getElementById('memEmail').value.trim(),ministry:document.getElementById('memMinistry').value,dgroupLeader:document.getElementById('memDgroupLeader').value.trim(),phone:document.getElementById('memPhone').value.trim(),birthday:document.getElementById('memBday').value,gender:document.getElementById('memGender').value,civilStatus:document.getElementById('memCivilStatus').value,hasChildren:document.getElementById('memHasChildren').value,emergencyContact:document.getElementById('memEmergencyContact').value.trim(),emergencyPhone:document.getElementById('memEmergencyPhone').value.trim(),membershipStatus:document.getElementById('memMembershipStatus').value,membershipDate:document.getElementById('memMembershipDate').value,baptismDate:document.getElementById('memBaptismDate').value,baptismPlace:document.getElementById('memBaptismPlace').value.trim(),classes:classes,photo:existing?existing.photo:null,status:'active',addedLocally:existing?existing.addedLocally||false:true,dateRegistered:existing?existing.dateRegistered:today()};
