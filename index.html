@@ -159,6 +159,18 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 </style>
 </head>
 <body>
+
+<!-- What's New Modal -->
+<div id="whatsNewModal" style="position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:24px">
+<div style="background:var(--card);border:1px solid rgba(255,255,255,0.1);border-radius:20px;max-width:400px;width:100%;max-height:80vh;overflow-y:auto;padding:28px">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+<h3 style="font-size:18px;font-weight:700">What's New</h3>
+<button onclick="document.getElementById('whatsNewModal').style.display='none'" style="background:none;border:none;color:var(--text-secondary);font-size:20px;cursor:pointer">&times;</button>
+</div>
+<div id="changelogContent"></div>
+</div>
+</div>
+
 <div class="header">
 <div class="logo"><span style="display:inline-block;width:40px;height:40px;border-radius:50%;overflow:hidden;vertical-align:middle;margin-right:8px;background:#fff"><img src="logo.jpg" alt="JILGM" style="width:100%;height:100%;object-fit:cover;transform:scale(1.55);object-position:center center"></span>Attendance Tracker</div>
 <div class="header-date" id="headerDate"></div>
@@ -177,6 +189,9 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 
 <div class="content">
 <div class="tab-content active" id="tabCheckin">
+<div style="display:flex;align-items:center;justify-content:center;margin-bottom:12px">
+<select id="occasionSelect" style="padding:8px 14px;border-radius:20px;background:var(--surface);border:1px solid var(--card-border);color:var(--text);font-size:12px;font-weight:600;text-align:center"></select>
+</div>
 <div class="mode-pills" id="modePills">
 <div class="pill-slider" id="pillSlider" style="width:33.33%"></div>
 <div class="mode-pill active" data-mode="qr">QR Scan</div>
@@ -301,11 +316,11 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 <h4>Data</h4>
 <div class="settings-row"><div class="label">Import Members</div><button class="btn btn-outline" style="padding:8px 16px;font-size:12px" id="importBtn">Import CSV</button></div>
 <div class="settings-row"><div class="label">Export Data</div><button class="btn btn-outline" style="padding:8px 16px;font-size:12px" id="exportBtn">Export CSV</button></div>
-<div class="settings-row"><div class="label">Load Demo Data</div><button class="btn btn-outline" style="padding:8px 16px;font-size:12px" id="loadDemoBtn">Load Demo</button></div>
+
 
 </div>
 <div class="settings-section">
-<h4>Ministries</h4>
+<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'flex':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Ministries <span style="font-size:14px;color:var(--text-secondary)">-</span></h4>
 <div class="settings-row" style="flex-wrap:wrap;gap:8px">
 <div id="ministryTags" style="display:flex;flex-wrap:wrap;gap:6px;width:100%;margin-bottom:8px"></div>
 <div style="display:flex;gap:8px;width:100%">
@@ -315,8 +330,31 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 </div>
 </div>
 <div class="settings-section">
+<h4>Occasions</h4>
+<div class="settings-row" style="flex-wrap:wrap;gap:8px">
+<div id="occasionTags" style="display:flex;flex-wrap:wrap;gap:6px;width:100%;margin-bottom:8px"></div>
+<div style="display:flex;gap:8px;width:100%">
+<input type="text" id="newOccasionInput" placeholder="Add occasion name..." style="flex:1;padding:8px 12px;border-bottom:2px solid var(--card-border);font-size:14px">
+<button class="btn btn-primary" style="padding:8px 16px;font-size:12px" id="addOccasionBtn">Add</button>
+</div>
+</div>
+</div>
+<div class="settings-section">
+<h4>Feedback</h4>
+<div style="display:flex;flex-direction:column;gap:12px">
+<select id="feedbackCategory" style="padding:10px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--card-border);color:var(--text);font-size:13px">
+<option value="Improve App">Improve App</option>
+<option value="Report Bug">Report Bug</option>
+<option value="Suggestion">Suggestion</option>
+</select>
+<textarea id="feedbackMsg" placeholder="Tell us what you think..." style="padding:12px;border-radius:8px;background:var(--surface);border:1px solid var(--card-border);color:var(--text);font-size:13px;min-height:80px;resize:vertical"></textarea>
+<button class="btn btn-primary" style="padding:10px 16px;font-size:12px" id="sendFeedbackBtn">Send Feedback</button>
+</div>
+</div>
+<div class="settings-section">
 <h4>About</h4>
-<div class="settings-row"><div><div class="label">JILGM - STBC Attendance</div><div class="sublabel">v1.0.0</div></div></div>
+<div class="settings-row"><div><div class="label">JILGM - STBC Attendance</div><div class="sublabel" id="appVersionLabel">v1.1.0</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
+
 </div>
 </div>
 </div>
@@ -411,48 +449,7 @@ function dbClear(store){return new Promise((r)=>{const tx=db.transaction(store,'
 
 const DEMO_MEMBERS=[];
 
-async function seedData(){return}
-async function loadDemoData(){
-const demoMembers=[
-{id:'m1',name:'Juan dela Cruz',dgroup:'Agape',dgroupLeader:'Ptr. Mark',ministry:'Worship',phone:'09171234567',birthday:'1990-03-15',gender:'Male',photo:null,status:'active',dateRegistered:'2024-01-10',outreach:'Sto. Tomas',address:'123 Rizal St, Sto. Tomas'},
-{id:'m2',name:'Maria Santos',dgroup:'Kairos',dgroupLeader:'Sis. Joy',ministry:'Worship',phone:'09181234567',birthday:'1988-07-22',gender:'Female',photo:null,status:'active',dateRegistered:'2024-01-10',outreach:'Sto. Tomas',address:'456 Mabini Ave, Sto. Tomas'},
-{id:'m3',name:'Pedro Reyes',dgroup:'Shalom',dgroupLeader:'Bro. Dan',ministry:'Ushers',phone:'09191234567',birthday:'1985-11-03',gender:'Male',photo:null,status:'active',dateRegistered:'2024-01-10',outreach:'Sto. Tomas',address:''},
-{id:'m4',name:'Ana Garcia',dgroup:'Bethel',dgroupLeader:'Sis. Grace',ministry:'Kids Ministry',phone:'09201234567',birthday:'1992-05-18',gender:'Female',photo:null,status:'active',dateRegistered:'2024-01-10',outreach:'Sto. Tomas',address:'78 Bonifacio St, Sto. Tomas'},
-{id:'m5',name:'Jose Ramos',dgroup:'Zion',dgroupLeader:'Bro. Carlo',ministry:'Media/Tech',phone:'09211234567',birthday:'1987-09-30',gender:'Male',photo:null,status:'active',dateRegistered:'2024-01-10',outreach:'Sto. Tomas',address:''},
-{id:'m6',name:'Rosa Fernandez',dgroup:'Agape',dgroupLeader:'Ptr. Mark',ministry:'Kids Ministry',phone:'09221234567',birthday:'1995-01-12',gender:'Female',photo:null,status:'active',dateRegistered:'2024-01-15',outreach:'Sto. Tomas',address:'90 Luna St, Sto. Tomas'},
-{id:'m7',name:'Carlo Bautista',dgroup:'Kairos',dgroupLeader:'Sis. Joy',ministry:'Media/Tech',phone:'09231234567',birthday:'1993-04-25',gender:'Male',photo:null,status:'active',dateRegistered:'2024-01-15',outreach:'Sto. Tomas',address:''},
-{id:'m8',name:'Luz Villanueva',dgroup:'Shalom',dgroupLeader:'Bro. Dan',ministry:'',phone:'09241234567',birthday:'1991-08-08',gender:'Female',photo:null,status:'active',dateRegistered:'2024-01-15',outreach:'Sto. Tomas',address:'12 Quezon Blvd, Sto. Tomas'},
-{id:'m9',name:'Miguel Torres',dgroup:'Bethel',dgroupLeader:'Sis. Grace',ministry:'Ushers',phone:'09251234567',birthday:'1989-12-01',gender:'Male',photo:null,status:'active',dateRegistered:'2024-02-01',outreach:'Sto. Tomas',address:''},
-{id:'m10',name:'Grace Mendoza',dgroup:'Zion',dgroupLeader:'Bro. Carlo',ministry:'Worship',phone:'09261234567',birthday:'1994-06-14',gender:'Female',photo:null,status:'active',dateRegistered:'2024-02-01',outreach:'Sto. Tomas',address:'34 Aguinaldo St, Sto. Tomas'},
-{id:'m11',name:'Roberto Cruz',dgroup:'Agape',dgroupLeader:'Ptr. Mark',ministry:'Ushers',phone:'09271234567',birthday:'1986-02-28',gender:'Male',photo:null,status:'active',dateRegistered:'2024-02-10',outreach:'Sto. Tomas',address:''},
-{id:'m12',name:'Elena Pascual',dgroup:'Kairos',dgroupLeader:'Sis. Joy',ministry:'',phone:'09281234567',birthday:'1990-10-17',gender:'Female',photo:null,status:'active',dateRegistered:'2024-02-10',outreach:'Sto. Tomas',address:'56 Laurel Ave, Sto. Tomas'},
-{id:'m13',name:'Daniel Aquino',dgroup:'Shalom',dgroupLeader:'Bro. Dan',ministry:'Youth',phone:'09291234567',birthday:'1988-03-09',gender:'Male',photo:null,status:'active',dateRegistered:'2024-02-15',outreach:'Sto. Tomas',address:''},
-{id:'m14',name:'Sofia Navarro',dgroup:'Bethel',dgroupLeader:'Sis. Grace',ministry:'Youth',phone:'09301234567',birthday:'1996-07-21',gender:'Female',photo:null,status:'active',dateRegistered:'2024-02-15',outreach:'Sto. Tomas',address:''},
-{id:'m15',name:'Marco Rivera',dgroup:'Zion',dgroupLeader:'Bro. Carlo',ministry:'',phone:'09311234567',birthday:'1984-11-30',gender:'Male',photo:null,status:'active',dateRegistered:'2024-03-01',outreach:'Tanauan',address:'Brgy. Darasa, Tanauan'},
-{id:'m16',name:'Camille Ocampo',dgroup:'Agape',dgroupLeader:'Ptr. Mark',ministry:'Worship',phone:'09321234567',birthday:'1997-01-05',gender:'Female',photo:null,status:'active',dateRegistered:'2024-03-01',outreach:'Tanauan',address:'Brgy. Sala, Tanauan'},
-{id:'m17',name:'Paolo Santiago',dgroup:'Kairos',dgroupLeader:'Sis. Joy',ministry:'Media/Tech',phone:'09331234567',birthday:'1991-09-19',gender:'Male',photo:null,status:'inactive',dateRegistered:'2024-03-10',outreach:'Tanauan',address:'Poblacion, Tanauan'},
-{id:'m18',name:'Joy Manalo',dgroup:'Shalom',dgroupLeader:'Bro. Dan',ministry:'Kids Ministry',phone:'09341234567',birthday:'1993-04-02',gender:'Female',photo:null,status:'active',dateRegistered:'2024-03-10',outreach:'Tanauan',address:''},
-{id:'m19',name:'Renz Tolentino',dgroup:'Bethel',dgroupLeader:'Sis. Grace',ministry:'',phone:'09351234567',birthday:'1990-08-14',gender:'Male',photo:null,status:'active',dateRegistered:'2024-03-15',outreach:'Naujan',address:'Brgy. Bancuro, Naujan'},
-{id:'m20',name:'Faith Dimaculangan',dgroup:'Zion',dgroupLeader:'Bro. Carlo',ministry:'Youth',phone:'09361234567',birthday:'1995-12-25',gender:'Female',photo:null,status:'active',dateRegistered:'2024-03-15',outreach:'Socorro',address:'Poblacion, Socorro'}
-];
-await dbClear('members');await dbClear('attendance');
-for(const m of demoMembers)await dbPut('members',m);
-const todayStr=today();
-const d=new Date();
-const sundays=[];
-for(let i=7;i>=0;i--){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);sundays.push(sun.toISOString().split('T')[0])}
-const attendance=[];
-for(const sunday of sundays){
-const count=Math.floor(Math.random()*8)+10;
-const shuffled=[...demoMembers].filter(m=>m.status==='active'||m.status==='Active').sort(()=>Math.random()-0.5).slice(0,count);
-for(const m of shuffled){attendance.push({memberId:m.id,memberName:m.name,date:sunday,timestamp:Date.now(),checkedInBy:'demo'})}
-}
-const todayChecked=['m1','m2','m4','m6','m8','m10','m12','m14','m16','m18','m20'];
-for(const id of todayChecked){const m=demoMembers.find(x=>x.id===id);attendance.push({memberId:id,memberName:m.name,date:todayStr,timestamp:Date.now(),checkedInBy:'demo'})}
-for(const a of attendance)await dbPut('attendance',a);
-allMembers=await dbGet('members');await loadTodayAttendance();updateCounter();renderAvatarGrid();
-showToast('Demo data loaded (20 members, 8 weeks history)');
-}
+
 
 let toastTimer=null;
 function showToast(msg,type='success'){
@@ -523,14 +520,22 @@ const overlay=document.getElementById('qrOverlay');
 if(already){
 overlay.innerHTML=`<div class="result"><div class="icon warning"><svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></div><h3 style="margin-top:8px">${member.name}</h3><p style="color:var(--warning);margin-top:4px">Already checked in</p></div>`;
 }else{
-await checkInMember(member);playBeep();
+const ok=await checkInMember(member);
+if(ok===false){setTimeout(()=>{if(qrScanner)try{qrScanner.resume()}catch(e){}},500);return}
+playBeep();
 overlay.innerHTML=`<div class="result"><div class="icon success"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div>${createAvatar(member,'large')}<h3 style="margin-top:12px">Welcome, ${member.name.split(' ')[0]}!</h3><p style="color:var(--success);margin-top:4px">God bless you today!</p></div>`;
 }
 overlay.classList.add('show');
 setTimeout(()=>{overlay.classList.remove('show');if(qrScanner)try{qrScanner.resume()}catch(e){}},2000);
 }
 
+let sundayConfirmed=false;
+function isSunday(){return new Date().getDay()===0}
 async function checkInMember(member){
+if(!isSunday()&&!sundayConfirmed){
+if(!confirm('Today is not Sunday. Are you sure you want to record attendance?'))return false;
+sundayConfirmed=true;
+}
 if(member.status==='inactive'){
 member.status='active';
 member.membershipStatus='Returning Guest';
@@ -538,7 +543,7 @@ await dbPut('members',member);
 const idx=allMembers.findIndex(m=>m.id===member.id);
 if(idx>=0)allMembers[idx]=member;
 }
-const record={memberId:member.id,memberName:member.name,date:today(),timestamp:Date.now(),checkedInBy:'app'};
+const record={memberId:member.id,memberName:member.name,date:today(),timestamp:Date.now(),checkedInBy:'app',occasion:currentOccasion};
 await dbPut('attendance',record);todayAttendance.push(record);updateCounter();
 await checkAndGraduate(member);
 const url=await getSetting('scriptUrl');
@@ -546,6 +551,7 @@ if(url){
 try{await fetch(url,{method:'POST',body:JSON.stringify({action:'checkIn',...record}),headers:{'Content-Type':'text/plain'}});
 }catch(e){await dbPut('pendingSync',{action:'checkIn',payload:record,createdAt:Date.now()})}
 }
+return true;
 }
 
 async function loadTodayAttendance(){
@@ -634,7 +640,8 @@ grid.querySelectorAll('.avatar-grid-item').forEach(item=>{
 item.addEventListener('click',async()=>{
 const id=item.dataset.id;const member=allMembers.find(m=>m.id===id);
 if(todayAttendance.find(a=>a.memberId===id)){showToast(`${member.name} already checked in`,'warning');return}
-await checkInMember(member);playBeep();showToast(`${member.name} checked in!`);
+const ok2=await checkInMember(member);if(ok2===false)return;
+playBeep();showToast(`${member.name} checked in!`);
 item.classList.add('checked');
 const av=item.querySelector('.avatar');av.style.animation='checkPulse 0.6s';
 av.insertAdjacentHTML('beforeend','<div class="check-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="3"/></svg></div>');
@@ -661,7 +668,8 @@ res.querySelectorAll('.search-result-item').forEach(item=>{
 item.addEventListener('click',async()=>{
 const id=item.dataset.id;const member=allMembers.find(m=>m.id===id);
 if(todayAttendance.find(a=>a.memberId===id)){showToast(`${member.name} already checked in`,'warning');return}
-await checkInMember(member);playBeep();showToast(`${member.name} checked in!`);
+const ok3=await checkInMember(member);if(ok3===false)return;
+playBeep();showToast(`${member.name} checked in!`);
 e.target.value='';res.innerHTML='';
 });
 });
@@ -721,8 +729,8 @@ async function saveVisitor(){
 const name=document.getElementById('visitorName').value.trim();if(!name){showToast('Name is required','error');return}
 const member={id:'m'+Date.now(),name,dgroup:'',phone:document.getElementById('visitorPhone').value.trim(),birthday:'',photo:null,status:'active',dateRegistered:today()};
 await dbPut('members',member);allMembers.push(member);
-await checkInMember(member);playBeep();
-closeModal();showToast(`${name} added and checked in!`);updateCounter();
+const ok4=await checkInMember(member);if(ok4===false)return;
+playBeep();closeModal();showToast(`${name} added and checked in!`);updateCounter();
 }
 
 async function saveMember(existing){
@@ -871,7 +879,7 @@ async function setSetting(key,value){await dbPut('settings',{key,value})}
 
 async function getMinistries(){
 const val=await getSetting('ministries');
-return val?JSON.parse(val):['Abraham','Admin','Children','Dance','Engineering','Evangelism','Finance','Kitchen','Media Arts','Prayer','Social Concern','Well Watered Women (W3)','Worship','Young Professional','Youth'];
+return val?JSON.parse(val):['Abraham','Admin','Children','Christian Education','Dance','Engineering','Evangelism','Finance','Kitchen','Media Arts','Prayer','Social Concern',"Sunday's Crew",'Well Watered Women (W3)','Worship','Young Professional','Youth'];
 }
 async function saveMinistries(list){await setSetting('ministries',JSON.stringify(list));populateMinistryDropdowns(list)}
 function populateMinistryDropdowns(list){
@@ -988,10 +996,7 @@ document.getElementById('statChildren').textContent=val;
 showToast('Children count saved');
 });
 
-document.getElementById('loadDemoBtn').addEventListener('click',async()=>{
-if(!confirm('This will replace current data with demo data. Continue?'))return;
-await loadDemoData();
-});
+
 
 
 
@@ -1001,7 +1006,7 @@ document.getElementById('installBtn').addEventListener('click',()=>{if(deferredP
 document.getElementById('dismissInstall').addEventListener('click',()=>document.getElementById('installBanner').classList.remove('show'));
 
 async function init(){
-await openDB();await seedData();
+await openDB();
 allMembers=await dbGet('members');await loadTodayAttendance();
 await checkInactiveMembers();
 allMembers=await dbGet('members');
@@ -1046,7 +1051,7 @@ if(currentTab==='tabCheckin'&&currentMode==='tap')renderAvatarGrid();
 if(currentTab==='tabMembers')renderMemberList();
 }}catch(e){}
 }
-setInterval(autoSync,60000);
+setInterval(autoSync,10000);
 
 document.getElementById('generateReportBtn').addEventListener('click',async()=>{
 const todayStr=today();
@@ -1112,7 +1117,108 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 },50);
 });
 
+// === APP VERSION & CHANGELOG ===
+const APP_VERSION='1.1.0';
+const CHANGELOG=[
+{version:'1.1.0',date:'July 27, 2026',changes:[
+{type:'New',text:'Google Sign-In access control'},
+{type:'New',text:'Occasion selector (Prayer Connect, Midweek, etc.)'},
+{type:'New',text:'Feedback system (send from Settings)'},
+{type:'New',text:"What's New popup on updates"},
+{type:'New',text:'Sunday-only check-in confirmation'},
+{type:'Improve',text:'Auto-sync every 10 seconds (near real-time)'},
+{type:'Improve',text:'Front/back camera flip for QR scanner'},
+{type:'Fix',text:'Toast notifications no longer stick on screen'},
+{type:'Fix',text:'Members tab now renders correctly'},
+]}
+];
+
+function renderChangelog(){
+const el=document.getElementById('changelogContent');
+el.innerHTML=CHANGELOG.map(v=>`
+<div style="margin-bottom:24px">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+<span style="background:linear-gradient(135deg,#7b2ff7,#00d4ff);padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700">v${v.version}</span>
+<span style="font-size:11px;color:var(--text-secondary)">${v.date}</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+${v.changes.map(c=>{
+const colors={New:'#4caf50',Fix:'#ff9800',Improve:'#00d4ff'};
+return `<div style="display:flex;align-items:center;gap:8px;font-size:12px">
+<span style="background:${colors[c.type]}22;color:${colors[c.type]};padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;min-width:50px;text-align:center">${c.type.toUpperCase()}</span>
+<span style="color:var(--text-secondary)">${c.text}</span>
+</div>`;
+}).join('')}
+</div>
+</div>`).join('');
+}
+
+async function checkWhatsNew(){
+const stored=await getSetting('appVersion');
+if(stored!==APP_VERSION){
+renderChangelog();
+document.getElementById('whatsNewModal').style.display='flex';
+await setSetting('appVersion',APP_VERSION);
+}
+}
+document.getElementById('whatsNewBtn').addEventListener('click',()=>{renderChangelog();document.getElementById('whatsNewModal').style.display='flex'});
+
+// === OCCASIONS ===
+let currentOccasion='Sunday Service';
+async function getOccasions(){
+const val=await getSetting('occasions');
+return val?JSON.parse(val):['Sunday Service','Prayer Connect','Midweek Service','Bible Study'];
+}
+async function saveOccasions(list){await setSetting('occasions',JSON.stringify(list));populateOccasionDropdown(list);renderOccasionTags(list)}
+function populateOccasionDropdown(list){
+const el=document.getElementById('occasionSelect');
+el.innerHTML=list.map(o=>`<option${o===currentOccasion?' selected':''}>${o}</option>`).join('');
+}
+async function renderOccasionTags(list){
+if(!list)list=await getOccasions();
+const el=document.getElementById('occasionTags');
+el.innerHTML=list.map(o=>`<span style="background:var(--surface);border:1px solid var(--card-border);border-radius:8px;padding:4px 10px;font-size:11px;display:inline-flex;align-items:center;gap:6px">${o}<span style="cursor:pointer;opacity:0.5" data-remove-occasion="${o}">&times;</span></span>`).join('');
+el.querySelectorAll('[data-remove-occasion]').forEach(x=>x.addEventListener('click',async()=>{
+const name=x.dataset.removeOccasion;
+if(name==='Sunday Service'){showToast('Cannot remove default occasion','warning');return}
+if(!confirm(`Remove "${name}"?`))return;
+const l=await getOccasions();await saveOccasions(l.filter(o=>o!==name));
+}));
+}
+document.getElementById('occasionSelect').addEventListener('change',(e)=>{currentOccasion=e.target.value});
+document.getElementById('addOccasionBtn').addEventListener('click',async()=>{
+const input=document.getElementById('newOccasionInput');
+const name=input.value.trim();if(!name)return;
+const list=await getOccasions();if(list.includes(name)){showToast('Already exists','warning');return}
+list.push(name);await saveOccasions(list);input.value='';showToast(`"${name}" added`);
+});
+
+// === FEEDBACK ===
+document.getElementById('sendFeedbackBtn').addEventListener('click',async()=>{
+const category=document.getElementById('feedbackCategory').value;
+const msg=document.getElementById('feedbackMsg').value.trim();
+if(!msg){showToast('Please enter a message','warning');return}
+const url=await getSetting('scriptUrl');
+if(!url){showToast('No sync URL configured','warning');return}
+const userEmail=await getSetting('userEmail')||'anonymous';
+try{
+await fetch(url,{method:'POST',body:JSON.stringify({action:'submitFeedback',category,message:msg,userEmail}),headers:{'Content-Type':'text/plain'}});
+document.getElementById('feedbackMsg').value='';
+showToast('Feedback sent! Thank you.');
+}catch(e){showToast('Failed to send feedback','error')}
+});
+
+// === INIT UPDATES ===
+(async function initExtras(){
+await checkWhatsNew();
+const occasions=await getOccasions();
+populateOccasionDropdown(occasions);
+renderOccasionTags(occasions);
+})();
+
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
 </script>
+
+
 </body>
 </html>
