@@ -189,8 +189,8 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 
 <div class="content">
 <div class="tab-content active" id="tabCheckin">
-<div id="occasionWrapper" style="display:none;align-items:center;justify-content:center;margin-bottom:12px">
-<select id="occasionSelect" style="padding:8px 14px;border-radius:20px;background:var(--surface);border:1px solid var(--card-border);color:var(--text);font-size:12px;font-weight:600;text-align:center"></select>
+<div id="occasionBanner" style="display:none;text-align:center;margin-bottom:12px">
+<span style="background:var(--accent);color:#fff;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600" id="occasionLabel"></span>
 </div>
 <div class="mode-pills" id="modePills">
 <div class="pill-slider" id="pillSlider" style="width:33.33%"></div>
@@ -257,7 +257,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 <div class="stat-card"><div class="value" id="statToday">0</div><div class="label">Checked In Today</div></div>
 <div class="stat-card"><div class="value" id="statMembers">0</div><div class="label">Total Members</div></div>
 <div class="stat-card"><div class="value" id="statChildren">-</div><div class="label">Children Today</div></div>
-<div class="stat-card"><div class="value" id="statVisitors">0</div><div class="label">Visitors This Month</div></div>
+<div class="stat-card"><div class="value" id="statVisitors">0</div><div class="label">New This Month</div></div>
 <div class="stat-card"><div class="value" id="statAvg">0</div><div class="label">Weekly Average</div></div>
 </div>
 <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px">
@@ -1053,6 +1053,13 @@ updateCounter();
 if(currentTab==='tabCheckin'&&currentMode==='tap')renderAvatarGrid();
 if(currentTab==='tabMembers')renderMemberList();
 }}catch(e){}
+try{
+const r3=await fetch(url+'?action=getOccasion');
+const json3=await r3.json();
+if(json3.success&&json3.data){
+if(json3.data.active&&json3.data.active!==currentOccasion){currentOccasion=json3.data.active;await setSetting('activeOccasion',currentOccasion);updateOccasionBanner();renderOccasionTags()}
+if(json3.data.list){await setSetting('occasions',JSON.stringify(json3.data.list));renderOccasionTags(json3.data.list)}
+}}catch(e){}
 }
 setInterval(autoSync,10000);
 
@@ -1170,27 +1177,54 @@ document.getElementById('whatsNewBtn').addEventListener('click',()=>{renderChang
 let currentOccasion='Sunday Service';
 async function getOccasions(){
 const val=await getSetting('occasions');
-return val?JSON.parse(val):['Sunday Service','Prayer Connect','Midweek Service','Bible Study'];
+return val?JSON.parse(val):['Sunday Service'];
 }
-async function saveOccasions(list){await setSetting('occasions',JSON.stringify(list));populateOccasionDropdown(list);renderOccasionTags(list)}
-function populateOccasionDropdown(list){
-const el=document.getElementById('occasionSelect');
-const wrapper=document.getElementById('occasionWrapper');
-el.innerHTML=list.map(o=>`<option${o===currentOccasion?' selected':''}>${o}</option>`).join('');
-wrapper.style.display=list.length>1?'flex':'none';
+async function saveOccasions(list){
+await setSetting('occasions',JSON.stringify(list));
+renderOccasionTags(list);
+const url=await getSetting('scriptUrl');
+if(url)try{await fetch(url,{method:'POST',body:JSON.stringify({action:'setOccasion',list}),headers:{'Content-Type':'text/plain'}})}catch(e){}
+}
+async function setActiveOccasion(name){
+if(isSunday()&&name!=='Sunday Service'){
+const typed=prompt(`Today is Sunday. To switch to "${name}", type "CONFIRM" below:`);
+if(!typed||typed.trim().toUpperCase()!=='CONFIRM'){showToast('Occasion not changed','warning');return}
+}
+currentOccasion=name;
+await setSetting('activeOccasion',name);
+updateOccasionBanner();
+const url=await getSetting('scriptUrl');
+if(url)try{await fetch(url,{method:'POST',body:JSON.stringify({action:'setOccasion',active:name}),headers:{'Content-Type':'text/plain'}})}catch(e){}
+}
+function updateOccasionBanner(){
+const banner=document.getElementById('occasionBanner');
+const label=document.getElementById('occasionLabel');
+if(currentOccasion&&currentOccasion!=='Sunday Service'){
+label.textContent=currentOccasion;
+banner.style.display='block';
+}else{
+banner.style.display='none';
+}
 }
 async function renderOccasionTags(list){
 if(!list)list=await getOccasions();
 const el=document.getElementById('occasionTags');
-el.innerHTML=list.map(o=>`<span style="background:var(--surface);border:1px solid var(--card-border);border-radius:8px;padding:4px 10px;font-size:11px;display:inline-flex;align-items:center;gap:6px">${o}<span style="cursor:pointer;opacity:0.5" data-remove-occasion="${o}">&times;</span></span>`).join('');
-el.querySelectorAll('[data-remove-occasion]').forEach(x=>x.addEventListener('click',async()=>{
+el.innerHTML=list.map(o=>`<span style="background:${o===currentOccasion?'var(--accent)':'var(--surface)'};color:${o===currentOccasion?'#fff':'var(--text)'};border:1px solid var(--card-border);border-radius:8px;padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:6px;cursor:pointer" data-occasion="${o}">${o}${o!=='Sunday Service'?`<span style="cursor:pointer;opacity:0.6" data-remove-occasion="${o}">&times;</span>`:''}</span>`).join('');
+el.querySelectorAll('[data-occasion]').forEach(x=>x.addEventListener('click',async(e)=>{
+if(e.target.dataset.removeOccasion)return;
+await setActiveOccasion(x.dataset.occasion);
+renderOccasionTags();
+}));
+el.querySelectorAll('[data-remove-occasion]').forEach(x=>x.addEventListener('click',async(e)=>{
+e.stopPropagation();
 const name=x.dataset.removeOccasion;
-if(name==='Sunday Service'){showToast('Cannot remove default occasion','warning');return}
 if(!confirm(`Remove "${name}"?`))return;
-const l=await getOccasions();await saveOccasions(l.filter(o=>o!==name));
+const l=await getOccasions();
+const newList=l.filter(o=>o!==name);
+if(currentOccasion===name)await setActiveOccasion('Sunday Service');
+await saveOccasions(newList);
 }));
 }
-document.getElementById('occasionSelect').addEventListener('change',(e)=>{currentOccasion=e.target.value});
 document.getElementById('addOccasionBtn').addEventListener('click',async()=>{
 const input=document.getElementById('newOccasionInput');
 const name=input.value.trim();if(!name)return;
@@ -1217,7 +1251,9 @@ showToast('Feedback sent! Thank you.');
 (async function initExtras(){
 await checkWhatsNew();
 const occasions=await getOccasions();
-populateOccasionDropdown(occasions);
+const savedOccasion=await getSetting('activeOccasion');
+if(savedOccasion)currentOccasion=savedOccasion;
+updateOccasionBanner();
 renderOccasionTags(occasions);
 })();
 
