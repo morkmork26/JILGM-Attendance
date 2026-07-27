@@ -189,7 +189,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 
 <div class="content">
 <div class="tab-content active" id="tabCheckin">
-<div style="display:flex;align-items:center;justify-content:center;margin-bottom:12px">
+<div id="occasionWrapper" style="display:none;align-items:center;justify-content:center;margin-bottom:12px">
 <select id="occasionSelect" style="padding:8px 14px;border-radius:20px;background:var(--surface);border:1px solid var(--card-border);color:var(--text);font-size:12px;font-weight:600;text-align:center"></select>
 </div>
 <div class="mode-pills" id="modePills">
@@ -1172,7 +1172,9 @@ return val?JSON.parse(val):['Sunday Service','Prayer Connect','Midweek Service',
 async function saveOccasions(list){await setSetting('occasions',JSON.stringify(list));populateOccasionDropdown(list);renderOccasionTags(list)}
 function populateOccasionDropdown(list){
 const el=document.getElementById('occasionSelect');
+const wrapper=document.getElementById('occasionWrapper');
 el.innerHTML=list.map(o=>`<option${o===currentOccasion?' selected':''}>${o}</option>`).join('');
+wrapper.style.display=list.length>1?'flex':'none';
 }
 async function renderOccasionTags(list){
 if(!list)list=await getOccasions();
