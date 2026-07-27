@@ -956,10 +956,20 @@ if(json.success&&json.data){
 await dbClear('members');
 for(const m of json.data)await dbPut('members',m);
 allMembers=json.data;
-updateCounter();
 }
+const r2=await fetch(url+'?action=getAttendance&date='+today());
+const json2=await r2.json();
+if(json2.success&&json2.data){
+const existing=new Set(todayAttendance.map(a=>a.memberId));
+for(const rec of json2.data){
+if(!existing.has(rec.memberId)){
+await dbPut('attendance',{memberId:rec.memberId,memberName:rec.memberName,date:rec.date,timestamp:rec.timestamp||Date.now(),checkedInBy:rec.checkedInBy||'sync'});
+todayAttendance.push(rec);
+}}
+}
+updateCounter();
 await setSetting('lastSynced',new Date().toLocaleString());
-showToast(`Synced! ${allMembers.length} members loaded`);loadSettings();renderAvatarGrid();
+showToast(`Synced! ${allMembers.length} members, ${todayAttendance.length} checked in`);loadSettings();renderAvatarGrid();
 }catch(e){showToast('Sync failed, try again','error')}
 finally{dot.classList.remove('syncing')}
 });
