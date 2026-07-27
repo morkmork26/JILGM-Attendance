@@ -229,10 +229,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 <div class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
 </div>
 <div class="search-results" id="searchResults"></div>
-<div class="visitor-card" id="addVisitorBtn">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-<p>New Visitor</p>
-</div>
+
 </div>
 </div>
 
@@ -679,17 +676,11 @@ e.target.value='';res.innerHTML='';
 },200);
 });
 
-document.getElementById('addVisitorBtn').addEventListener('click',()=>showModal('visitor'));
+
 
 function showModal(type,data=null){
 const overlay=document.getElementById('modalOverlay');const content=document.getElementById('modalContent');
-if(type==='visitor'){
-content.innerHTML=`<div class="modal-header"><h3>New Visitor</h3><button class="modal-close" id="closeModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-<div class="input-group"><input type="text" id="visitorName" placeholder=" " required><label>Name</label></div>
-<div class="input-group"><input type="tel" id="visitorPhone" placeholder=" "><label>Phone (optional)</label></div>
-<div class="input-group"><textarea id="visitorNotes" placeholder=" " rows="2"></textarea><label>Notes (optional)</label></div>
-<button class="btn btn-primary" style="width:100%;margin-top:8px" id="saveVisitor">Save Visitor</button>`;
-}else if(type==='member'){
+if(type==='member'){
 const classes=['Class 101','Class 102','Class 201','Class 301','Class 401','SOP 1','SOP 2','SOW','PCS'];
 const memberClasses=data&&data.classes?data.classes:[];
 content.innerHTML=`<div class="modal-header"><h3>${data?'Edit Member':'Add Member'}</h3><button class="modal-close" id="closeModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
@@ -718,7 +709,7 @@ content.innerHTML=`<div class="modal-header"><h3>${data?'Edit Member':'Add Membe
 overlay.classList.add('show');
 setTimeout(()=>{
 document.getElementById('closeModal').addEventListener('click',closeModal);
-if(type==='visitor')document.getElementById('saveVisitor').addEventListener('click',saveVisitor);
+
 if(type==='member'){
 getMinistries().then(list=>{
 const el=document.getElementById('memMinistry');
@@ -732,13 +723,7 @@ document.getElementById('memPhotoBtn').addEventListener('click',()=>document.get
 
 function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
 
-async function saveVisitor(){
-const name=document.getElementById('visitorName').value.trim();if(!name){showToast('Name is required','error');return}
-const member={id:'m'+Date.now(),name,dgroup:'',phone:document.getElementById('visitorPhone').value.trim(),birthday:'',photo:null,status:'active',dateRegistered:today()};
-await dbPut('members',member);allMembers.push(member);
-const ok4=await checkInMember(member);if(ok4===false)return;
-playBeep();closeModal();showToast(`${name} added and checked in!`);updateCounter();
-}
+
 
 async function saveMember(existing){
 const name=document.getElementById('memName').value.trim();if(!name){showToast('Name is required','error');return}
