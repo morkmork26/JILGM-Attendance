@@ -2,496 +2,1233 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JILGM-STBC Attendance System | Proposal</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0f0e17">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>JILGM - STBC Attendance</title>
+<link rel="manifest" href="manifest.json">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{
---bg:#0f0e17;--surface:#1a1a2e;--card:#16213e;--glass:rgba(22,33,62,0.7);
---text:#e0e0e0;--text-secondary:#a0a0b0;--accent:#d4a843;--accent2:#7b2ff7;
---accent3:#00d4ff;--success:#4caf50;--border:rgba(255,255,255,0.08);
---gradient:linear-gradient(135deg,#d4a843,#f5d676,#c9952c);
---gradient2:linear-gradient(135deg,#7b2ff7,#00d4ff);
-}
-body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
-a{color:var(--accent3);text-decoration:none}
-
-/* Navigation */
-.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,14,23,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:12px 0}
-.nav-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px}
-.nav-brand{font-weight:700;font-size:15px;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.nav-links{display:flex;gap:24px}
-.nav-links a{color:var(--text-secondary);font-size:13px;font-weight:500;transition:color 0.3s}
-.nav-links a:hover{color:var(--accent)}
-@media(max-width:768px){.nav-links{display:none}}
-
-/* Hero */
-.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:120px 24px 80px;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 30% 50%,rgba(123,47,247,0.08) 0%,transparent 50%),radial-gradient(ellipse at 70% 50%,rgba(212,168,67,0.06) 0%,transparent 50%);animation:heroGlow 8s ease-in-out infinite alternate}
-@keyframes heroGlow{0%{transform:translate(0,0)}100%{transform:translate(-2%,1%)}}
-.hero-content{position:relative;z-index:1;max-width:700px}
-.hero-logo{width:100px;height:100px;border-radius:50%;margin:0 auto 24px;box-shadow:0 0 40px rgba(212,168,67,0.3);border:3px solid rgba(212,168,67,0.4);overflow:hidden;display:flex;align-items:center;justify-content:center;background:#fff}
-.hero-logo span{font-size:36px;font-weight:800;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero h1{font-size:clamp(28px,5vw,48px);font-weight:800;margin-bottom:8px;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero .subtitle{font-size:clamp(14px,2.5vw,18px);color:var(--text-secondary);margin-bottom:40px;font-weight:400}
-.hero-stats{display:flex;gap:40px;justify-content:center;flex-wrap:wrap}
-.hero-stat{text-align:center}
-.hero-stat .number{font-size:32px;font-weight:800;background:var(--gradient2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-stat .label{font-size:12px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
-
-/* Sections */
-section{padding:80px 24px;max-width:1100px;margin:0 auto}
-.section-title{font-size:clamp(24px,4vw,36px);font-weight:700;margin-bottom:8px;text-align:center}
-.section-subtitle{color:var(--text-secondary);text-align:center;margin-bottom:48px;font-size:15px;max-width:600px;margin-left:auto;margin-right:auto}
-.gold-text{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-
-/* Problem/Solution */
-.ps-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:40px}
-@media(max-width:768px){.ps-grid{grid-template-columns:1fr}}
-.ps-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;position:relative;overflow:hidden}
-.ps-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.ps-card.problem::before{background:linear-gradient(90deg,#ff6b6b,#ffa500)}
-.ps-card.solution::before{background:var(--gradient2)}
-.ps-card h3{font-size:18px;margin-bottom:20px;display:flex;align-items:center;gap:10px}
-.ps-card ul{list-style:none;display:flex;flex-direction:column;gap:14px}
-.ps-card li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text-secondary)}
-.ps-card li::before{content:'';width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:6px}
-.ps-card.problem li::before{background:#ff6b6b}
-.ps-card.solution li::before{background:var(--accent3)}
-
-/* Flow Diagram */
-.flow-container{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px 24px;margin-top:40px;overflow-x:auto}
-.flow{display:flex;align-items:center;justify-content:center;gap:0;min-width:700px;padding:20px 0}
-.flow-step{display:flex;flex-direction:column;align-items:center;text-align:center;position:relative}
-.flow-icon{width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:10px;transition:transform 0.3s,box-shadow 0.3s}
-.flow-icon:hover{transform:scale(1.1);box-shadow:0 8px 24px rgba(123,47,247,0.3)}
-.flow-step:nth-child(1) .flow-icon{background:linear-gradient(135deg,#667eea,#764ba2)}
-.flow-step:nth-child(3) .flow-icon{background:linear-gradient(135deg,#f093fb,#f5576c)}
-.flow-step:nth-child(5) .flow-icon{background:linear-gradient(135deg,#4facfe,#00f2fe)}
-.flow-step:nth-child(7) .flow-icon{background:linear-gradient(135deg,#43e97b,#38f9d7)}
-.flow-step:nth-child(9) .flow-icon{background:linear-gradient(135deg,#fa709a,#fee140)}
-.flow-label{font-size:12px;font-weight:600;max-width:100px;color:var(--text)}
-.flow-sublabel{font-size:10px;color:var(--text-secondary);margin-top:2px}
-.flow-arrow{font-size:20px;color:var(--accent);margin:0 8px;flex-shrink:0;opacity:0.6}
-
-/* Feature Cards */
-.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;margin-top:40px}
-.feature-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;transition:transform 0.3s,box-shadow 0.3s,border-color 0.3s;cursor:default;position:relative;overflow:hidden}
-.feature-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(123,47,247,0.15);border-color:rgba(123,47,247,0.3)}
-.feature-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gradient2);opacity:0;transition:opacity 0.3s}
-.feature-card:hover::after{opacity:1}
-.feature-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px}
-.feature-card:nth-child(1) .feature-icon{background:rgba(123,47,247,0.15)}
-.feature-card:nth-child(2) .feature-icon{background:rgba(0,212,255,0.15)}
-.feature-card:nth-child(3) .feature-icon{background:rgba(212,168,67,0.15)}
-.feature-card:nth-child(4) .feature-icon{background:rgba(76,175,80,0.15)}
-.feature-card:nth-child(5) .feature-icon{background:rgba(255,107,107,0.15)}
-.feature-card:nth-child(6) .feature-icon{background:rgba(240,147,251,0.15)}
-.feature-card:nth-child(7) .feature-icon{background:rgba(67,233,123,0.15)}
-.feature-card:nth-child(8) .feature-icon{background:rgba(79,172,254,0.15)}
-.feature-card h3{font-size:16px;font-weight:700;margin-bottom:8px}
-.feature-card p{font-size:13px;color:var(--text-secondary);line-height:1.7}
-.feature-details{max-height:0;overflow:hidden;transition:max-height 0.4s cubic-bezier(0.4,0,0.2,1)}
-.feature-card.expanded .feature-details{max-height:300px}
-.feature-details ul{list-style:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
-.feature-details li{font-size:12px;color:var(--text-secondary);padding-left:16px;position:relative}
-.feature-details li::before{content:'\2022';position:absolute;left:0;color:var(--accent)}
-.feature-toggle{display:inline-block;margin-top:12px;font-size:11px;color:var(--accent3);cursor:pointer;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
-.feature-toggle:hover{text-decoration:underline}
-
-/* Tech Highlights */
-.tech-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:40px}
-.tech-badge{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;transition:transform 0.3s,border-color 0.3s}
-.tech-badge:hover{transform:translateY(-2px);border-color:rgba(212,168,67,0.3)}
-.tech-badge .icon{font-size:28px;margin-bottom:8px}
-.tech-badge .title{font-size:13px;font-weight:700;margin-bottom:4px}
-.tech-badge .desc{font-size:11px;color:var(--text-secondary)}
-
-/* Mockups */
-.mockup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;margin-top:40px}
-.mockup-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:transform 0.3s}
-.mockup-card:hover{transform:scale(1.02)}
-.mockup-header{background:var(--surface);padding:8px 12px;display:flex;align-items:center;gap:6px}
-.mockup-dot{width:8px;height:8px;border-radius:50%}
-.mockup-dot:nth-child(1){background:#ff5f57}
-.mockup-dot:nth-child(2){background:#ffbd2e}
-.mockup-dot:nth-child(3){background:#28c840}
-.mockup-body{padding:20px;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
-.mockup-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent);text-align:center;padding:12px}
-.mock-avatar{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff}
-.mock-avatars{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-.mock-bar{height:6px;border-radius:3px;background:var(--gradient2)}
-.mock-scan{width:80px;height:80px;border:3px solid var(--accent3);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:32px;position:relative}
-.mock-scan::after{content:'';position:absolute;top:50%;left:8px;right:8px;height:2px;background:var(--accent3);animation:scanLine 2s ease-in-out infinite}
-@keyframes scanLine{0%,100%{top:20%}50%{top:80%}}
-
-/* CTA */
-.cta{text-align:center;padding:80px 24px;position:relative}
-.cta h2{font-size:clamp(24px,4vw,32px);font-weight:700;margin-bottom:16px}
-.cta p{color:var(--text-secondary);max-width:500px;margin:0 auto 32px;font-size:15px}
-.cta-steps{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-top:32px}
-.cta-step{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;width:180px;text-align:center}
-.cta-step .num{width:28px;height:28px;border-radius:50%;background:var(--gradient2);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;margin-bottom:10px}
-.cta-step .text{font-size:12px;color:var(--text-secondary)}
-
-/* Footer */
-.footer{text-align:center;padding:32px 24px;border-top:1px solid var(--border);color:var(--text-secondary);font-size:12px}
-
-/* Animations */
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-.animate{opacity:0;animation:fadeUp 0.6s ease forwards}
-.animate.d1{animation-delay:0.1s}.animate.d2{animation-delay:0.2s}.animate.d3{animation-delay:0.3s}
-.animate.d4{animation-delay:0.4s}.animate.d5{animation-delay:0.5s}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0f0e17;--card:#1a1a2e;--card-border:rgba(255,255,255,0.05);--text:#eaeaea;--text-secondary:#8b8b9e;--accent:#6c63ff;--accent2:#48c6ef;--success:#00e676;--warning:#ffab00;--error:#ff5252;--glass:rgba(26,26,46,0.8);--radius:16px;--nav-h:64px;--header-h:56px}
+body.light{--bg:#f5f5f7;--card:#ffffff;--card-border:rgba(0,0,0,0.08);--text:#1a1a2e;--text-secondary:#6b6b7b;--glass:rgba(255,255,255,0.85)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-weight:400;line-height:1.5}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;color:var(--text);background:transparent;border:none;outline:none;font-size:16px}
+.header{position:sticky;top:0;z-index:100;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--card-border)}
+.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);opacity:0.4}
+.logo{font-size:14px;font-weight:700;background:linear-gradient(135deg,#d4a843,#f5d676,#c9952c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.3px;white-space:nowrap}
+.header-date{font-size:13px;color:var(--text-secondary);font-weight:500}
+.header-right{display:flex;align-items:center;gap:10px}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--success)}
+.sync-dot.syncing{animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.3)}}
+.counter-badge{font-size:12px;font-weight:600;background:var(--card);border:1px solid var(--card-border);border-radius:20px;padding:4px 10px}
+.content{padding:16px;padding-bottom:calc(var(--nav-h) + 24px);min-height:calc(100vh - var(--header-h) - var(--nav-h))}
+.tab-content{display:none;animation:fadeIn 0.3s ease}
+.tab-content.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-around;z-index:100}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 16px;position:relative;transition:all 0.2s}
+.nav-item svg{width:22px;height:22px;stroke:var(--text-secondary);fill:none;stroke-width:1.8;transition:all 0.2s}
+.nav-item span{font-size:10px;color:var(--text-secondary);font-weight:500;transition:color 0.2s}
+.nav-item.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:32px;height:3px;border-radius:0 0 3px 3px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.nav-item.active svg{stroke:var(--accent);filter:drop-shadow(0 0 6px rgba(108,99,255,0.4))}
+.nav-item.active span{color:var(--text)}
+.mode-pills{display:flex;background:var(--card);border-radius:12px;padding:4px;margin-bottom:16px;position:relative;border:1px solid var(--card-border)}
+.mode-pill{flex:1;text-align:center;padding:10px 8px;font-size:13px;font-weight:600;border-radius:10px;transition:all 0.3s;z-index:1;position:relative}
+.mode-pill.active{color:#fff}
+.pill-slider{position:absolute;top:4px;left:4px;height:calc(100% - 8px);border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);z-index:0}
+.avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff;flex-shrink:0;position:relative;transition:transform 0.2s}
+.avatar.small{width:36px;height:36px;font-size:13px}
+.avatar.large{width:80px;height:80px;font-size:28px}
+.avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.avatar.checked-in{box-shadow:0 0 0 3px var(--success)}
+.avatar .check-badge{position:absolute;top:-2px;right:-2px;width:16px;height:16px;background:var(--success);border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg)}
+.avatar .check-badge svg{width:10px;height:10px;stroke:#fff;stroke-width:3}
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px;transition:transform 0.2s,box-shadow 0.2s}
+.card:active{transform:scale(0.97)}
+.avatar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:12px}
+.avatar-grid-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:12px;transition:all 0.2s;cursor:pointer}
+.avatar-grid-item:active{transform:scale(0.93)}
+.avatar-grid-item .name{font-size:11px;color:var(--text-secondary);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72px}
+.avatar-grid-item.checked .avatar{box-shadow:0 0 0 3px var(--success)}
+@keyframes checkPulse{0%{box-shadow:0 0 0 3px var(--success)}50%{box-shadow:0 0 0 8px rgba(0,230,118,0.2)}100%{box-shadow:0 0 0 3px var(--success)}}
+.filter-bar{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.filter-bar select{background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:8px 12px;font-size:13px;color:var(--text);appearance:none;-webkit-appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b8b9e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.toggle-pills{display:flex;background:var(--card);border-radius:8px;overflow:hidden;border:1px solid var(--card-border)}
+.toggle-pill{padding:6px 12px;font-size:12px;font-weight:500;transition:all 0.2s}
+.toggle-pill.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.filter-count{font-size:12px;color:var(--text-secondary);margin-bottom:12px}
+.input-group{position:relative;margin-bottom:20px}
+.input-group input,.input-group select,.input-group textarea{width:100%;padding:12px 0 8px;border-bottom:2px solid var(--card-border);font-size:16px;transition:border-color 0.3s}
+.input-group input:focus,.input-group select:focus,.input-group textarea:focus{border-bottom-color:var(--accent)}
+.input-group label{position:absolute;left:0;top:12px;font-size:14px;color:var(--text-secondary);transition:all 0.2s;pointer-events:none}
+.input-group input:focus~label,.input-group input:not(:placeholder-shown)~label,.input-group select:focus~label,.input-group textarea:focus~label,.input-group textarea:not(:placeholder-shown)~label{top:-8px;font-size:11px;color:var(--accent)}
+.input-group .search-icon{position:absolute;right:0;top:12px}
+.input-group .search-icon svg{width:18px;height:18px;stroke:var(--text-secondary)}
+.btn{padding:12px 24px;border-radius:12px;font-size:14px;font-weight:600;transition:all 0.2s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{transform:scale(0.97)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 15px rgba(108,99,255,0.3)}
+.btn-primary:hover{box-shadow:0 6px 20px rgba(108,99,255,0.4)}
+.btn-danger{background:var(--error);color:#fff}
+.btn-outline{border:1px solid var(--card-border);color:var(--text)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:200;display:none;align-items:flex-end;justify-content:center;animation:fadeIn 0.2s}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;transform:translateY(100%);animation:slideUp 0.3s forwards}
+@keyframes slideUp{to{transform:translateY(0)}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-header h3{font-size:18px;font-weight:700}
+.modal-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center}
+.modal-close svg{width:18px;height:18px;stroke:var(--text-secondary)}
+.fab{position:fixed;bottom:calc(var(--nav-h) + 20px);right:20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(108,99,255,0.4);z-index:50;transition:transform 0.2s}
+.fab:active{transform:scale(0.9)}
+.fab svg{width:24px;height:24px;stroke:#fff;stroke-width:2}
+.fab.pulse{animation:fabPulse 2s ease-in-out 3}
+@keyframes fabPulse{0%,100%{box-shadow:0 6px 20px rgba(108,99,255,0.4)}50%{box-shadow:0 6px 30px rgba(108,99,255,0.7)}}
+.stat-cards{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;margin-bottom:20px;-webkit-overflow-scrolling:touch}
+.stat-cards::-webkit-scrollbar{display:none}
+.stat-card{min-width:130px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px;flex-shrink:0}
+.stat-card .value{font-size:28px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-card .label{font-size:12px;color:var(--text-secondary);margin-top:4px}
+.chart{margin-bottom:24px}
+.chart-title{font-size:14px;font-weight:600;margin-bottom:12px}
+.chart-bars{display:flex;align-items:flex-end;gap:8px;height:160px;padding:0 4px}
+.chart-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.chart-bar .bar{width:100%;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,var(--accent),var(--accent2));transition:height 1s cubic-bezier(0.4,0,0.2,1);min-height:4px}
+.chart-bar .bar-label{font-size:10px;color:var(--text-secondary)}
+.chart-bar .bar-value{font-size:11px;font-weight:600}
+.member-list{display:flex;flex-direction:column;gap:8px}
+.member-row{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border:1px solid var(--card-border);border-radius:12px;transition:all 0.2s;cursor:pointer}
+.member-row:active{transform:scale(0.98)}
+.member-row .info{flex:1;min-width:0}
+.member-row .info .name{font-weight:600;font-size:14px}
+.member-row .info .sub{font-size:12px;color:var(--text-secondary)}
+.pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.pill-active{background:rgba(0,230,118,0.15);color:var(--success)}
+.pill-inactive{background:rgba(255,82,82,0.15);color:var(--error)}
+.detail-panel{position:fixed;inset:0;z-index:200;background:var(--bg);transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);overflow-y:auto;padding:20px}
+.detail-panel.open{transform:translateX(0)}
+.detail-panel .back-btn{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-secondary);margin-bottom:20px}
+.detail-panel .back-btn svg{width:20px;height:20px;stroke:var(--text-secondary)}
+.streak-dots{display:flex;gap:6px;margin:12px 0}
+.streak-dots .dot{width:12px;height:12px;border-radius:50%}
+.streak-dots .dot.present{background:var(--success)}
+.streak-dots .dot.absent{background:rgba(255,255,255,0.1)}
+.toast{position:fixed;bottom:calc(var(--nav-h) + 16px);left:50%;transform:translateX(-50%) translateY(100px);background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--card-border);border-radius:12px;padding:12px 20px;font-size:14px;font-weight:500;z-index:300;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1),opacity 0.3s;display:flex;align-items:center;gap:10px;max-width:90vw;opacity:0;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
+.toast .toast-progress{position:absolute;bottom:0;left:0;height:3px;border-radius:0 0 12px 12px;background:linear-gradient(90deg,var(--accent),var(--accent2));animation:toastProgress 3s linear forwards}
+@keyframes toastProgress{from{width:100%}to{width:0}}
+.qr-scanner{width:100%;max-width:300px;margin:0 auto;border-radius:var(--radius);overflow:hidden;position:relative;background:#000}
+.qr-scanner .scan-line{position:absolute;top:0;left:10%;width:80%;height:2px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);animation:scanLine 2s linear infinite}
+@keyframes scanLine{from{top:10%}to{top:90%}}
+.qr-overlay{position:fixed;inset:0;z-index:250;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px)}
+.qr-overlay.show{display:flex}
+.qr-overlay .result{text-align:center;animation:scaleIn 0.3s}
+@keyframes scaleIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}
+.qr-overlay .result .icon{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.qr-overlay .result .icon.success{background:rgba(0,230,118,0.2)}
+.qr-overlay .result .icon.warning{background:rgba(255,171,0,0.2)}
+.qr-overlay .result .icon svg{width:40px;height:40px}
+.search-results{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.search-result-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border:1px solid var(--card-border);border-radius:12px;cursor:pointer;transition:all 0.2s}
+.search-result-item:active{transform:scale(0.97)}
+.visitor-card{border:2px dashed var(--card-border);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;margin-top:12px}
+.visitor-card:active{transform:scale(0.97)}
+.visitor-card svg{width:32px;height:32px;stroke:var(--text-secondary);margin-bottom:8px}
+.visitor-card p{font-size:13px;color:var(--text-secondary)}
+.empty-state{text-align:center;padding:48px 24px}
+.empty-state svg{width:64px;height:64px;stroke:var(--text-secondary);margin-bottom:16px;opacity:0.5}
+.empty-state p{color:var(--text-secondary);font-size:14px}
+.settings-section{margin-bottom:24px}
+.settings-section h4{font-size:13px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--card);border:1px solid var(--card-border);border-radius:12px;margin-bottom:8px}
+.settings-row .label{font-size:14px}
+.settings-row .sublabel{font-size:12px;color:var(--text-secondary)}
+.install-banner{position:fixed;top:var(--header-h);left:0;right:0;background:linear-gradient(135deg,var(--accent),var(--accent2));padding:10px 16px;display:none;align-items:center;justify-content:space-between;z-index:90;font-size:13px;font-weight:500}
+.install-banner.show{display:flex}
+.skeleton{background:linear-gradient(90deg,var(--card) 25%,rgba(255,255,255,0.05) 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+.follow-up-card{background:var(--card);border:1px solid rgba(255,171,0,0.2);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.follow-up-card .info .name{font-weight:600;font-size:14px}
+.follow-up-card .info .sub{font-size:12px;color:var(--warning)}
+#qr-reader{width:100%;overflow:hidden}
+#qr-reader video{width:100%!important;height:auto!important;border-radius:var(--radius)}
+#qr-reader img{display:none}
+@media(min-width:600px){.avatar-grid{grid-template-columns:repeat(5,1fr)}.content{max-width:540px;margin:0 auto}}
 </style>
 </head>
 <body>
 
-<nav class="nav">
-<div class="nav-inner">
-<div class="nav-brand">JILGM - STBC</div>
-<div class="nav-links">
-<a href="#flow">How It Works</a>
-<a href="#features">Features</a>
-<a href="#tech">Technical</a>
-<a href="#preview">Preview</a>
+<!-- What's New Modal -->
+<div id="whatsNewModal" style="position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:24px">
+<div style="background:var(--card);border:1px solid rgba(255,255,255,0.1);border-radius:20px;max-width:400px;width:100%;max-height:80vh;overflow-y:auto;padding:28px">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+<h3 style="font-size:18px;font-weight:700">What's New</h3>
+<button onclick="document.getElementById('whatsNewModal').style.display='none'" style="background:none;border:none;color:var(--text-secondary);font-size:20px;cursor:pointer">&times;</button>
+</div>
+<div id="changelogContent"></div>
 </div>
 </div>
+
+<div class="header">
+<div class="logo"><span style="display:inline-block;width:40px;height:40px;border-radius:50%;overflow:hidden;vertical-align:middle;margin-right:8px;background:#fff"><img src="logo.jpg" alt="JILGM" style="width:100%;height:100%;object-fit:cover;transform:scale(1.55);object-position:center center"></span>Attendance Tracker</div>
+<div class="header-date" id="headerDate"></div>
+<div class="header-right">
+<button id="themeToggle" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center"><svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
+<div class="sync-dot" id="syncDot"></div>
+<div class="counter-badge" id="counterBadge">0/0</div>
+</div>
+</div>
+
+<div class="install-banner" id="installBanner">
+<span>Install App for offline use</span>
+<button class="btn" style="padding:6px 14px;font-size:12px;background:rgba(255,255,255,0.2);border-radius:8px" id="installBtn">Install</button>
+<button style="padding:4px" id="dismissInstall"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+</div>
+
+<div class="content">
+<div class="tab-content active" id="tabCheckin">
+<div id="occasionWrapper" style="display:none;align-items:center;justify-content:center;margin-bottom:12px">
+<select id="occasionSelect" style="padding:8px 14px;border-radius:20px;background:var(--surface);border:1px solid var(--card-border);color:var(--text);font-size:12px;font-weight:600;text-align:center"></select>
+</div>
+<div class="mode-pills" id="modePills">
+<div class="pill-slider" id="pillSlider" style="width:33.33%"></div>
+<div class="mode-pill active" data-mode="qr">QR Scan</div>
+<div class="mode-pill" data-mode="tap">Quick Tap</div>
+<div class="mode-pill" data-mode="search">Search</div>
+</div>
+
+<div id="modeQR">
+<div class="qr-scanner">
+<div id="qr-reader"></div>
+<div class="scan-line"></div>
+</div>
+<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px">
+<p style="font-size:13px;color:var(--text-secondary);margin:0">Point camera at member QR code</p>
+<button class="btn btn-outline" style="padding:6px 12px;font-size:11px;border-radius:8px" onclick="flipCamera()">Flip Camera</button>
+</div>
+</div>
+
+<div id="modeTap" style="display:none">
+<div class="filter-bar">
+<select id="ministryFilter"><option value="">All Ministries</option></select>
+<div class="toggle-pills">
+<div class="toggle-pill active" data-show="all">All</div>
+<div class="toggle-pill" data-show="nothere">Not Here</div>
+</div>
+</div>
+<div class="filter-count" id="tapCount">Showing 0 members</div>
+<div class="avatar-grid" id="avatarGrid"></div>
+</div>
+
+<div id="modeSearch" style="display:none">
+<div class="input-group">
+<input type="text" id="searchInput" placeholder=" " autocomplete="off">
+<label>Search member name...</label>
+<div class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
+</div>
+<div class="search-results" id="searchResults"></div>
+<div class="visitor-card" id="addVisitorBtn">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+<p>New Visitor</p>
+</div>
+</div>
+</div>
+
+<div class="tab-content" id="tabMembers">
+<div class="input-group" style="margin-bottom:12px">
+<input type="text" id="memberSearch" placeholder=" " autocomplete="off">
+<label>Search members...</label>
+</div>
+<div class="filter-bar" id="memberFilters">
+<div class="toggle-pills">
+<div class="toggle-pill active" data-filter="all">All</div>
+<div class="toggle-pill" data-filter="active">Active</div>
+<div class="toggle-pill" data-filter="inactive">Inactive</div>
+</div>
+<select id="memberMinistryFilter"><option value="">All Ministries</option></select>
+<select id="memberOutreachFilter"><option value="">All Outreaches</option><option>Sto. Tomas</option><option>Tanauan</option><option>Naujan</option><option>Socorro</option></select>
+</div>
+<div class="filter-count" id="memberCount">0 members</div>
+<div class="member-list" id="memberList"></div>
+</div>
+
+<div class="tab-content" id="tabReports">
+<div style="margin-bottom:16px"><button class="btn btn-primary" style="width:100%;padding:14px;font-size:14px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2))" id="generateReportBtn">Generate Report</button></div>
+<div class="stat-cards" id="statCards">
+<div class="stat-card"><div class="value" id="statToday">0</div><div class="label">Checked In Today</div></div>
+<div class="stat-card"><div class="value" id="statMembers">0</div><div class="label">Total Members</div></div>
+<div class="stat-card"><div class="value" id="statChildren">-</div><div class="label">Children Today</div></div>
+<div class="stat-card"><div class="value" id="statVisitors">0</div><div class="label">Visitors This Month</div></div>
+<div class="stat-card"><div class="value" id="statAvg">0</div><div class="label">Weekly Average</div></div>
+</div>
+<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px">
+<label style="font-size:13px;color:var(--text-secondary);white-space:nowrap">Children count:</label>
+<input type="number" id="childrenInput" placeholder="0" min="0" style="width:70px;padding:8px 12px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;font-size:16px;text-align:center">
+<button class="btn btn-outline" style="padding:6px 14px;font-size:12px" id="saveChildrenBtn">Save</button>
+</div>
+<div style="margin-bottom:24px">
+<div class="chart-title">Ministry Breakdown</div>
+<div id="ministryBreakdown"></div>
+</div>
+<div class="chart">
+<div class="chart-title">Weekly Attendance</div>
+<div class="chart-bars" id="chartBars"></div>
+</div>
+<div>
+<div class="chart-title" style="color:var(--warning)">Needs Follow-Up</div>
+<div id="followUpList"></div>
+</div>
+</div>
+
+<div class="tab-content" id="tabSettings">
+<div class="settings-section">
+<h4>Connection</h4>
+<div class="input-group">
+<input type="text" id="scriptUrl" placeholder=" ">
+<label>Google Apps Script URL</label>
+</div>
+<div style="display:flex;gap:8px;align-items:center">
+<button class="btn btn-outline" id="testConnection">Test Connection</button>
+<button class="btn btn-outline" id="unlockUrlBtn" style="display:none;padding:6px 12px;font-size:11px;color:var(--warning)">Edit URL</button>
+<span id="connectionStatus" style="font-size:12px"></span>
+</div>
+</div>
+<div class="settings-section">
+<h4>Report</h4>
+<div class="settings-row" style="flex-direction:column;align-items:stretch;gap:8px">
+<div class="input-group"><input type="email" id="reportEmail" placeholder=" "><label>Report Email</label></div>
+<div class="input-group"><input type="text" id="defaultOutreach" placeholder=" " value="STBC"><label>Default Outreach Location</label></div>
+</div>
+</div>
+<div class="settings-section">
+<h4>Sync</h4>
+<div class="settings-row">
+<div><div class="label">Last Synced</div><div class="sublabel" id="lastSynced">Never</div></div>
+<button class="btn btn-primary" style="padding:8px 16px;font-size:12px" id="syncNowBtn">Sync Now</button>
+</div>
+<div class="settings-row">
+<div><div class="label">Pending Changes</div><div class="sublabel" id="pendingCount">0 items</div></div>
+</div>
+</div>
+<div class="settings-section">
+<h4>Data</h4>
+<div class="settings-row"><div class="label">Import Members</div><button class="btn btn-outline" style="padding:8px 16px;font-size:12px" id="importBtn">Import CSV</button></div>
+<div class="settings-row"><div class="label">Export Data</div><button class="btn btn-outline" style="padding:8px 16px;font-size:12px" id="exportBtn">Export CSV</button></div>
+
+
+</div>
+<div class="settings-section">
+<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'flex':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Ministries <span style="font-size:14px;color:var(--text-secondary)">-</span></h4>
+<div class="settings-row" style="flex-wrap:wrap;gap:8px">
+<div id="ministryTags" style="display:flex;flex-wrap:wrap;gap:6px;width:100%;margin-bottom:8px"></div>
+<div style="display:flex;gap:8px;width:100%">
+<input type="text" id="newMinistryInput" placeholder="Add ministry name..." style="flex:1;padding:8px 12px;border-bottom:2px solid var(--card-border);font-size:14px">
+<button class="btn btn-primary" style="padding:8px 16px;font-size:12px" id="addMinistryBtn">Add</button>
+</div>
+</div>
+</div>
+<div class="settings-section">
+<h4>Occasions</h4>
+<div class="settings-row" style="flex-wrap:wrap;gap:8px">
+<div id="occasionTags" style="display:flex;flex-wrap:wrap;gap:6px;width:100%;margin-bottom:8px"></div>
+<div style="display:flex;gap:8px;width:100%">
+<input type="text" id="newOccasionInput" placeholder="Add occasion name..." style="flex:1;padding:8px 12px;border-bottom:2px solid var(--card-border);font-size:14px">
+<button class="btn btn-primary" style="padding:8px 16px;font-size:12px" id="addOccasionBtn">Add</button>
+</div>
+</div>
+</div>
+<div class="settings-section">
+<h4>Feedback</h4>
+<div style="display:flex;flex-direction:column;gap:12px">
+<select id="feedbackCategory" style="padding:10px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--card-border);color:var(--text);font-size:13px">
+<option value="Improve App">Improve App</option>
+<option value="Report Bug">Report Bug</option>
+<option value="Suggestion">Suggestion</option>
+</select>
+<textarea id="feedbackMsg" placeholder="Tell us what you think..." style="padding:12px;border-radius:8px;background:var(--surface);border:1px solid var(--card-border);color:var(--text);font-size:13px;min-height:80px;resize:vertical"></textarea>
+<button class="btn btn-primary" style="padding:10px 16px;font-size:12px" id="sendFeedbackBtn">Send Feedback</button>
+</div>
+</div>
+<div class="settings-section">
+<h4>About</h4>
+<div class="settings-row"><div><div class="label">JILGM - STBC Attendance</div><div class="sublabel" id="appVersionLabel">v1.1.0</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
+
+</div>
+</div>
+</div>
+
+<button class="fab pulse" id="fab" style="display:none">
+<svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+</button>
+
+<nav class="bottom-nav">
+<button class="nav-item active" data-tab="tabCheckin">
+<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+<span>Check-In</span>
+</button>
+<button class="nav-item" data-tab="tabMembers">
+<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+<span>Members</span>
+</button>
+<button class="nav-item" data-tab="tabReports">
+<svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+<span>Reports</span>
+</button>
+<button class="nav-item" data-tab="tabSettings">
+<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68 1.65 1.65 0 0010 3.17V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+<span>Settings</span>
+</button>
 </nav>
 
-<section class="hero">
-<div class="hero-content">
-<div class="hero-logo"><span>JIL</span></div>
-<h1>JILGM - STBC Attendance System</h1>
-<p class="subtitle">A modern, digital attendance tracking solution designed for<br>Jesus Is Lord Global Ministry, Sto. Tomas Batangas Chapter</p>
-
-</div>
-</section>
-
-
-
-<section id="flow">
-<h2 class="section-title">How It <span class="gold-text">Works</span></h2>
-<p class="section-subtitle">End-to-end automated flow from registration to reporting</p>
-<div class="flow-container">
-<div class="flow">
-<div class="flow-step">
-<div class="flow-icon">&#128444;</div>
-<div class="flow-label">Printed QR Poster</div>
-<div class="flow-sublabel">At the church</div>
-</div>
-<div class="flow-arrow">&#10132;</div>
-<div class="flow-step">
-<div class="flow-icon">&#128241;</div>
-<div class="flow-label">Member Scans to Register</div>
-<div class="flow-sublabel">Opens Google Form</div>
-</div>
-<div class="flow-arrow">&#10132;</div>
-<div class="flow-step">
-<div class="flow-icon">&#128450;</div>
-<div class="flow-label">Saved to Database</div>
-<div class="flow-sublabel">Google Sheets</div>
-</div>
-<div class="flow-arrow">&#10132;</div>
-<div class="flow-step">
-<div class="flow-icon">&#9993;</div>
-<div class="flow-label">Personal QR Emailed</div>
-<div class="flow-sublabel">Automatic</div>
-</div>
-<div class="flow-arrow">&#10132;</div>
-<div class="flow-step">
-<div class="flow-icon">&#128247;</div>
-<div class="flow-label">Usher Scans QR</div>
-<div class="flow-sublabel">Every Sunday</div>
-</div>
-<div class="flow-arrow">&#10132;</div>
-<div class="flow-step">
-<div class="flow-icon">&#128200;</div>
-<div class="flow-label">Report Generated</div>
-<div class="flow-sublabel">Auto-emailed</div>
-</div>
-</div>
-</div>
-</section>
-
-<section id="features">
-<h2 class="section-title">Key <span class="gold-text">Features</span></h2>
-<p class="section-subtitle">Everything your ministry needs for attendance management in one app</p>
-<div class="features-grid">
-
-<div class="feature-card">
-<div class="feature-icon">&#128247;</div>
-<h3>Smart Check-In System</h3>
-<p>Multiple ways to check in members quickly and accurately on Sunday service.</p>
-<div class="feature-details"><ul>
-<li>QR Scan mode with front and back camera support</li>
-<li>Quick Tap mode with visual avatar grid</li>
-<li>Search mode with instant name matching</li>
-<li>Visitor walk-in check-in (no pre-registration needed)</li>
-<li>Audio beep confirmation on successful check-in</li>
-<li>Duplicate prevention (cannot check in same member twice)</li>
-</ul></div>
-<span class="feature-toggle" onclick="this.parentElement.classList.toggle('expanded')">See details</span>
+<div class="detail-panel" id="detailPanel">
+<button class="back-btn" id="detailBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back</button>
+<div id="detailContent"></div>
 </div>
 
-<div class="feature-card">
-<div class="feature-icon">&#128101;</div>
-<h3>Member Management</h3>
-<p>Complete member database with 20+ fields, photos, and organized views.</p>
-<div class="feature-details"><ul>
-<li>Full profile: name, contact, address, birthday, gender, civil status</li>
-<li>Ministry assignment, D-Group leader, classes attended</li>
-<li>Emergency contact information</li>
-<li>Photo capture and display</li>
-<li>Filter by status (Active/Inactive), ministry, and outreach</li>
-<li>Inline QR code display and resend capability</li>
-</ul></div>
-<span class="feature-toggle" onclick="this.parentElement.classList.toggle('expanded')">See details</span>
+<div class="modal-overlay" id="modalOverlay">
+<div class="modal" id="modalContent"></div>
 </div>
 
-<div class="feature-card">
-<div class="feature-icon">&#9889;</div>
-<h3>Automatic Registration</h3>
-<p>Members register once via Google Form. Everything else is automatic.</p>
-<div class="feature-details"><ul>
-<li>Google Form captures all member information</li>
-<li>Auto-generates unique Member ID (MEM-001, MEM-002...)</li>
-<li>QR code auto-created and emailed to member</li>
-<li>QR saved to Google Drive for backup</li>
-<li>No manual data entry needed by ushers</li>
-</ul></div>
-<span class="feature-toggle" onclick="this.parentElement.classList.toggle('expanded')">See details</span>
-</div>
+<div class="qr-overlay" id="qrOverlay"></div>
 
-<div class="feature-card">
-<div class="feature-icon">&#128259;</div>
-<h3>Real-Time Sync</h3>
-<p>All usher devices stay synchronized. Works offline and syncs when connected.</p>
-<div class="feature-details"><ul>
-<li>Auto-sync every 60 seconds (silent, no user action needed)</li>
-<li>Offline check-ins queued and synced when internet returns</li>
-<li>Installable as native app (PWA) on any phone</li>
-<li>Multiple ushers can check in simultaneously</li>
-<li>New form registrations appear automatically on all devices</li>
-</ul></div>
-<span class="feature-toggle" onclick="this.parentElement.classList.toggle('expanded')">See details</span>
-</div>
+<div class="toast" id="toast"><span id="toastMsg"></span><div class="toast-progress"></div></div>
 
-<div class="feature-card">
-<div class="feature-icon">&#128202;</div>
-<h3>Attendance Reports</h3>
-<p>Instant, detailed reports with demographic breakdowns and trends.</p>
-<div class="feature-details"><ul>
-<li>Age bracket breakdown: Youth, YPro, Mothers, Fathers, Children</li>
-<li>Separate line items per outreach location</li>
-<li>Weekly attendance bar chart (last 8 Sundays)</li>
-<li>Ministry breakdown with progress bars</li>
-<li>Follow-up list for members absent 3+ Sundays</li>
-<li>One-tap email report to leadership</li>
-</ul></div>
-<span class="feature-toggle" onclick="this.parentElement.classList.toggle('expanded')">See details</span>
-</div>
-
-<div class="feature-card">
-<div class="feature-icon">&#129504;</div>
-<h3>Smart Attendance Logic</h3>
-<p>Automated intelligence to track member engagement and growth.</p>
-<div class="feature-details"><ul>
-<li>Auto-detects inactive members (8 consecutive Sundays absent)</li>
-<li>Custom inactivity rules per outreach location</li>
-<li>New member "N" badge for First Time and Returning Guests</li>
-<li>Auto-graduation to Regular Attendee after 4 check-ins</li>
-<li>Auto-reactivation when inactive member returns</li>
-<li>Membership status pipeline: First Time > Returning > Regular</li>
-</ul></div>
-<span class="feature-toggle" onclick="this.parentElement.classList.toggle('expanded')">See details</span>
-</div>
-
-<div class="feature-card">
-<div class="feature-icon">&#127759;</div>
-<h3>Outreach Tracking</h3>
-<p>Track satellite locations separately with location-specific rules.</p>
-<div class="feature-details"><ul>
-<li>Four locations: Sto. Tomas, Tanauan, Naujan, Socorro</li>
-<li>Tanauan: Tracked on 1st Sundays only (8-month inactivity rule)</li>
-<li>Naujan/Socorro: No auto-inactive (grace for remote areas)</li>
-<li>Separate reporting per outreach in attendance reports</li>
-<li>Grand total separates main church vs outreach numbers</li>
-</ul></div>
-<span class="feature-toggle" onclick="this.parentElement.classList.toggle('expanded')">See details</span>
-</div>
-
-<div class="feature-card">
-<div class="feature-icon">&#128274;</div>
-<h3>Data Security & Backup</h3>
-<p>Your data stays in your own Google account with automated backups.</p>
-<div class="feature-details"><ul>
-<li>Google Sheets as database (accessible, familiar, exportable)</li>
-<li>Weekly automated backup with email notification</li>
-<li>QR codes stored in Google Drive</li>
-<li>No third-party servers or paid subscriptions</li>
-<li>Data owned 100% by the church</li>
-</ul></div>
-<span class="feature-toggle" onclick="this.parentElement.classList.toggle('expanded')">See details</span>
-</div>
-
-</div>
-</section>
-
-<section id="tech">
-<h2 class="section-title">Technical <span class="gold-text">Highlights</span></h2>
-<p class="section-subtitle">Built with reliability, accessibility, and zero cost in mind</p>
-<div class="tech-grid">
-<div class="tech-badge">
-<div class="icon">&#128225;</div>
-<div class="title">Offline-First</div>
-<div class="desc">Works without internet. Syncs when connected.</div>
-</div>
-<div class="tech-badge">
-<div class="icon">&#128176;</div>
-<div class="title">Zero Monthly Cost</div>
-<div class="desc">Free hosting (GitHub Pages) + free Google services.</div>
-</div>
-<div class="tech-badge">
-<div class="icon">&#128241;</div>
-<div class="title">Any Phone</div>
-<div class="desc">Works on any device with a browser. No app store needed.</div>
-</div>
-<div class="tech-badge">
-<div class="icon">&#128187;</div>
-<div class="title">Installable PWA</div>
-<div class="desc">Installs like a native app with home screen icon.</div>
-</div>
-<div class="tech-badge">
-<div class="icon">&#128218;</div>
-<div class="title">Google Sheets Backend</div>
-<div class="desc">Familiar interface. Anyone can view the raw data.</div>
-</div>
-<div class="tech-badge">
-<div class="icon">&#128274;</div>
-<div class="title">Church-Owned Data</div>
-<div class="desc">All data stored in church's own Google account.</div>
-</div>
-</div>
-</section>
-
-<section id="preview">
-<h2 class="section-title">What Ushers <span class="gold-text">See</span></h2>
-<p class="section-subtitle">Clean, intuitive interface designed for fast Sunday morning check-ins</p>
-<div class="mockup-grid">
-
-<div class="mockup-card">
-<div class="mockup-header"><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div></div>
-<div class="mockup-title">QR Scan Mode</div>
-<div class="mockup-body">
-<div class="mock-scan">&#128247;</div>
-<div style="font-size:11px;color:var(--text-secondary);margin-top:8px">Point camera at member QR</div>
-<div style="display:flex;gap:8px;margin-top:4px">
-<span style="font-size:10px;background:var(--surface);padding:4px 8px;border-radius:6px">Back Cam</span>
-<span style="font-size:10px;background:rgba(123,47,247,0.2);padding:4px 8px;border-radius:6px;color:var(--accent3)">Flip</span>
-</div>
-</div>
-</div>
-
-<div class="mockup-card">
-<div class="mockup-header"><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div></div>
-<div class="mockup-title">Quick Tap Mode</div>
-<div class="mockup-body">
-<div class="mock-avatars">
-<div class="mock-avatar" style="background:#7b2ff7">JD</div>
-<div class="mock-avatar" style="background:#00d4ff">MA</div>
-<div class="mock-avatar" style="background:#d4a843">RS</div>
-<div class="mock-avatar" style="background:#4caf50;box-shadow:0 0 0 2px #4caf50">PL</div>
-<div class="mock-avatar" style="background:#ff6b6b">TG</div>
-<div class="mock-avatar" style="background:#f093fb">KM</div>
-<div class="mock-avatar" style="background:#43e97b;box-shadow:0 0 0 2px #4caf50">AH</div>
-<div class="mock-avatar" style="background:#4facfe">ND</div>
-</div>
-<div style="font-size:10px;color:var(--text-secondary);margin-top:8px">Tap avatar to check in. Green = already here.</div>
-</div>
-</div>
-
-<div class="mockup-card">
-<div class="mockup-header"><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div></div>
-<div class="mockup-title">Member Detail</div>
-<div class="mockup-body">
-<div class="mock-avatar" style="background:#7b2ff7;width:48px;height:48px;font-size:18px">JD</div>
-<div style="font-size:13px;font-weight:700">Juan Dela Cruz</div>
-<div style="font-size:10px;color:var(--text-secondary)">Sto. Tomas | Worship Ministry</div>
-<div style="display:flex;gap:4px;margin-top:8px">
-<div style="width:12px;height:12px;border-radius:50%;background:#4caf50"></div>
-<div style="width:12px;height:12px;border-radius:50%;background:#4caf50"></div>
-<div style="width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,0.1)"></div>
-<div style="width:12px;height:12px;border-radius:50%;background:#4caf50"></div>
-<div style="width:12px;height:12px;border-radius:50%;background:#4caf50"></div>
-</div>
-<div style="font-size:9px;color:var(--text-secondary);margin-top:4px">Last 5 Sundays attendance</div>
-</div>
-</div>
-
-<div class="mockup-card">
-<div class="mockup-header"><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div></div>
-<div class="mockup-title">Attendance Report</div>
-<div class="mockup-body">
-<div style="width:100%;display:flex;flex-direction:column;gap:6px;padding:0 12px">
-<div style="display:flex;justify-content:space-between;font-size:11px"><span>Youth</span><span style="font-weight:700">12</span></div>
-<div class="mock-bar" style="width:60%"></div>
-<div style="display:flex;justify-content:space-between;font-size:11px"><span>YPro</span><span style="font-weight:700">18</span></div>
-<div class="mock-bar" style="width:90%"></div>
-<div style="display:flex;justify-content:space-between;font-size:11px"><span>Mothers</span><span style="font-weight:700">15</span></div>
-<div class="mock-bar" style="width:75%"></div>
-<div style="display:flex;justify-content:space-between;font-size:11px"><span>Fathers</span><span style="font-weight:700">8</span></div>
-<div class="mock-bar" style="width:40%"></div>
-</div>
-</div>
-</div>
-
-</div>
-</section>
-
-<section class="cta">
-<h2>Ready to <span class="gold-text">Modernize</span> Our Attendance?</h2>
-<p>A simple, free, and powerful system that any usher can use. No technical knowledge required.</p>
-<div class="cta-steps">
-<div class="cta-step"><div class="num">1</div><div class="text">Print registration QR code poster for the church</div></div>
-<div class="cta-step"><div class="num">2</div><div class="text">Members scan to register and receive their personal QR</div></div>
-<div class="cta-step"><div class="num">3</div><div class="text">Install the app on usher phones</div></div>
-<div class="cta-step"><div class="num">4</div><div class="text">Start scanning on Sunday</div></div>
-</div>
-</section>
-
-<div class="footer">
-<p>JILGM - STBC Attendance System | Proposed by the Media Arts Ministry | 2026</p>
-</div>
-
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
-// Animated counters
-const counters=document.querySelectorAll('.hero-stat .number');
-const observer=new IntersectionObserver(entries=>{
-entries.forEach(entry=>{
-if(entry.isIntersecting){
-const el=entry.target;
-const target=parseInt(el.dataset.target);
-let current=0;
-const step=Math.max(1,Math.floor(target/30));
-const timer=setInterval(()=>{
-current+=step;
-if(current>=target){current=target;clearInterval(timer)}
-el.textContent=target===0?'$0':current+'+';
-},30);
-observer.unobserve(el);
-}
-});
-},{threshold:0.5});
-counters.forEach(c=>observer.observe(c));
+const DB_NAME='jilgm_attendance';const DB_VERSION=1;let db;
+const today=()=>{const d=new Date();return d.toISOString().split('T')[0]};
+const formatDate=(d)=>{const opts={weekday:'short',month:'short',day:'numeric'};return new Date(d+'T00:00:00').toLocaleDateString('en-US',opts)};
+document.getElementById('headerDate').textContent=formatDate(today());
 
-// Smooth scroll
-document.querySelectorAll('.nav-links a').forEach(link=>{
-link.addEventListener('click',e=>{
-e.preventDefault();
-const target=document.querySelector(link.getAttribute('href'));
-if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+function getAvatarColor(name){
+const colors=['#6c63ff','#00bcd4','#ff6b6b','#feca57','#48dbfb','#ff9ff3','#54a0ff','#5f27cd','#01a3a4','#f368e0','#ee5a24','#009432'];
+let hash=0;for(let i=0;i<name.length;i++)hash=name.charCodeAt(i)+((hash<<5)-hash);
+return colors[Math.abs(hash)%colors.length];
+}
+function getInitials(name){return name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)}
+function getAge(birthday){
+if(!birthday)return 0;
+const b=new Date(birthday+'T00:00:00');const now=new Date();
+let age=now.getFullYear()-b.getFullYear();
+const m=now.getMonth()-b.getMonth();
+if(m<0||(m===0&&now.getDate()<b.getDate()))age--;
+return age;
+}
+function getAgeGroup(member){
+const age=getAge(member.birthday);
+if(age<=12)return 'Children';
+if(age<=17)return 'Youth';
+const isParent=member.hasChildren==='Yes';
+const isMarriedOrSep=member.civilStatus==='Married'||member.civilStatus==='Widow'||member.civilStatus==='Separated';
+if(isParent||isMarriedOrSep){return member.gender==='Female'?'Mothers':'Fathers'}
+return 'YPro';
+}
+function createAvatar(member,size=''){
+const cls='avatar'+(size?' '+size:'');
+if(member.photo){return `<div class="${cls}"><img src="${member.photo}" alt="${member.name}"></div>`}
+return `<div class="${cls}" style="background:${getAvatarColor(member.name)}">${getInitials(member.name)}</div>`;
+}
+
+function openDB(){return new Promise((resolve,reject)=>{
+const req=indexedDB.open(DB_NAME,DB_VERSION);
+req.onupgradeneeded=(e)=>{const d=e.target.result;
+if(!d.objectStoreNames.contains('members'))d.createObjectStore('members',{keyPath:'id'});
+if(!d.objectStoreNames.contains('attendance')){const s=d.createObjectStore('attendance',{keyPath:'id',autoIncrement:true});s.createIndex('date','date')}
+if(!d.objectStoreNames.contains('pendingSync'))d.createObjectStore('pendingSync',{keyPath:'id',autoIncrement:true});
+if(!d.objectStoreNames.contains('settings'))d.createObjectStore('settings',{keyPath:'key'});
+};req.onsuccess=(e)=>{db=e.target.result;resolve(db)};req.onerror=(e)=>reject(e);
+})}
+
+function dbGet(store){return new Promise((r)=>{const tx=db.transaction(store,'readonly');const s=tx.objectStore(store);const req=s.getAll();req.onsuccess=()=>r(req.result)})}
+function dbPut(store,data){return new Promise((r)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).put(data);tx.oncomplete=()=>r()})}
+function dbDelete(store,key){return new Promise((r)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).delete(key);tx.oncomplete=()=>r()})}
+function dbClear(store){return new Promise((r)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).clear();tx.oncomplete=()=>r()})}
+
+const DEMO_MEMBERS=[];
+
+
+
+let toastTimer=null;
+function showToast(msg,type='success'){
+const t=document.getElementById('toast');const m=document.getElementById('toastMsg');
+m.textContent=msg;t.style.borderLeft=`3px solid var(--${type})`;
+if(toastTimer)clearTimeout(toastTimer);
+t.classList.add('show');toastTimer=setTimeout(()=>{t.classList.remove('show');toastTimer=null},3000);
+}
+
+function playBeep(){
+try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const osc=ctx.createOscillator();const gain=ctx.createGain();
+osc.connect(gain);gain.connect(ctx.destination);osc.frequency.value=800;osc.type='sine';gain.gain.value=0.3;
+osc.start();osc.stop(ctx.currentTime+0.15)}catch(e){}
+}
+
+let currentTab='tabCheckin';let currentMode='qr';let qrScanner=null;let allMembers=[];let todayAttendance=[];
+
+function switchTab(tabId){
+document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+document.getElementById(tabId).classList.add('active');
+document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+currentTab=tabId;
+const fab=document.getElementById('fab');
+fab.style.display=tabId==='tabMembers'?'flex':'none';
+if(tabId==='tabCheckin'&&currentMode==='tap')renderAvatarGrid();
+if(tabId==='tabMembers')renderMemberList();
+if(tabId==='tabReports')renderReports();
+if(tabId==='tabSettings')loadSettings();
+if(tabId!=='tabCheckin'&&qrScanner){try{qrScanner.stop()}catch(e){}}
+}
+
+document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>switchTab(n.dataset.tab)));
+
+function switchMode(mode){
+currentMode=mode;
+document.querySelectorAll('.mode-pill').forEach((p,i)=>{p.classList.toggle('active',p.dataset.mode===mode)});
+const idx=['qr','tap','search'].indexOf(mode);
+document.getElementById('pillSlider').style.transform=`translateX(${idx*100}%)`;
+document.getElementById('modeQR').style.display=mode==='qr'?'block':'none';
+document.getElementById('modeTap').style.display=mode==='tap'?'block':'none';
+document.getElementById('modeSearch').style.display=mode==='search'?'block':'none';
+if(mode==='qr')startQR();else if(qrScanner){try{qrScanner.stop()}catch(e){}}
+if(mode==='tap')renderAvatarGrid();
+}
+document.querySelectorAll('.mode-pill').forEach(p=>p.addEventListener('click',()=>switchMode(p.dataset.mode)));
+
+let cameraFacing='environment';
+function startQR(){
+if(qrScanner)try{qrScanner.stop()}catch(e){}
+const el=document.getElementById('qr-reader');el.innerHTML='';
+qrScanner=new Html5Qrcode('qr-reader');
+qrScanner.start({facingMode:cameraFacing},{fps:10,qrbox:220},onQRScan,()=>{}).then(()=>{
+const vid=document.querySelector('#qr-reader video');
+if(vid)vid.style.transform=cameraFacing==='user'?'scaleX(-1)':'none';
+}).catch(()=>{
+el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);font-size:13px;padding:20px;text-align:center">Camera not available. Try Quick Tap or Search mode.</div>';
+});
+}
+function flipCamera(){
+cameraFacing=cameraFacing==='environment'?'user':'environment';
+startQR();
+}
+
+async function onQRScan(decoded){
+if(qrScanner)try{qrScanner.pause(true)}catch(e){}
+const member=allMembers.find(m=>m.id===decoded);
+if(!member){setTimeout(()=>{if(qrScanner)try{qrScanner.resume()}catch(e){}},1500);return}
+const already=todayAttendance.find(a=>a.memberId===member.id);
+const overlay=document.getElementById('qrOverlay');
+if(already){
+overlay.innerHTML=`<div class="result"><div class="icon warning"><svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></div><h3 style="margin-top:8px">${member.name}</h3><p style="color:var(--warning);margin-top:4px">Already checked in</p></div>`;
+}else{
+const ok=await checkInMember(member);
+if(ok===false){setTimeout(()=>{if(qrScanner)try{qrScanner.resume()}catch(e){}},500);return}
+playBeep();
+overlay.innerHTML=`<div class="result"><div class="icon success"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div>${createAvatar(member,'large')}<h3 style="margin-top:12px">Welcome, ${member.name.split(' ')[0]}!</h3><p style="color:var(--success);margin-top:4px">God bless you today!</p></div>`;
+}
+overlay.classList.add('show');
+setTimeout(()=>{overlay.classList.remove('show');if(qrScanner)try{qrScanner.resume()}catch(e){}},2000);
+}
+
+let sundayConfirmed=false;
+function isSunday(){return new Date().getDay()===0}
+async function checkInMember(member){
+if(!isSunday()&&!sundayConfirmed){
+if(!confirm('Today is not Sunday. Are you sure you want to record attendance?'))return false;
+sundayConfirmed=true;
+}
+if(member.status==='inactive'){
+member.status='active';
+member.membershipStatus='Returning Guest';
+await dbPut('members',member);
+const idx=allMembers.findIndex(m=>m.id===member.id);
+if(idx>=0)allMembers[idx]=member;
+}
+const record={memberId:member.id,memberName:member.name,date:today(),timestamp:Date.now(),checkedInBy:'app',occasion:currentOccasion};
+await dbPut('attendance',record);todayAttendance.push(record);updateCounter();
+await checkAndGraduate(member);
+const url=await getSetting('scriptUrl');
+if(url){
+try{await fetch(url,{method:'POST',body:JSON.stringify({action:'checkIn',...record}),headers:{'Content-Type':'text/plain'}});
+}catch(e){await dbPut('pendingSync',{action:'checkIn',payload:record,createdAt:Date.now()})}
+}
+return true;
+}
+
+async function loadTodayAttendance(){
+const all=await dbGet('attendance');todayAttendance=all.filter(a=>a.date===today());updateCounter();
+}
+
+async function getMemberAttendCount(memberId){
+const all=await dbGet('attendance');
+const unique=new Set(all.filter(a=>a.memberId===memberId).map(a=>a.date));
+return unique.size;
+}
+
+function isNewMember(member){
+return member.membershipStatus==='First Time Guest';
+}
+function isNewOrReturning(member){
+return member.membershipStatus==='First Time Guest'||member.membershipStatus==='Returning Guest';
+}
+
+async function checkAndGraduate(member){
+if(!isNewOrReturning(member))return;
+const count=await getMemberAttendCount(member.id);
+if(count>=4){
+member.membershipStatus='Regular Attendee';
+await dbPut('members',member);
+const idx=allMembers.findIndex(m=>m.id===member.id);
+if(idx>=0)allMembers[idx]=member;
+}
+}
+
+function getFirstSundays(count){
+const result=[];const now=new Date();
+for(let i=0;i<count;i++){
+const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+while(d.getDay()!==0)d.setDate(d.getDate()+1);
+result.push(d.toISOString().split('T')[0]);
+}
+return result;
+}
+
+async function checkInactiveMembers(){
+const allAtt=await dbGet('attendance');
+const d=new Date();
+const sundays=[];
+for(let i=0;i<8;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);sundays.push(sun.toISOString().split('T')[0])}
+const firstSundays=getFirstSundays(8);
+const sixMonthsAgo=new Date(d);sixMonthsAgo.setMonth(sixMonthsAgo.getMonth()-6);
+for(const member of allMembers){
+if(member.status==='inactive')continue;
+const memberAtt=allAtt.filter(a=>a.memberId===member.id);
+if(memberAtt.length===0)continue;
+if(member.outreach==='Naujan'||member.outreach==='Socorro'){
+continue;
+}else if(member.outreach==='Tanauan'){
+const attended=memberAtt.filter(a=>firstSundays.includes(a.date));
+if(attended.length===0)member.status='inactive';
+}else{
+const attended=memberAtt.filter(a=>sundays.includes(a.date));
+if(attended.length===0)member.status='inactive';
+}
+if(member.status==='inactive')await dbPut('members',member);
+}
+}
+
+function updateCounter(){
+const total=allMembers.length;const checked=todayAttendance.length;
+document.getElementById('counterBadge').textContent=`${checked}/${total}`;
+}
+
+async function renderAvatarGrid(){
+const ministry=document.getElementById('ministryFilter').value;
+const showAll=document.querySelector('#modeTap .toggle-pill.active').dataset.show==='all';
+let filtered=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&m.addedLocally);
+if(ministry)filtered=filtered.filter(m=>m.ministry===ministry);
+if(!showAll)filtered=filtered.filter(m=>!todayAttendance.find(a=>a.memberId===m.id));
+document.getElementById('tapCount').textContent=`Showing ${filtered.length} members`;
+const grid=document.getElementById('avatarGrid');
+grid.innerHTML=filtered.map(m=>{
+const checked=todayAttendance.find(a=>a.memberId===m.id);
+const isNew=isNewOrReturning(m);
+return `<div class="avatar-grid-item${checked?' checked':''}" data-id="${m.id}">
+<div class="avatar" style="background:${m.photo?'none':getAvatarColor(m.name)}">${m.photo?`<img src="${m.photo}">`:(getInitials(m.name))}${checked?'<div class="check-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="3"/></svg></div>':''}${isNew?'<div class="check-badge" style="background:var(--warning);left:-2px;right:auto"><span style="font-size:7px;font-weight:700;color:#000">N</span></div>':''}</div>
+<div class="name">${m.name.split(' ')[0]}</div></div>`;
+}).join('');
+grid.querySelectorAll('.avatar-grid-item').forEach(item=>{
+item.addEventListener('click',async()=>{
+const id=item.dataset.id;const member=allMembers.find(m=>m.id===id);
+if(todayAttendance.find(a=>a.memberId===id)){showToast(`${member.name} already checked in`,'warning');return}
+const ok2=await checkInMember(member);if(ok2===false)return;
+playBeep();showToast(`${member.name} checked in!`);
+item.classList.add('checked');
+const av=item.querySelector('.avatar');av.style.animation='checkPulse 0.6s';
+av.insertAdjacentHTML('beforeend','<div class="check-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="3"/></svg></div>');
 });
 });
+}
+
+document.getElementById('ministryFilter').addEventListener('change',renderAvatarGrid);
+document.querySelectorAll('#modeTap .toggle-pill').forEach(p=>p.addEventListener('click',(e)=>{
+document.querySelectorAll('#modeTap .toggle-pill').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');renderAvatarGrid();
+}));
+
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input',(e)=>{
+clearTimeout(searchTimeout);searchTimeout=setTimeout(()=>{
+const q=e.target.value.toLowerCase().trim();const res=document.getElementById('searchResults');
+if(!q){res.innerHTML='';return}
+const matches=allMembers.filter(m=>m.name.toLowerCase().includes(q)).slice(0,10);
+res.innerHTML=matches.map(m=>{
+const checked=todayAttendance.find(a=>a.memberId===m.id);
+return `<div class="search-result-item" data-id="${m.id}">${createAvatar(m,'small')}<div class="info"><div class="name">${m.name}</div><div class="sub">${m.dgroup}${m.ministry?' / '+m.ministry:''}${checked?' - Already here':''}</div></div></div>`;
+}).join('');
+res.querySelectorAll('.search-result-item').forEach(item=>{
+item.addEventListener('click',async()=>{
+const id=item.dataset.id;const member=allMembers.find(m=>m.id===id);
+if(todayAttendance.find(a=>a.memberId===id)){showToast(`${member.name} already checked in`,'warning');return}
+const ok3=await checkInMember(member);if(ok3===false)return;
+playBeep();showToast(`${member.name} checked in!`);
+e.target.value='';res.innerHTML='';
+});
+});
+},200);
+});
+
+document.getElementById('addVisitorBtn').addEventListener('click',()=>showModal('visitor'));
+
+function showModal(type,data=null){
+const overlay=document.getElementById('modalOverlay');const content=document.getElementById('modalContent');
+if(type==='visitor'){
+content.innerHTML=`<div class="modal-header"><h3>New Visitor</h3><button class="modal-close" id="closeModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+<div class="input-group"><input type="text" id="visitorName" placeholder=" " required><label>Name</label></div>
+<div class="input-group"><input type="tel" id="visitorPhone" placeholder=" "><label>Phone (optional)</label></div>
+<div class="input-group"><textarea id="visitorNotes" placeholder=" " rows="2"></textarea><label>Notes (optional)</label></div>
+<button class="btn btn-primary" style="width:100%;margin-top:8px" id="saveVisitor">Save Visitor</button>`;
+}else if(type==='member'){
+const classes=['Class 101','Class 102','Class 201','Class 301','Class 401','SOP 1','SOP 2','SOW','PCS'];
+const memberClasses=data&&data.classes?data.classes:[];
+content.innerHTML=`<div class="modal-header"><h3>${data?'Edit Member':'Add Member'}</h3><button class="modal-close" id="closeModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+<div class="input-group"><input type="text" id="memName" placeholder=" " value="${data?data.name:''}"><label>Full Name</label></div>
+<div class="input-group"><select id="memOutreach" style="padding:12px 0 8px;border-bottom:2px solid var(--card-border);width:100%"><option value="">Select Outreach</option><option${data&&data.outreach==='Sto. Tomas'?' selected':''}>Sto. Tomas</option><option${data&&data.outreach==='Tanauan'?' selected':''}>Tanauan</option><option${data&&data.outreach==='Naujan'?' selected':''}>Naujan</option><option${data&&data.outreach==='Socorro'?' selected':''}>Socorro</option></select></div>
+<div class="input-group"><input type="email" id="memEmail" placeholder=" " value="${data?data.email||'':''}"><label>Email</label></div>
+<div class="input-group"><input type="tel" id="memPhone" placeholder=" " value="${data?data.phone||'':''}"><label>Phone</label></div>
+<div class="input-group"><input type="text" id="memAddress" placeholder=" " value="${data?data.address||'':''}"><label>Address</label></div>
+<div class="input-group"><input type="date" id="memBday" value="${data?data.birthday||'':''}"><label style="top:-8px;font-size:11px;color:var(--accent)">Birthday</label></div>
+<div class="input-group"><select id="memGender" style="padding:12px 0 8px;border-bottom:2px solid var(--card-border);width:100%"><option value="">Select Gender</option><option${data&&data.gender==='Male'?' selected':''}>Male</option><option${data&&data.gender==='Female'?' selected':''}>Female</option></select></div>
+<div class="input-group"><select id="memCivilStatus" style="padding:12px 0 8px;border-bottom:2px solid var(--card-border);width:100%"><option value="">Civil Status</option><option${data&&data.civilStatus==='Single'?' selected':''}>Single</option><option${data&&data.civilStatus==='Married'?' selected':''}>Married</option><option${data&&data.civilStatus==='Widow'?' selected':''}>Widow</option><option${data&&data.civilStatus==='Separated'?' selected':''}>Separated</option></select></div>
+<div class="input-group"><select id="memHasChildren" style="padding:12px 0 8px;border-bottom:2px solid var(--card-border);width:100%"><option value="">Do you have children?</option><option${data&&data.hasChildren==='Yes'?' selected':''}>Yes</option><option${data&&data.hasChildren==='No'?' selected':''}>No</option></select></div>
+<div class="input-group"><input type="text" id="memEmergencyContact" placeholder=" " value="${data?data.emergencyContact||'':''}"><label>Emergency Contact Person</label></div>
+<div class="input-group"><input type="tel" id="memEmergencyPhone" placeholder=" " value="${data?data.emergencyPhone||'':''}"><label>Emergency Contact Number</label></div>
+<div class="input-group"><input type="text" id="memDgroupLeader" placeholder=" " value="${data?data.dgroupLeader||'':''}"><label>D-Group Leader</label></div>
+<div class="input-group"><select id="memMinistry" style="padding:12px 0 8px;border-bottom:2px solid var(--card-border);width:100%" required><option value="">Select Ministry</option></select></div>
+<div class="input-group"><select id="memMembershipStatus" style="padding:12px 0 8px;border-bottom:2px solid var(--card-border);width:100%"><option value="">Membership Status</option><option${data&&data.membershipStatus==='First Time Guest'?' selected':''}>First Time Guest</option><option${data&&data.membershipStatus==='Regular Attendee'?' selected':''}>Regular Attendee</option><option${data&&data.membershipStatus==='Returning Guest'?' selected':''}>Returning Guest</option></select></div>
+<div class="input-group"><input type="date" id="memMembershipDate" value="${data?data.membershipDate||'':''}"><label style="top:-8px;font-size:11px;color:var(--accent)">Membership Date (optional)</label></div>
+<div class="input-group"><input type="date" id="memBaptismDate" value="${data?data.baptismDate||'':''}"><label style="top:-8px;font-size:11px;color:var(--accent)">Date of Baptism (optional)</label></div>
+<div class="input-group"><input type="text" id="memBaptismPlace" placeholder=" " value="${data?data.baptismPlace||'':''}"><label>Place of Baptism (optional)</label></div>
+<div style="margin:12px 0"><label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:8px">Classes Attended</label><div style="display:flex;flex-wrap:wrap;gap:8px" id="memClassesContainer">${classes.map(c=>`<label style="display:flex;align-items:center;gap:4px;font-size:13px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px 10px;cursor:pointer"><input type="checkbox" value="${c}"${memberClasses.includes(c)?' checked':''}>${c}</label>`).join('')}</div></div>
+<button class="btn btn-outline" style="margin-bottom:12px" id="memPhotoBtn">Add Photo (Optional)</button>
+<input type="file" id="memPhotoInput" accept="image/*" capture="user" style="display:none">
+<button class="btn btn-primary" style="width:100%;margin-top:8px" id="saveMember">Save</button>`;
+}
+overlay.classList.add('show');
+setTimeout(()=>{
+document.getElementById('closeModal').addEventListener('click',closeModal);
+if(type==='visitor')document.getElementById('saveVisitor').addEventListener('click',saveVisitor);
+if(type==='member'){
+getMinistries().then(list=>{
+const el=document.getElementById('memMinistry');
+el.innerHTML=`<option value="">Select Ministry</option>`+['None',...list].map(m=>`<option${data&&data.ministry===m?' selected':''}>${m}</option>`).join('');
+});
+document.getElementById('saveMember').addEventListener('click',()=>saveMember(data));
+document.getElementById('memPhotoBtn').addEventListener('click',()=>document.getElementById('memPhotoInput').click());
+}
+},50);
+}
+
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
+
+async function saveVisitor(){
+const name=document.getElementById('visitorName').value.trim();if(!name){showToast('Name is required','error');return}
+const member={id:'m'+Date.now(),name,dgroup:'',phone:document.getElementById('visitorPhone').value.trim(),birthday:'',photo:null,status:'active',dateRegistered:today()};
+await dbPut('members',member);allMembers.push(member);
+const ok4=await checkInMember(member);if(ok4===false)return;
+playBeep();closeModal();showToast(`${name} added and checked in!`);updateCounter();
+}
+
+async function saveMember(existing){
+const name=document.getElementById('memName').value.trim();if(!name){showToast('Name is required','error');return}
+if(existing){const confirm=prompt(`To confirm edit, type "${existing.name}"`);if(!confirm||confirm.trim().toLowerCase()!==existing.name.toLowerCase()){showToast('Edit cancelled','warning');return}}
+const classCheckboxes=document.querySelectorAll('#memClassesContainer input[type=checkbox]:checked');
+const classes=Array.from(classCheckboxes).map(cb=>cb.value);
+const member={id:existing?existing.id:'m'+Date.now(),name,outreach:document.getElementById('memOutreach').value,address:document.getElementById('memAddress').value.trim(),email:document.getElementById('memEmail').value.trim(),ministry:document.getElementById('memMinistry').value,dgroupLeader:document.getElementById('memDgroupLeader').value.trim(),phone:document.getElementById('memPhone').value.trim(),birthday:document.getElementById('memBday').value,gender:document.getElementById('memGender').value,civilStatus:document.getElementById('memCivilStatus').value,hasChildren:document.getElementById('memHasChildren').value,emergencyContact:document.getElementById('memEmergencyContact').value.trim(),emergencyPhone:document.getElementById('memEmergencyPhone').value.trim(),membershipStatus:document.getElementById('memMembershipStatus').value,membershipDate:document.getElementById('memMembershipDate').value,baptismDate:document.getElementById('memBaptismDate').value,baptismPlace:document.getElementById('memBaptismPlace').value.trim(),classes:classes,photo:existing?existing.photo:null,status:'active',addedLocally:existing?existing.addedLocally||false:true,dateRegistered:existing?existing.dateRegistered:today()};
+const fileInput=document.getElementById('memPhotoInput');
+if(fileInput.files.length>0){
+const file=fileInput.files[0];
+member.photo=await new Promise(r=>{const reader=new FileReader();reader.onload=e=>r(e.target.result);reader.readAsDataURL(file)});
+}
+await dbPut('members',member);
+if(existing){const idx=allMembers.findIndex(m=>m.id===existing.id);if(idx>=0)allMembers[idx]=member}
+else allMembers.push(member);
+closeModal();showToast(existing?'Member updated':'Member added');updateCounter();renderMemberList();
+}
+
+document.getElementById('fab').addEventListener('click',()=>showModal('member'));
+
+function renderMemberList(){
+const q=document.getElementById('memberSearch').value.toLowerCase().trim();
+const filter=document.querySelector('#memberFilters .toggle-pill.active').dataset.filter;
+const ministry=document.getElementById('memberMinistryFilter').value;
+let filtered=[...allMembers];
+if(q)filtered=filtered.filter(m=>m.name.toLowerCase().includes(q));
+if(filter==='active')filtered=filtered.filter(m=>m.status==='active'||m.status==='Active');
+if(filter==='inactive')filtered=filtered.filter(m=>m.status==='inactive'||m.status==='Inactive');
+if(ministry)filtered=filtered.filter(m=>m.ministry===ministry);
+const outreachF=document.getElementById('memberOutreachFilter').value;
+if(outreachF)filtered=filtered.filter(m=>m.outreach===outreachF);
+document.getElementById('memberCount').textContent=`${filtered.length} members`;
+const list=document.getElementById('memberList');
+list.innerHTML=filtered.map(m=>`<div class="member-row" data-id="${m.id}">${createAvatar(m,'small')}<div class="info"><div class="name">${m.name}</div><div class="sub">${m.outreach||'No outreach'}${m.ministry?' / '+m.ministry:''}</div></div><span class="pill pill-${m.status}">${m.status}</span></div>`).join('');
+list.querySelectorAll('.member-row').forEach(row=>row.addEventListener('click',()=>showDetail(row.dataset.id)));
+}
+
+document.getElementById('memberSearch').addEventListener('input',renderMemberList);
+document.querySelectorAll('#memberFilters .toggle-pill').forEach(p=>p.addEventListener('click',(e)=>{
+document.querySelectorAll('#memberFilters .toggle-pill').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');renderMemberList();
+}));
+document.getElementById('memberOutreachFilter').addEventListener('change',renderMemberList);
+
+async function showDetail(id){
+const member=allMembers.find(m=>m.id===id);if(!member)return;
+const panel=document.getElementById('detailPanel');const content=document.getElementById('detailContent');
+const allAtt=await dbGet('attendance');const memberAtt=allAtt.filter(a=>a.memberId===id);
+const age=getAge(member.birthday);
+const ageGroup=getAgeGroup(member);
+const d=new Date();
+const last10=[];
+for(let i=0;i<10;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);last10.push(sun.toISOString().split('T')[0])}
+const attendDots=last10.reverse().map(s=>allAtt.find(a=>a.memberId===member.id&&a.date===s)?'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--success);margin:0 2px"></span>':'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.1);margin:0 2px"></span>').join('');
+content.innerHTML=`<div style="text-align:center;margin-bottom:24px">${createAvatar(member,'large')}
+<h2 style="margin-top:12px">${member.name}</h2>
+<span style="display:inline-block;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;background:rgba(108,99,255,0.15);color:var(--accent);margin-top:6px">${member.outreach||'No outreach'}</span>
+</div>
+<div style="margin-top:16px;display:grid;gap:12px">
+<div class="card"><span style="font-size:12px;color:var(--text-secondary)">Phone</span><div>${member.phone||'-'}</div></div>
+<div class="card"><span style="font-size:12px;color:var(--text-secondary)">Address</span><div>${member.address||'-'}</div></div>
+<div class="card"><span style="font-size:12px;color:var(--text-secondary)">Birthday</span><div>${member.birthday?formatDate(member.birthday):'-'} (Age: ${age})</div></div>
+<div class="card"><span style="font-size:12px;color:var(--text-secondary)">Age Group</span><div>${ageGroup}</div></div>
+<div class="card"><span style="font-size:12px;color:var(--text-secondary)">Attendance (last 10 Sundays)</span><div style="margin-top:6px">${attendDots}</div></div>
+<div class="card" style="text-align:center"><div id="memberQRCode" style="margin-top:8px;background:#fff;padding:12px;border-radius:8px;display:inline-block"></div></div>
+</div>
+<div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap"><button class="btn btn-primary" style="flex:1" id="editMemberBtn">Edit</button><button class="btn btn-outline" style="flex:1" id="showQRBtn">Show QR</button><button class="btn btn-outline" style="flex:1" id="resendQRBtn">Resend QR</button><button class="btn btn-danger" style="flex:1" id="deleteMemberBtn">Delete</button></div>`;
+panel.classList.add('open');
+setTimeout(()=>{
+if(typeof QRCode!=='undefined')new QRCode(document.getElementById('memberQRCode'),{text:member.id,width:120,height:120});
+document.getElementById('editMemberBtn').addEventListener('click',()=>{panel.classList.remove('open');showModal('member',member)});
+document.getElementById('showQRBtn').addEventListener('click',()=>{const overlay=document.getElementById('qrOverlay');overlay.innerHTML='<div class="result" style="background:var(--card);padding:32px;border-radius:16px;text-align:center"><h3 style="margin-bottom:16px">'+member.name+'</h3><div id="qrPopupDisplay"></div><button class="btn btn-outline" style="margin-top:16px" onclick="document.getElementById(\'qrOverlay\').classList.remove(\'show\')">Close</button></div>';overlay.classList.add('show');setTimeout(()=>{new QRCode(document.getElementById('qrPopupDisplay'),{text:member.id,width:200,height:200,colorDark:'#ffffff',colorLight:'#1a1a2e'})},50)});
+document.getElementById('resendQRBtn').addEventListener('click',async()=>{const url=await getSetting('scriptUrl');if(!url){showToast('No sync URL configured','warning');return}try{await fetch(url,{method:'POST',body:JSON.stringify({action:'resendQR',memberId:member.id,memberName:member.name,phone:member.phone}),headers:{'Content-Type':'text/plain'}});showToast('QR resent to '+member.name)}catch(e){showToast('Failed to resend QR','error')}});
+document.getElementById('deleteMemberBtn').addEventListener('click',()=>{
+const overlay=document.getElementById('modalOverlay');const content=document.getElementById('modalContent');
+content.innerHTML=`<div class="modal-header"><h3>Delete Member</h3><button class="modal-close" id="closeModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+<p style="margin-bottom:12px;color:var(--text-secondary)">To delete <strong>${member.name}</strong>, type their full name below to confirm:</p>
+<div class="input-group"><input type="text" id="deleteConfirmInput" placeholder=" " autocomplete="off"><label>${member.name}</label></div>
+<p style="font-size:12px;color:var(--error);margin:8px 0">This action cannot be undone.</p>
+<button class="btn btn-danger" style="width:100%;margin-top:8px;opacity:0.5;pointer-events:none" id="confirmDeleteBtn">Delete Member</button>`;
+overlay.classList.add('show');
+setTimeout(()=>{
+document.getElementById('closeModal').addEventListener('click',closeModal);
+const input=document.getElementById('deleteConfirmInput');
+const btn=document.getElementById('confirmDeleteBtn');
+input.addEventListener('input',()=>{
+const match=input.value.trim().toLowerCase()===member.name.toLowerCase();
+btn.style.opacity=match?'1':'0.5';btn.style.pointerEvents=match?'auto':'none';
+});
+btn.addEventListener('click',async()=>{
+await dbDelete('members',member.id);allMembers=allMembers.filter(m=>m.id!==member.id);
+closeModal();panel.classList.remove('open');renderMemberList();updateCounter();showToast('Member deleted');
+});
+},50);
+});
+},100);
+}
+document.getElementById('detailBack').addEventListener('click',()=>document.getElementById('detailPanel').classList.remove('open'));
+
+async function renderReports(){
+const allAtt=await dbGet('attendance');const todayCount=allAtt.filter(a=>a.date===today()).length;
+document.getElementById('statToday').textContent=todayCount;
+document.getElementById('statMembers').textContent=allMembers.filter(m=>m.status==='active'||m.status==='Active').length;
+const childrenCount=await getSetting('children_'+today());
+document.getElementById('statChildren').textContent=childrenCount||'-';
+if(childrenCount)document.getElementById('childrenInput').value=childrenCount;
+const thisMonth=today().slice(0,7);const visitors=allMembers.filter(m=>m.dateRegistered&&m.dateRegistered.startsWith(thisMonth));
+document.getElementById('statVisitors').textContent=visitors.length;
+const sundays=[];const d=new Date();
+for(let i=7;i>=0;i--){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);sundays.push(sun.toISOString().split('T')[0])}
+const weeklyCounts=sundays.map(s=>allAtt.filter(a=>a.date===s).length);
+const max=Math.max(...weeklyCounts,1);
+const avg=weeklyCounts.length?Math.round(weeklyCounts.reduce((a,b)=>a+b,0)/weeklyCounts.length):0;
+document.getElementById('statAvg').textContent=avg;
+document.getElementById('chartBars').innerHTML=sundays.map((s,i)=>{
+const pct=(weeklyCounts[i]/max)*100;
+return `<div class="chart-bar"><div class="bar-value">${weeklyCounts[i]}</div><div class="bar" style="height:${pct}%"></div><div class="bar-label">${s.slice(5)}</div></div>`;
+}).join('');
+const ministrySection=document.getElementById('ministryBreakdown');
+if(ministrySection){
+const activeMembers=allMembers.filter(m=>m.status==='active'||m.status==='Active');
+const todayIds=new Set(todayAttendance.map(a=>a.memberId));
+const ministryMap={};
+activeMembers.forEach(m=>{const key=m.ministry||'(unassigned)';if(!ministryMap[key])ministryMap[key]={total:0,present:0};ministryMap[key].total++;if(todayIds.has(m.id))ministryMap[key].present++});
+ministrySection.innerHTML=Object.entries(ministryMap).sort((a,b)=>b[1].total-a[1].total).map(([name,data])=>{
+const pct=data.total?Math.round((data.present/data.total)*100):0;
+return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${name}</span><span style="color:var(--text-secondary)">${data.present}/${data.total}</span></div><div style="height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width 0.6s"></div></div></div>`;
+}).join('');
+}
+const absentMembers=allMembers.filter(m=>{
+if(m.status!=='active')return false;
+let consecutive=0;
+for(let i=0;i<3;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);const ds=sun.toISOString().split('T')[0];
+if(!allAtt.find(a=>a.memberId===m.id&&a.date===ds))consecutive++;else break}
+return consecutive>=3;
+});
+const followUp=document.getElementById('followUpList');
+if(allAtt.length===0){followUp.innerHTML='<div class="empty-state"><p>Not enough data yet</p></div>'}
+else{followUp.innerHTML=absentMembers.length?absentMembers.map(m=>{
+const lastAtt=allAtt.filter(a=>a.memberId===m.id).sort((a,b)=>b.timestamp-a.timestamp)[0];
+return `<div class="follow-up-card">${createAvatar(m,'small')}<div class="info"><div class="name">${m.name}</div><div class="sub">${m.ministry||'No ministry'} | Last seen: ${lastAtt?formatDate(lastAtt.date):'Never'}</div></div></div>`;
+}).join(''):'<div class="empty-state"><p>Everyone is attending regularly!</p></div>';}
+}
+
+async function getSetting(key){const all=await dbGet('settings');const s=all.find(x=>x.key===key);return s?s.value:null}
+async function setSetting(key,value){await dbPut('settings',{key,value})}
+
+async function getMinistries(){
+const val=await getSetting('ministries');
+return val?JSON.parse(val):['Abraham','Admin','Children','Christian Education','Dance','Engineering','Evangelism','Finance','Kitchen','Media Arts','Prayer','Social Concern',"Sunday's Crew",'Well Watered Women (W3)','Worship','Young Professional','Youth'];
+}
+async function saveMinistries(list){await setSetting('ministries',JSON.stringify(list));populateMinistryDropdowns(list)}
+function populateMinistryDropdowns(list){
+['ministryFilter','memberMinistryFilter','memMinistry'].forEach(id=>{
+const el=document.getElementById(id);if(!el)return;
+const val=el.value;
+const isForm=id==='memMinistry';
+el.innerHTML=`<option value="">${isForm?'Select Ministry':'All Ministries'}</option>`+['None',...list].map(m=>`<option${val===m?' selected':''}>${m}</option>`).join('');
+});
+}
+async function renderMinistryTags(){
+const list=await getMinistries();
+const container=document.getElementById('ministryTags');
+container.innerHTML=list.map(m=>`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--card-border);border-radius:20px;padding:6px 12px;font-size:13px">${m}<button onclick="removeMinistry('${m.replace(/'/g,"\\'")}')" style="background:none;border:none;color:var(--error);font-size:16px;cursor:pointer;line-height:1">&times;</button></span>`).join('');
+populateMinistryDropdowns(list);
+}
+async function removeMinistry(name){
+if(!confirm(`Remove "${name}" ministry?`))return;
+const list=await getMinistries();
+await saveMinistries(list.filter(m=>m!==name));renderMinistryTags();
+}
+async function loadSettings(){
+const url=await getSetting('scriptUrl');
+if(url){document.getElementById('scriptUrl').value=url;document.getElementById('scriptUrl').disabled=true;document.getElementById('testConnection').style.display='none';document.getElementById('unlockUrlBtn').style.display='inline-block'}
+const lastSync=await getSetting('lastSynced');document.getElementById('lastSynced').textContent=lastSync||'Never';
+const pending=await dbGet('pendingSync');document.getElementById('pendingCount').textContent=`${pending.length} items`;
+const reportEmail=await getSetting('reportEmail');if(reportEmail)document.getElementById('reportEmail').value=reportEmail;
+const outreach=await getSetting('defaultOutreach');if(outreach)document.getElementById('defaultOutreach').value=outreach;
+await renderMinistryTags();
+}
+
+document.getElementById('unlockUrlBtn').addEventListener('click',()=>{
+if(!confirm('Are you sure you want to edit the Script URL?'))return;
+document.getElementById('scriptUrl').disabled=false;
+document.getElementById('testConnection').style.display='inline-block';
+document.getElementById('unlockUrlBtn').style.display='none';
+});
+
+document.getElementById('testConnection').addEventListener('click',async()=>{
+const url=document.getElementById('scriptUrl').value.trim();if(!url){showToast('Enter a URL first','error');return}
+await setSetting('scriptUrl',url);
+document.getElementById('scriptUrl').disabled=true;
+document.getElementById('testConnection').style.display='none';
+document.getElementById('unlockUrlBtn').style.display='inline-block';
+const status=document.getElementById('connectionStatus');status.textContent='Testing...';status.style.color='#8b8b9e';
+try{const r=await fetch(url+'?action=ping');if(r.ok){status.textContent='Connected';status.style.color='var(--success)'}else throw 0}
+catch(e){status.textContent='Failed';status.style.color='var(--error)'}
+});
+
+document.getElementById('reportEmail').addEventListener('change',async(e)=>{await setSetting('reportEmail',e.target.value.trim())});
+document.getElementById('defaultOutreach').addEventListener('change',async(e)=>{await setSetting('defaultOutreach',e.target.value.trim())});
+
+document.getElementById('syncNowBtn').addEventListener('click',async()=>{
+const dot=document.getElementById('syncDot');dot.classList.add('syncing');
+const url=await getSetting('scriptUrl');
+if(!url){showToast('No sync URL configured','warning');dot.classList.remove('syncing');return}
+try{
+let synced=0;
+const pending=await dbGet('pendingSync');
+for(const item of pending){
+try{await fetch(url,{method:'POST',body:JSON.stringify(item.payload),headers:{'Content-Type':'text/plain'}});await dbDelete('pendingSync',item.id);synced++}catch(e){break}
+}
+const r=await fetch(url+'?action=getMembers');
+const json=await r.json();
+if(json.success&&json.data){
+await dbClear('members');
+for(const m of json.data)await dbPut('members',m);
+allMembers=json.data;
+updateCounter();
+}
+await setSetting('lastSynced',new Date().toLocaleString());
+showToast(`Synced! ${allMembers.length} members loaded`);loadSettings();renderAvatarGrid();
+}catch(e){showToast('Sync failed, try again','error')}
+finally{dot.classList.remove('syncing')}
+});
+
+document.getElementById('exportBtn').addEventListener('click',async()=>{
+const members=await dbGet('members');
+const csv='Name,D-Group,Ministry,Phone,Birthday,Status\n'+members.map(m=>`"${m.name}","${m.dgroup}","${m.ministry||''}","${m.phone||''}","${m.birthday||''}","${m.status}"`).join('\n');
+const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='jilgm_members.csv';a.click();
+});
+
+document.getElementById('importBtn').addEventListener('click',()=>{
+const input=document.createElement('input');input.type='file';input.accept='.csv';
+input.addEventListener('change',async(e)=>{
+const file=e.target.files[0];const text=await file.text();const lines=text.split('\n').slice(1);
+let count=0;
+for(const line of lines){
+const parts=line.match(/(".*?"|[^,]+)/g);if(!parts||parts.length<1)continue;
+const name=parts[0].replace(/"/g,'').trim();if(!name)continue;
+const member={id:'m'+Date.now()+count,name,dgroup:parts[1]?parts[1].replace(/"/g,'').trim():'',phone:parts[2]?parts[2].replace(/"/g,'').trim():'',birthday:parts[3]?parts[3].replace(/"/g,'').trim():'',photo:null,status:parts[4]?parts[4].replace(/"/g,'').trim():'active',dateRegistered:today()};
+await dbPut('members',member);allMembers.push(member);count++;
+}
+showToast(`Imported ${count} members`);updateCounter();
+});input.click();
+});
+
+document.getElementById('addMinistryBtn').addEventListener('click',async()=>{
+const input=document.getElementById('newMinistryInput');const name=input.value.trim();
+if(!name){showToast('Enter a ministry name','error');return}
+const list=await getMinistries();
+if(list.includes(name)){showToast('Already exists','warning');return}
+list.push(name);await saveMinistries(list);renderMinistryTags();
+input.value='';showToast(`"${name}" added`);
+});
+
+document.getElementById('memberMinistryFilter').addEventListener('change',renderMemberList);
+
+document.getElementById('saveChildrenBtn').addEventListener('click',async()=>{
+const val=document.getElementById('childrenInput').value;
+if(!val||val<0){showToast('Enter a valid number','error');return}
+await setSetting('children_'+today(),val);
+document.getElementById('statChildren').textContent=val;
+showToast('Children count saved');
+});
+
+
+
+
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBanner').classList.add('show')});
+document.getElementById('installBtn').addEventListener('click',()=>{if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null}document.getElementById('installBanner').classList.remove('show')});
+document.getElementById('dismissInstall').addEventListener('click',()=>document.getElementById('installBanner').classList.remove('show'));
+
+async function init(){
+await openDB();
+allMembers=await dbGet('members');await loadTodayAttendance();
+await checkInactiveMembers();
+allMembers=await dbGet('members');
+const ministries=await getMinistries();populateMinistryDropdowns(ministries);
+const theme=await getSetting('theme');
+if(theme==='light'){document.body.classList.add('light');document.getElementById('themeIcon').innerHTML='<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';}
+renderAvatarGrid();
+}
+init();
+
+document.getElementById('themeToggle').addEventListener('click',async()=>{
+const isLight=document.body.classList.toggle('light');
+await setSetting('theme',isLight?'light':'dark');
+const icon=document.getElementById('themeIcon');
+icon.innerHTML=isLight?'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>':'<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+});
+
+async function autoSync(){
+const url=await getSetting('scriptUrl');if(!url)return;
+try{
+const r=await fetch(url+'?action=getAttendance&date='+today());
+const json=await r.json();
+if(json.success&&json.data){
+const existing=new Set(todayAttendance.map(a=>a.memberId));
+for(const rec of json.data){
+if(!existing.has(rec.memberId)){
+await dbPut('attendance',{memberId:rec.memberId,memberName:rec.memberName,date:rec.date,timestamp:rec.timestamp||Date.now(),checkedInBy:rec.checkedInBy||'sync'});
+todayAttendance.push(rec);
+}}
+updateCounter();
+if(currentTab==='tabCheckin'&&currentMode==='tap')renderAvatarGrid();
+}}catch(e){}
+try{
+const r2=await fetch(url+'?action=getMembers');
+const json2=await r2.json();
+if(json2.success&&json2.data&&json2.data.length!==allMembers.length){
+await dbClear('members');
+for(const m of json2.data)await dbPut('members',m);
+allMembers=json2.data;
+updateCounter();
+if(currentTab==='tabCheckin'&&currentMode==='tap')renderAvatarGrid();
+if(currentTab==='tabMembers')renderMemberList();
+}}catch(e){}
+}
+setInterval(autoSync,10000);
+
+document.getElementById('generateReportBtn').addEventListener('click',async()=>{
+const todayStr=today();
+const allAtt=await dbGet('attendance');
+const checkedIn=todayAttendance.map(a=>allMembers.find(m=>m.id===a.memberId)).filter(Boolean);
+const stoTomasMembers=checkedIn.filter(m=>!m.outreach||m.outreach==='Sto. Tomas');
+const outreachGroups={};
+checkedIn.filter(m=>m.outreach&&m.outreach!=='Sto. Tomas').forEach(m=>{
+if(!outreachGroups[m.outreach])outreachGroups[m.outreach]=0;
+outreachGroups[m.outreach]++;
+});
+const counts={Youth:0,YPro:0,Mothers:0,Fathers:0};
+stoTomasMembers.forEach(m=>{
+const isFirstAttend=m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1;
+if(!isFirstAttend){const g=getAgeGroup(m);if(counts[g]!==undefined)counts[g]++}
+});
+const childrenVal=await getSetting('children_'+todayStr);
+const newCount=stoTomasMembers.filter(m=>isNewMember(m)).length;
+const outreach=(await getSetting('defaultOutreach'))||'STBC';
+const adultTotal=counts.Youth+counts.YPro+counts.Mothers+counts.Fathers;
+const childNum=parseInt(childrenVal)||0;
+const outreachTotal=Object.values(outreachGroups).reduce((a,b)=>a+b,0);
+const grandTotal=adultTotal+childNum+outreachTotal;
+const outreachHTML=Object.entries(outreachGroups).map(([name,count])=>`<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--accent2)">${name} Outreach</div><div style="font-size:20px;font-weight:700">${count}</div></div>`).join('');
+const overlay=document.getElementById('modalOverlay');const content=document.getElementById('modalContent');
+content.innerHTML=`<div class="modal-header"><h3>Send Report</h3><button class="modal-close" id="closeModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+<div style="margin-bottom:12px"><label style="font-size:12px;color:var(--text-secondary)">Date</label><div style="font-size:16px;font-weight:600">${formatDate(todayStr)}</div></div>
+<div class="input-group"><input type="text" id="rptOutreach" placeholder=" " value="${outreach}"><label>Outreach</label></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0">
+<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--text-secondary)">Youth</div><div style="font-size:20px;font-weight:700">${counts.Youth}</div></div>
+<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--text-secondary)">YPro</div><div style="font-size:20px;font-weight:700">${counts.YPro}</div></div>
+<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--text-secondary)">Mothers</div><div style="font-size:20px;font-weight:700">${counts.Mothers}</div></div>
+<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--text-secondary)">Fathers</div><div style="font-size:20px;font-weight:700">${counts.Fathers}</div></div>
+${outreachHTML}
+</div>
+<div class="input-group"><input type="number" id="rptChildren" placeholder=" " min="0" value="${childNum||''}"><label>Children</label></div>
+<div style="margin:8px 0;padding:12px;background:var(--card);border-radius:10px;text-align:center;font-weight:700;font-size:18px" id="rptTotalDisplay">Total: ${adultTotal} + ${childNum}${outreachTotal?' + '+outreachTotal+' (outreach)':''} = ${grandTotal}</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0">
+<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--success)">New (First Time Guests)</div><div style="font-size:20px;font-weight:700;color:var(--success)">${newCount}</div></div>
+<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--text-secondary)">Others</div><input type="text" id="rptOthers" placeholder="Notes..." style="width:100%;text-align:center;font-size:14px;margin-top:4px;padding:4px;background:transparent;border-bottom:1px solid var(--card-border)"></div>
+</div>
+<p style="font-size:11px;color:var(--text-secondary);margin:8px 0;text-align:center">This report will be emailed to the configured Report Email in Settings.</p>
+<button class="btn btn-primary" style="width:100%;margin-top:8px;padding:14px;font-size:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:12px" id="sendReportBtn">Send Now</button>`;
+overlay.classList.add('show');
+setTimeout(()=>{
+document.getElementById('closeModal').addEventListener('click',closeModal);
+document.getElementById('rptChildren').addEventListener('input',(e)=>{
+const c=parseInt(e.target.value)||0;
+setSetting('children_'+todayStr,c.toString());
+document.getElementById('statChildren').textContent=c||'-';
+document.getElementById('childrenInput').value=c;
+});
+document.getElementById('sendReportBtn').addEventListener('click',async()=>{
+const url=await getSetting('scriptUrl');const email=await getSetting('reportEmail');
+if(!url||!email){showToast('Configure Script URL and Report Email in Settings first','error');return}
+const report={action:'sendReport',date:todayStr,outreach:document.getElementById('rptOutreach').value,youth:counts.Youth,ypro:counts.YPro,mothers:counts.Mothers,fathers:counts.Fathers,children:parseInt(document.getElementById('rptChildren').value)||0,newCount:newCount,outreachGroups:outreachGroups,others:document.getElementById('rptOthers').value,email:email,grandTotal:grandTotal};
+try{
+const r=await fetch(url,{method:'POST',body:JSON.stringify(report),headers:{'Content-Type':'text/plain'}});
+const json=await r.json();
+if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.error||'Failed to send','error')}
+}catch(e){showToast('Network error, try again','error')}
+});
+},50);
+});
+
+// === APP VERSION & CHANGELOG ===
+const APP_VERSION='1.1.0';
+const CHANGELOG=[
+{version:'1.1.0',date:'July 27, 2026',changes:[
+{type:'New',text:'Google Sign-In access control'},
+{type:'New',text:'Occasion selector (Prayer Connect, Midweek, etc.)'},
+{type:'New',text:'Feedback system (send from Settings)'},
+{type:'New',text:"What's New popup on updates"},
+{type:'New',text:'Sunday-only check-in confirmation'},
+{type:'Improve',text:'Auto-sync every 10 seconds (near real-time)'},
+{type:'Improve',text:'Front/back camera flip for QR scanner'},
+{type:'Fix',text:'Toast notifications no longer stick on screen'},
+{type:'Fix',text:'Members tab now renders correctly'},
+]}
+];
+
+function renderChangelog(){
+const el=document.getElementById('changelogContent');
+el.innerHTML=CHANGELOG.map(v=>`
+<div style="margin-bottom:24px">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+<span style="background:linear-gradient(135deg,#7b2ff7,#00d4ff);padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700">v${v.version}</span>
+<span style="font-size:11px;color:var(--text-secondary)">${v.date}</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+${v.changes.map(c=>{
+const colors={New:'#4caf50',Fix:'#ff9800',Improve:'#00d4ff'};
+return `<div style="display:flex;align-items:center;gap:8px;font-size:12px">
+<span style="background:${colors[c.type]}22;color:${colors[c.type]};padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;min-width:50px;text-align:center">${c.type.toUpperCase()}</span>
+<span style="color:var(--text-secondary)">${c.text}</span>
+</div>`;
+}).join('')}
+</div>
+</div>`).join('');
+}
+
+async function checkWhatsNew(){
+const stored=await getSetting('appVersion');
+if(stored!==APP_VERSION){
+renderChangelog();
+document.getElementById('whatsNewModal').style.display='flex';
+await setSetting('appVersion',APP_VERSION);
+}
+}
+document.getElementById('whatsNewBtn').addEventListener('click',()=>{renderChangelog();document.getElementById('whatsNewModal').style.display='flex'});
+
+// === OCCASIONS ===
+let currentOccasion='Sunday Service';
+async function getOccasions(){
+const val=await getSetting('occasions');
+return val?JSON.parse(val):['Sunday Service','Prayer Connect','Midweek Service','Bible Study'];
+}
+async function saveOccasions(list){await setSetting('occasions',JSON.stringify(list));populateOccasionDropdown(list);renderOccasionTags(list)}
+function populateOccasionDropdown(list){
+const el=document.getElementById('occasionSelect');
+const wrapper=document.getElementById('occasionWrapper');
+el.innerHTML=list.map(o=>`<option${o===currentOccasion?' selected':''}>${o}</option>`).join('');
+wrapper.style.display=list.length>1?'flex':'none';
+}
+async function renderOccasionTags(list){
+if(!list)list=await getOccasions();
+const el=document.getElementById('occasionTags');
+el.innerHTML=list.map(o=>`<span style="background:var(--surface);border:1px solid var(--card-border);border-radius:8px;padding:4px 10px;font-size:11px;display:inline-flex;align-items:center;gap:6px">${o}<span style="cursor:pointer;opacity:0.5" data-remove-occasion="${o}">&times;</span></span>`).join('');
+el.querySelectorAll('[data-remove-occasion]').forEach(x=>x.addEventListener('click',async()=>{
+const name=x.dataset.removeOccasion;
+if(name==='Sunday Service'){showToast('Cannot remove default occasion','warning');return}
+if(!confirm(`Remove "${name}"?`))return;
+const l=await getOccasions();await saveOccasions(l.filter(o=>o!==name));
+}));
+}
+document.getElementById('occasionSelect').addEventListener('change',(e)=>{currentOccasion=e.target.value});
+document.getElementById('addOccasionBtn').addEventListener('click',async()=>{
+const input=document.getElementById('newOccasionInput');
+const name=input.value.trim();if(!name)return;
+const list=await getOccasions();if(list.includes(name)){showToast('Already exists','warning');return}
+list.push(name);await saveOccasions(list);input.value='';showToast(`"${name}" added`);
+});
+
+// === FEEDBACK ===
+document.getElementById('sendFeedbackBtn').addEventListener('click',async()=>{
+const category=document.getElementById('feedbackCategory').value;
+const msg=document.getElementById('feedbackMsg').value.trim();
+if(!msg){showToast('Please enter a message','warning');return}
+const url=await getSetting('scriptUrl');
+if(!url){showToast('No sync URL configured','warning');return}
+const userEmail=await getSetting('userEmail')||'anonymous';
+try{
+await fetch(url,{method:'POST',body:JSON.stringify({action:'submitFeedback',category,message:msg,userEmail}),headers:{'Content-Type':'text/plain'}});
+document.getElementById('feedbackMsg').value='';
+showToast('Feedback sent! Thank you.');
+}catch(e){showToast('Failed to send feedback','error')}
+});
+
+// === INIT UPDATES ===
+(async function initExtras(){
+await checkWhatsNew();
+const occasions=await getOccasions();
+populateOccasionDropdown(occasions);
+renderOccasionTags(occasions);
+})();
+
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
 </script>
+
+
 </body>
 </html>
