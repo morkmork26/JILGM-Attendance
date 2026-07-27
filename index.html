@@ -502,7 +502,10 @@ function startQR(){
 if(qrScanner)try{qrScanner.stop()}catch(e){}
 const el=document.getElementById('qr-reader');el.innerHTML='';
 qrScanner=new Html5Qrcode('qr-reader');
-qrScanner.start({facingMode:cameraFacing},{fps:10,qrbox:220},onQRScan,()=>{}).catch(()=>{
+qrScanner.start({facingMode:cameraFacing},{fps:10,qrbox:220},onQRScan,()=>{}).then(()=>{
+const vid=document.querySelector('#qr-reader video');
+if(vid)vid.style.transform=cameraFacing==='user'?'scaleX(-1)':'none';
+}).catch(()=>{
 el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);font-size:13px;padding:20px;text-align:center">Camera not available. Try Quick Tap or Search mode.</div>';
 });
 }
@@ -624,7 +627,7 @@ document.getElementById('counterBadge').textContent=`${checked}/${total}`;
 async function renderAvatarGrid(){
 const ministry=document.getElementById('ministryFilter').value;
 const showAll=document.querySelector('#modeTap .toggle-pill.active').dataset.show==='all';
-let filtered=allMembers.filter(m=>m.status==='active'||m.status==='Active');
+let filtered=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&m.addedLocally);
 if(ministry)filtered=filtered.filter(m=>m.ministry===ministry);
 if(!showAll)filtered=filtered.filter(m=>!todayAttendance.find(a=>a.memberId===m.id));
 document.getElementById('tapCount').textContent=`Showing ${filtered.length} members`;
@@ -737,7 +740,7 @@ async function saveMember(existing){
 const name=document.getElementById('memName').value.trim();if(!name){showToast('Name is required','error');return}
 const classCheckboxes=document.querySelectorAll('#memClassesContainer input[type=checkbox]:checked');
 const classes=Array.from(classCheckboxes).map(cb=>cb.value);
-const member={id:existing?existing.id:'m'+Date.now(),name,outreach:document.getElementById('memOutreach').value,address:document.getElementById('memAddress').value.trim(),email:document.getElementById('memEmail').value.trim(),ministry:document.getElementById('memMinistry').value,dgroupLeader:document.getElementById('memDgroupLeader').value.trim(),phone:document.getElementById('memPhone').value.trim(),birthday:document.getElementById('memBday').value,gender:document.getElementById('memGender').value,civilStatus:document.getElementById('memCivilStatus').value,hasChildren:document.getElementById('memHasChildren').value,emergencyContact:document.getElementById('memEmergencyContact').value.trim(),emergencyPhone:document.getElementById('memEmergencyPhone').value.trim(),membershipStatus:document.getElementById('memMembershipStatus').value,membershipDate:document.getElementById('memMembershipDate').value,baptismDate:document.getElementById('memBaptismDate').value,baptismPlace:document.getElementById('memBaptismPlace').value.trim(),classes:classes,photo:existing?existing.photo:null,status:'active',dateRegistered:existing?existing.dateRegistered:today()};
+const member={id:existing?existing.id:'m'+Date.now(),name,outreach:document.getElementById('memOutreach').value,address:document.getElementById('memAddress').value.trim(),email:document.getElementById('memEmail').value.trim(),ministry:document.getElementById('memMinistry').value,dgroupLeader:document.getElementById('memDgroupLeader').value.trim(),phone:document.getElementById('memPhone').value.trim(),birthday:document.getElementById('memBday').value,gender:document.getElementById('memGender').value,civilStatus:document.getElementById('memCivilStatus').value,hasChildren:document.getElementById('memHasChildren').value,emergencyContact:document.getElementById('memEmergencyContact').value.trim(),emergencyPhone:document.getElementById('memEmergencyPhone').value.trim(),membershipStatus:document.getElementById('memMembershipStatus').value,membershipDate:document.getElementById('memMembershipDate').value,baptismDate:document.getElementById('memBaptismDate').value,baptismPlace:document.getElementById('memBaptismPlace').value.trim(),classes:classes,photo:existing?existing.photo:null,status:'active',addedLocally:existing?existing.addedLocally||false:true,dateRegistered:existing?existing.dateRegistered:today()};
 const fileInput=document.getElementById('memPhotoInput');
 if(fileInput.files.length>0){
 const file=fileInput.files[0];
