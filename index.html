@@ -26,9 +26,9 @@ body.light .cmodal-overlay{background:rgba(0,0,0,0.4)}
 body.light .cmodal-box{box-shadow:0 24px 48px rgba(0,0,0,0.12);border-color:rgba(0,0,0,0.08)}
 body.light .cmodal-input{background:rgba(0,0,0,0.03);border-color:rgba(0,0,0,0.12)}
 body.light .cmodal-cancel{background:rgba(0,0,0,0.05);color:var(--text-secondary)}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-weight:400;line-height:1.5}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-weight:400;line-height:1.5;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior-y:contain}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
-input,select,textarea{font-family:inherit;color:var(--text);background:transparent;border:none;outline:none;font-size:16px}
+input,select,textarea{font-family:inherit;color:var(--text);background:transparent;border:none;outline:none;font-size:16px;-webkit-user-select:auto;user-select:auto}
 .header{position:sticky;top:0;z-index:100;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--card-border)}
 .header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);opacity:0.4}
 .logo{font-size:13px;font-weight:700;background:linear-gradient(135deg,#d4a843,#f5d676,#c9952c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.3px;white-space:nowrap;display:flex;align-items:center;gap:6px}
@@ -468,6 +468,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
+document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT'&&e.target.tagName!=='TEXTAREA')e.preventDefault()});
 const DB_NAME='jilgm_attendance';const DB_VERSION=1;let db;
 const today=()=>{const d=new Date();return d.toISOString().split('T')[0]};
 const formatDate=(d)=>{const opts={weekday:'short',month:'short',day:'numeric'};return new Date(d+'T00:00:00').toLocaleDateString('en-US',opts)};
@@ -1198,6 +1199,7 @@ else if(s==='Blocked'){clearInterval(poll);showAccessGate('blocked')}
 });
 
 async function init(){
+try{
 await openDB();
 const theme=await getSetting('theme');
 if(theme==='light'){document.body.classList.add('light');document.getElementById('themeIcon').innerHTML='<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';}
@@ -1223,6 +1225,7 @@ allMembers=await dbGet('members');
 const ministries=await getMinistries();populateMinistryDropdowns(ministries);
 renderAvatarGrid();
 await initExtras();
+}catch(e){document.body.innerHTML='<div style="padding:40px;text-align:center;color:#ff5252"><h3>App Error</h3><p style="margin-top:12px;color:#8b8b9e;font-size:14px">'+e.message+'</p><button onclick="location.reload()" style="margin-top:20px;padding:12px 24px;background:#6c63ff;color:#fff;border:none;border-radius:12px;font-size:14px">Retry</button></div>'}
 }
 init();
 
@@ -1457,4 +1460,15 @@ showToast('Feedback sent! Thank you.');
 async function initExtras(){
 await checkWhatsNew();
 const occasions=await getOccasions();
-const savedOccasion=await getSetting('activeOccasion')
+const savedOccasion=await getSetting('activeOccasion');
+if(savedOccasion)currentOccasion=savedOccasion;
+updateOccasionBanner();
+renderOccasionTags(occasions);
+}
+
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
+</script>
+
+
+</body>
+</html>
