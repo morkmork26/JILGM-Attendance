@@ -1040,7 +1040,12 @@ document.getElementById('scriptUrl').disabled=true;
 document.getElementById('testConnection').style.display='none';
 document.getElementById('unlockUrlBtn').style.display='inline-block';
 const status=document.getElementById('connectionStatus');status.textContent='Testing...';status.style.color='#8b8b9e';
-try{const r=await fetch(url+'?action=ping');if(r.ok){status.textContent='Connected';status.style.color='var(--success)'}else throw 0}
+try{const r=await fetch(url+'?action=ping');if(r.ok){status.textContent='Connected';status.style.color='var(--success)';
+const access=await checkDeviceAccess();
+if(access==='unregistered'||access==='unknown'){showAccessGate('register')}
+else if(access==='Pending'){showAccessGate('pending')}
+else if(access==='Blocked'){showAccessGate('blocked')}
+}else throw 0}
 catch(e){status.textContent='Failed';status.style.color='var(--error)'}
 });
 
@@ -1452,15 +1457,4 @@ showToast('Feedback sent! Thank you.');
 async function initExtras(){
 await checkWhatsNew();
 const occasions=await getOccasions();
-const savedOccasion=await getSetting('activeOccasion');
-if(savedOccasion)currentOccasion=savedOccasion;
-updateOccasionBanner();
-renderOccasionTags(occasions);
-}
-
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
-</script>
-
-
-</body>
-</html>
+const savedOccasion=await getSetting('activeOccasion')
