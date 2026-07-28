@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>FlockTrack</title>
 <link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{--bg:#0f0e17;--card:#1a1a2e;--card-border:rgba(255,255,255,0.05);--text:#eaeaea;--text-secondary:#8b8b9e;--accent:#6c63ff;--accent2:#48c6ef;--success:#00e676;--warning:#ffab00;--error:#ff5252;--glass:rgba(26,26,46,0.8);--radius:16px;--nav-h:64px;--header-h:56px}
@@ -32,8 +34,8 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 .header{position:sticky;top:0;z-index:100;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--card-border)}
 .header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);opacity:0.4}
 .logo{display:flex;align-items:center;gap:8px;white-space:nowrap}
-.logo .logo-name .flock{color:#ffffff;font-size:14px;font-weight:700;letter-spacing:0.3px}
-.logo .logo-name .track{color:#48c6ef;font-size:14px;font-weight:700;letter-spacing:0.3px}
+.logo .logo-name .flock{font-family:'Raleway',-apple-system,sans-serif;color:#ffffff;font-size:17px;font-weight:700;letter-spacing:0.8px}
+.logo .logo-name .track{font-family:'Raleway',-apple-system,sans-serif;color:#48c6ef;font-size:17px;font-weight:700;letter-spacing:0.8px}
 body.light .logo .logo-name .flock{color:#1a1a2e}
 body.light .logo .logo-name .track{color:#0ea5e9}
 .header-right{display:flex;align-items:center;gap:8px}
@@ -178,6 +180,27 @@ body.light .logo .logo-name .track{color:#0ea5e9}
 #qr-reader video{width:100%!important;height:auto!important;border-radius:var(--radius)}
 #qr-reader img{display:none}
 @media(min-width:600px){.avatar-grid{grid-template-columns:repeat(5,1fr)}.content{max-width:540px;margin:0 auto}}
+.sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:9998;opacity:0;pointer-events:none;transition:opacity 0.25s}
+.sheet-overlay.show{opacity:1;pointer-events:auto}
+.sheet{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:var(--card);border-radius:20px 20px 0 0;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);max-height:70vh;display:flex;flex-direction:column}
+.sheet.show{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,0.2);margin:12px auto 0}
+.sheet-header{padding:16px 20px 12px;border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between}
+.sheet-header h3{font-size:15px;font-weight:600}
+.sheet-close{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;color:var(--text-secondary);font-size:18px}
+.sheet-body{overflow-y:auto;padding:8px 0;flex:1}
+.sheet-option{padding:14px 20px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background 0.15s}
+.sheet-option:active{background:rgba(108,99,255,0.08)}
+.sheet-option.selected{color:var(--accent)}
+.sheet-option.selected::after{content:'';width:20px;height:20px;border-radius:50%;background:var(--accent);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23fff' stroke-width='3'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");background-size:12px;background-repeat:no-repeat;background-position:center;flex-shrink:0}
+.sheet-option:not(.selected)::after{content:'';width:20px;height:20px;border-radius:50%;border:2px solid var(--card-border);flex-shrink:0}
+body.light .sheet{background:#ffffff}
+body.light .sheet-handle{background:rgba(0,0,0,0.15)}
+body.light .sheet-close{background:rgba(0,0,0,0.05)}
+body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
+.custom-select-trigger{width:100%;padding:14px 44px 14px 16px;background:var(--card);border:1.5px solid var(--card-border);border-radius:14px;font-size:15px;font-weight:500;color:var(--text);cursor:pointer;transition:border-color 0.2s;position:relative;text-align:left}
+.custom-select-trigger::after{content:'';position:absolute;right:16px;top:50%;transform:translateY(-50%);width:18px;height:18px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238b8b9e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-size:contain}
+.custom-select-trigger .cs-placeholder{color:var(--text-secondary)}
 .cmodal-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:24px}
 .cmodal-overlay.show{display:flex}
 .cmodal-box{background:var(--card);border:1px solid rgba(255,255,255,0.1);border-radius:20px;width:100%;max-width:340px;padding:28px 24px 20px;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:modalIn 0.25s ease}
@@ -198,6 +221,14 @@ body.light .logo .logo-name .track{color:#0ea5e9}
 </style>
 </head>
 <body>
+
+<!-- Bottom Sheet -->
+<div class="sheet-overlay" id="sheetOverlay"></div>
+<div class="sheet" id="bottomSheet">
+<div class="sheet-handle"></div>
+<div class="sheet-header"><h3 id="sheetTitle">Select</h3><button class="sheet-close" id="sheetClose">&times;</button></div>
+<div class="sheet-body" id="sheetBody"></div>
+</div>
 
 <!-- Custom Modal -->
 <div id="customModal" class="cmodal-overlay">
@@ -544,6 +575,48 @@ if(toastTimer)clearTimeout(toastTimer);
 t.classList.add('show');toastTimer=setTimeout(()=>{t.classList.remove('show');toastTimer=null},3000);
 }
 
+let activeSheetSelect=null;
+function openBottomSheet(title,options,currentVal,onSelect){
+const overlay=document.getElementById('sheetOverlay');
+const sheet=document.getElementById('bottomSheet');
+document.getElementById('sheetTitle').textContent=title;
+const body=document.getElementById('sheetBody');
+body.innerHTML=options.map(opt=>`<div class="sheet-option${opt===currentVal?' selected':''}" data-val="${opt}">${opt}</div>`).join('');
+body.querySelectorAll('.sheet-option').forEach(el=>{
+el.addEventListener('click',()=>{onSelect(el.dataset.val);setTimeout(closeBottomSheet,150)});
+});
+overlay.classList.add('show');sheet.classList.add('show');
+}
+function closeBottomSheet(){
+document.getElementById('sheetOverlay').classList.remove('show');
+document.getElementById('bottomSheet').classList.remove('show');
+}
+document.getElementById('sheetOverlay').addEventListener('click',closeBottomSheet);
+document.getElementById('sheetClose').addEventListener('click',closeBottomSheet);
+
+function initCustomSelects(container){
+container.querySelectorAll('select').forEach(sel=>{
+const options=Array.from(sel.options).map(o=>o.text);
+const label=sel.closest('.input-group')?.querySelector('label')?.textContent||'Select';
+const wrapper=document.createElement('div');wrapper.className='input-group';
+const trigger=document.createElement('button');trigger.type='button';trigger.className='custom-select-trigger';
+const labelEl=document.createElement('span');labelEl.className='custom-select-label';labelEl.textContent=label;
+labelEl.style.cssText='position:absolute;top:-8px;left:14px;font-size:10px;font-weight:600;color:var(--accent);background:var(--bg);padding:0 4px;text-transform:uppercase;letter-spacing:0.5px';
+trigger.innerHTML=sel.value?sel.options[sel.selectedIndex].text:`<span class="cs-placeholder">${sel.options[0].text}</span>`;
+trigger.addEventListener('click',()=>{
+openBottomSheet(label,options.filter(o=>o),sel.value?sel.options[sel.selectedIndex].text:'',val=>{
+const idx=options.indexOf(val);if(idx>=0)sel.selectedIndex=idx;
+trigger.innerHTML=val;
+sel.dispatchEvent(new Event('change'));
+});
+});
+sel.style.display='none';
+const parent=sel.parentElement;
+wrapper.appendChild(labelEl);wrapper.appendChild(trigger);wrapper.appendChild(sel);
+parent.replaceChild(wrapper,parent.contains(sel)?sel.closest('.input-group')||sel:sel);
+});
+}
+
 function customConfirm(msg,{title='Confirm',okText='Confirm',danger=false}={}){
 return new Promise((resolve)=>{
 const overlay=document.getElementById('customModal');
@@ -778,6 +851,7 @@ av.insertAdjacentHTML('beforeend','<div class="check-badge"><svg viewBox="0 0 24
 }
 
 document.getElementById('ministryFilter').addEventListener('change',renderAvatarGrid);
+initCustomSelects(document.getElementById('tabCheckin'));
 document.querySelectorAll('#modeTap .toggle-pill').forEach(p=>p.addEventListener('click',(e)=>{
 document.querySelectorAll('#modeTap .toggle-pill').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');renderAvatarGrid();
 }));
@@ -841,9 +915,9 @@ if(type==='member'){
 getMinistries().then(list=>{
 const el=document.getElementById('memMinistry');
 el.innerHTML=`<option value="">Select Ministry</option>`+['None',...list].map(m=>`<option${data&&data.ministry===m?' selected':''}>${m}</option>`).join('');
+initCustomSelects(document.getElementById('modalContent'));
 });
 document.getElementById('saveMember').addEventListener('click',()=>saveMember(data));
-
 }
 },50);
 }
@@ -1122,6 +1196,7 @@ input.value='';showToast(`"${name}" added`);
 });
 
 document.getElementById('memberMinistryFilter').addEventListener('change',renderMemberList);
+initCustomSelects(document.getElementById('tabMembers'));
 
 document.getElementById('saveChildrenBtn').addEventListener('click',async()=>{
 const val=document.getElementById('childrenInput').value;
@@ -1448,7 +1523,7 @@ list.push(name);await saveOccasions(list);input.value='';showToast(`"${name}" ad
 });
 
 // === FEEDBACK ===
-document.getElementById('sendFeedbackBtn').addEventListener('click',async()=>{
+document.getElementById('sendFeedbackBtn').addEventListener('click',asyanc()=>{
 const category=document.getElementById('feedbackCategory').value;
 const msg=document.getElementById('feedbackMsg').value.trim();
 if(!msg){showToast('Please enter a message','warning');return}
