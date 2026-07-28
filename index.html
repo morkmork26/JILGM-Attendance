@@ -14,7 +14,7 @@
 body.light{--bg:#f0f2f5;--card:#ffffff;--card-border:rgba(0,0,0,0.06);--text:#1a1a2e;--text-secondary:#5a5a6e;--accent:#4f46e5;--accent2:#0ea5e9;--glass:rgba(255,255,255,0.95);--success:#16a34a;--warning:#d97706;--error:#dc2626}
 body.light .header{box-shadow:0 2px 8px rgba(0,0,0,0.06);border-bottom:none}
 body.light .header::after{opacity:0.6}
-body.light .logo{background:linear-gradient(135deg,#4f46e5,#0ea5e9);-webkit-background-clip:text;background-clip:text}
+
 body.light .card,body.light .stat-card{box-shadow:0 2px 8px rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.06)}
 body.light .btn-primary{box-shadow:0 3px 12px rgba(79,70,229,0.3)}
 body.light .avatar-item{box-shadow:0 2px 6px rgba(0,0,0,0.04)}
@@ -31,9 +31,11 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 input,select,textarea{font-family:inherit;color:var(--text);background:transparent;border:none;outline:none;font-size:16px;-webkit-user-select:auto;user-select:auto}
 .header{position:sticky;top:0;z-index:100;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--card-border)}
 .header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);opacity:0.4}
-.logo{font-size:13px;font-weight:700;background:linear-gradient(135deg,#d4a843,#f5d676,#c9952c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.3px;white-space:nowrap;display:flex;align-items:center;gap:6px}
-.logo .logo-text{display:inline}
-.header-date{font-size:12px;color:var(--text-secondary);font-weight:500}
+.logo{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.logo .logo-name .flock{color:#ffffff;font-size:14px;font-weight:700;letter-spacing:0.3px}
+.logo .logo-name .track{color:#48c6ef;font-size:14px;font-weight:700;letter-spacing:0.3px}
+body.light .logo .logo-name .flock{color:#1a1a2e}
+body.light .logo .logo-name .track{color:#0ea5e9}
 .header-right{display:flex;align-items:center;gap:8px}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--success)}
 .sync-dot.syncing{animation:pulse 1s infinite}
@@ -76,7 +78,12 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 .toggle-pill.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
 .filter-count{font-size:12px;color:var(--text-secondary);margin-bottom:12px}
 .input-group{position:relative;margin-bottom:20px}
-.input-group input,.input-group select,.input-group textarea{width:100%;padding:12px 0 8px;border-bottom:2px solid var(--card-border);font-size:16px;transition:border-color 0.3s}
+.input-group input,.input-group textarea{width:100%;padding:14px 16px;background:var(--card);border:1.5px solid var(--card-border);border-radius:14px;font-size:15px;transition:border-color 0.2s,box-shadow 0.2s}
+.input-group input:focus,.input-group textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,0.15)}
+.input-group select{width:100%;appearance:none;-webkit-appearance:none;padding:14px 44px 14px 16px;background:var(--card);border:1.5px solid var(--card-border);border-radius:14px;font-size:15px;cursor:pointer;transition:border-color 0.2s,box-shadow 0.2s}
+.input-group select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,0.15);outline:none}
+.input-group{position:relative}
+.input-group select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238b8b9e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:18px}
 .input-group input:focus,.input-group select:focus,.input-group textarea:focus{border-bottom-color:var(--accent)}
 .input-group label{position:absolute;left:0;top:12px;font-size:14px;color:var(--text-secondary);transition:all 0.2s;pointer-events:none}
 .input-group input:focus~label,.input-group input:not(:placeholder-shown)~label,.input-group select:focus~label,.input-group textarea:focus~label,.input-group textarea:not(:placeholder-shown)~label{top:-8px;font-size:11px;color:var(--accent)}
@@ -244,8 +251,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 </div>
 
 <div class="header">
-<div class="logo"><span style="display:inline-block;width:32px;height:32px;border-radius:50%;overflow:hidden;background:#fff;flex-shrink:0"><img src="logo.jpg" alt="JILGM" style="width:100%;height:100%;object-fit:cover;transform:scale(1.55);object-position:center center"></span><span class="logo-text">Attendance Tracker</span></div>
-<div class="header-date" id="headerDate"></div>
+<div class="logo"><span style="display:inline-block;width:32px;height:32px;border-radius:50%;overflow:hidden;background:#fff;flex-shrink:0"><img src="logo.jpg" alt="JILGM" style="width:100%;height:100%;object-fit:cover;transform:scale(1.55);object-position:center center"></span><span class="logo-name"><span class="flock">Flock</span><span class="track">Track</span></span></div>
 <div class="header-right">
 <div class="sync-dot" id="syncDot"></div>
 <div class="counter-badge" id="counterBadge">0/0</div>
@@ -359,7 +365,8 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 </div>
 </div>
 <div class="settings-section">
-<h4>Connection</h4>
+<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'block':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Connection <span style="font-size:14px;color:var(--text-secondary)">+</span></h4>
+<div style="display:none">
 <div class="input-group">
 <input type="text" id="scriptUrl" placeholder=" ">
 <label>Google Apps Script URL</label>
@@ -370,11 +377,14 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 <span id="connectionStatus" style="font-size:12px"></span>
 </div>
 </div>
+</div>
 <div class="settings-section">
-<h4>Report</h4>
+<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'block':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Report <span style="font-size:14px;color:var(--text-secondary)">+</span></h4>
+<div style="display:none">
 <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:8px">
 <div class="input-group"><input type="email" id="reportEmail" placeholder=" "><label>Report Email</label></div>
 <div class="input-group"><input type="text" id="defaultOutreach" placeholder=" " value="Sto. Tomas"><label>Default Outreach Location</label></div>
+</div>
 </div>
 </div>
 <div class="settings-section">
@@ -388,11 +398,10 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 </div>
 </div>
 <div class="settings-section">
-<h4>Data</h4>
-<div class="settings-row"><div class="label">Import Members</div><button class="btn btn-outline" style="padding:8px 16px;font-size:12px" id="importBtn">Import CSV</button></div>
+<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'block':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Data <span style="font-size:14px;color:var(--text-secondary)">+</span></h4>
+<div style="display:none">
 <div class="settings-row"><div class="label">Export Data</div><button class="btn btn-outline" style="padding:8px 16px;font-size:12px" id="exportBtn">Export CSV</button></div>
-
-
+</div>
 </div>
 <div class="settings-section">
 <h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'flex':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Ministries <span style="font-size:14px;color:var(--text-secondary)">+</span></h4>
@@ -405,8 +414,8 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 </div>
 </div>
 <div class="settings-section">
-<h4>Occasions</h4>
-<div class="settings-row" style="flex-wrap:wrap;gap:8px">
+<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'flex':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Occasions <span style="font-size:14px;color:var(--text-secondary)">+</span></h4>
+<div class="settings-row" style="flex-wrap:wrap;gap:8px;display:none">
 <div id="occasionTags" style="display:flex;flex-wrap:wrap;gap:6px;width:100%;margin-bottom:8px"></div>
 <div style="display:flex;gap:8px;width:100%">
 <input type="text" id="newOccasionInput" placeholder="Add occasion name..." style="flex:1;padding:8px 12px;border-bottom:2px solid var(--card-border);font-size:14px">
@@ -415,14 +424,14 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 </div>
 </div>
 <div class="settings-section">
-<h4>Feedback</h4>
-<div style="display:flex;flex-direction:column;gap:12px">
-<select id="feedbackCategory" style="padding:10px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--card-border);color:var(--text);font-size:13px">
+<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'flex':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Feedback <span style="font-size:14px;color:var(--text-secondary)">+</span></h4>
+<div style="display:none;flex-direction:column;gap:12px">
+<select id="feedbackCategory" style="padding:10px 12px;border-radius:8px;background:var(--card);border:1px solid var(--card-border);color:var(--text);font-size:13px">
 <option value="Improve App">Improve App</option>
 <option value="Report Bug">Report Bug</option>
 <option value="Suggestion">Suggestion</option>
 </select>
-<textarea id="feedbackMsg" placeholder="Tell us what you think..." style="padding:12px;border-radius:8px;background:var(--surface);border:1px solid var(--card-border);color:var(--text);font-size:13px;min-height:80px;resize:vertical"></textarea>
+<textarea id="feedbackMsg" placeholder="Tell us what you think..." style="padding:12px;border-radius:8px;background:var(--card);border:1px solid var(--card-border);color:var(--text);font-size:13px;min-height:80px;resize:vertical"></textarea>
 <button class="btn btn-primary" style="padding:10px 16px;font-size:12px" id="sendFeedbackBtn">Send Feedback</button>
 </div>
 </div>
@@ -477,7 +486,7 @@ document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT'&&e.tar
 const DB_NAME='jilgm_attendance';const DB_VERSION=1;let db;
 const today=()=>{const d=new Date();return d.toISOString().split('T')[0]};
 const formatDate=(d)=>{const opts={weekday:'short',month:'short',day:'numeric'};return new Date(d+'T00:00:00').toLocaleDateString('en-US',opts)};
-document.getElementById('headerDate').textContent=formatDate(today());
+
 
 function getAvatarColor(name){
 const colors=['#6c63ff','#00bcd4','#ff6b6b','#feca57','#48dbfb','#ff9ff3','#54a0ff','#5f27cd','#01a3a4','#f368e0','#ee5a24','#009432'];
@@ -804,19 +813,19 @@ const classes=['Class 101','Class 102','Class 201','Class 301','Class 401','SOP 
 const memberClasses=data&&data.classes?data.classes:[];
 content.innerHTML=`<div class="modal-header"><h3>${data?'Edit Member':'Add Member'}</h3><button class="modal-close" id="closeModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
 <div class="input-group"><input type="text" id="memName" placeholder=" " value="${data?data.name:''}"><label>Full Name</label></div>
-<div class="input-group"><select id="memOutreach" style="padding:12px 0 8px;border-bottom:2px solid var(--card-border);width:100%"><option value="">Select Outreach</option><option${data&&data.outreach==='Sto. Tomas'?' selected':''}>Sto. Tomas</option><option${data&&data.outreach==='Tanauan'?' selected':''}>Tanauan</option><option${data&&data.outreach==='Naujan'?' selected':''}>Naujan</option><option${data&&data.outreach==='Socorro'?' selected':''}>Socorro</option></select></div>
+<div class="input-group"><select id="memOutreach"><option value="">Select Outreach</option><option${data&&data.outreach==='Sto. Tomas'?' selected':''}>Sto. Tomas</option><option${data&&data.outreach==='Tanauan'?' selected':''}>Tanauan</option><option${data&&data.outreach==='Naujan'?' selected':''}>Naujan</option><option${data&&data.outreach==='Socorro'?' selected':''}>Socorro</option></select></div>
 <div class="input-group"><input type="email" id="memEmail" placeholder=" " value="${data?data.email||'':''}"><label>Email</label></div>
 <div class="input-group"><input type="tel" id="memPhone" placeholder=" " value="${data?data.phone||'':''}"><label>Phone</label></div>
 <div class="input-group"><input type="text" id="memAddress" placeholder=" " value="${data?data.address||'':''}"><label>Address</label></div>
 <div class="input-group"><input type="date" id="memBday" value="${data?data.birthday||'':''}"><label style="top:-8px;font-size:11px;color:var(--accent)">Birthday</label></div>
-<div class="input-group"><select id="memGender" style="padding:12px 0 8px;border-bottom:2px solid var(--card-border);width:100%"><option value="">Select Gender</option><option${data&&data.gender==='Male'?' selected':''}>Male</option><option${data&&data.gender==='Female'?' selected':''}>Female</option></select></div>
-<div class="input-group"><select id="memCivilStatus" style="padding:12px 0 8px;border-bottom:2px solid var(--card-border);width:100%"><option value="">Civil Status</option><option${data&&data.civilStatus==='Single'?' selected':''}>Single</option><option${data&&data.civilStatus==='Married'?' selected':''}>Married</option><option${data&&data.civilStatus==='Widow'?' selected':''}>Widow</option><option${data&&data.civilStatus==='Separated'?' selected':''}>Separated</option></select></div>
-<div class="input-group"><select id="memHasChildren" style="padding:12px 0 8px;border-bottom:2px solid var(--card-border);width:100%"><option value="">Do you have children?</option><option${data&&data.hasChildren==='Yes'?' selected':''}>Yes</option><option${data&&data.hasChildren==='No'?' selected':''}>No</option></select></div>
+<div class="input-group"><select id="memGender"><option value="">Select Gender</option><option${data&&data.gender==='Male'?' selected':''}>Male</option><option${data&&data.gender==='Female'?' selected':''}>Female</option></select></div>
+<div class="input-group"><select id="memCivilStatus"><option value="">Civil Status</option><option${data&&data.civilStatus==='Single'?' selected':''}>Single</option><option${data&&data.civilStatus==='Married'?' selected':''}>Married</option><option${data&&data.civilStatus==='Widow'?' selected':''}>Widow</option><option${data&&data.civilStatus==='Separated'?' selected':''}>Separated</option></select></div>
+<div class="input-group"><select id="memHasChildren"><option value="">Do you have children?</option><option${data&&data.hasChildren==='Yes'?' selected':''}>Yes</option><option${data&&data.hasChildren==='No'?' selected':''}>No</option></select></div>
 <div class="input-group"><input type="text" id="memEmergencyContact" placeholder=" " value="${data?data.emergencyContact||'':''}"><label>Emergency Contact Person</label></div>
 <div class="input-group"><input type="tel" id="memEmergencyPhone" placeholder=" " value="${data?data.emergencyPhone||'':''}"><label>Emergency Contact Number</label></div>
 <div class="input-group"><input type="text" id="memDgroupLeader" placeholder=" " value="${data?data.dgroupLeader||'':''}"><label>D-Group Leader</label></div>
-<div class="input-group"><select id="memMinistry" style="padding:12px 0 8px;border-bottom:2px solid var(--card-border);width:100%" required><option value="">Select Ministry</option></select></div>
-<div class="input-group"><select id="memMembershipStatus" style="padding:12px 0 8px;border-bottom:2px solid var(--card-border);width:100%"><option value="">Membership Status</option><option${data&&data.membershipStatus==='First Time Guest'?' selected':''}>First Time Guest</option><option${data&&data.membershipStatus==='Regular Attendee'?' selected':''}>Regular Attendee</option><option${data&&data.membershipStatus==='Returning Guest'?' selected':''}>Returning Guest</option></select></div>
+<div class="input-group"><select id="memMinistry" required><option value="">Select Ministry</option></select></div>
+<div class="input-group"><select id="memMembershipStatus"><option value="">Membership Status</option><option${data&&data.membershipStatus==='First Time Guest'?' selected':''}>First Time Guest</option><option${data&&data.membershipStatus==='Regular Attendee'?' selected':''}>Regular Attendee</option><option${data&&data.membershipStatus==='Returning Guest'?' selected':''}>Returning Guest</option></select></div>
 <div class="input-group"><input type="date" id="memMembershipDate" value="${data?data.membershipDate||'':''}"><label style="top:-8px;font-size:11px;color:var(--accent)">Membership Date (optional)</label></div>
 <div class="input-group"><input type="date" id="memBaptismDate" value="${data?data.baptismDate||'':''}"><label style="top:-8px;font-size:11px;color:var(--accent)">Date of Baptism (optional)</label></div>
 <div class="input-group"><input type="text" id="memBaptismPlace" placeholder=" " value="${data?data.baptismPlace||'':''}"><label>Place of Baptism (optional)</label></div>
@@ -853,21 +862,27 @@ const member={id:existing?existing.id:'m'+Date.now(),name,outreach:document.getE
 await dbPut('members',member);
 if(existing){const idx=allMembers.findIndex(m=>m.id===existing.id);if(idx>=0)allMembers[idx]=member}
 else allMembers.push(member);
-closeModal();showToast(existing?'Member updated':'Member added');updateCounter();renderMemberList();
 const url=await getSetting('scriptUrl');
-if(url){
-const action=existing?'updateMember':'addMember';
-const payload={action,...member,classes:member.classes?member.classes.join(', '):''};
+if(url&&!existing){
+const payload={action:'addMember',...member,classes:member.classes?member.classes.join(', '):''};
 try{const res=await fetch(url,{method:'POST',body:JSON.stringify(payload),headers:{'Content-Type':'text/plain'}});
 const json=await res.json();
-if(!existing&&json.success&&json.data&&json.data.id){
+if(json.success&&json.data&&json.data.id){
 member.id=json.data.id;member.addedLocally=false;
-const idx=allMembers.findIndex(m=>m.name===member.name&&m.addedLocally);
-if(idx>=0)allMembers[idx]=member;
+await dbPut('members',member);allMembers.push(member);
+closeModal();showToast('Member added');updateCounter();renderMemberList();
+}else{showToast(json.error||'Failed to add member','error')}
+}catch(e){await dbPut('members',member);allMembers.push(member);
+await dbPut('pendingSync',{action:'addMember',payload,createdAt:Date.now()});
+closeModal();showToast('Member saved offline');updateCounter();renderMemberList()}
+}else if(existing){
 await dbPut('members',member);
-}
-}catch(e){if(!existing)await dbPut('pendingSync',{action:'addMember',payload,createdAt:Date.now()})}
-}
+const idx=allMembers.findIndex(m=>m.id===existing.id);if(idx>=0)allMembers[idx]=member;
+closeModal();showToast('Member updated');updateCounter();renderMemberList();
+if(url){const payload={action:'updateMember',...member,classes:member.classes?member.classes.join(', '):''};
+try{await fetch(url,{method:'POST',body:JSON.stringify(payload),headers:{'Content-Type':'text/plain'}})}catch(e){}}
+}else{await dbPut('members',member);allMembers.push(member);
+closeModal();showToast('Member saved locally');updateCounter();renderMemberList()}
 }
 
 document.getElementById('fab').addEventListener('click',()=>showModal('member'));
@@ -1095,20 +1110,7 @@ const csv='Name,D-Group,Ministry,Phone,Birthday,Status\n'+members.map(m=>`"${m.n
 const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='jilgm_members.csv';a.click();
 });
 
-document.getElementById('importBtn').addEventListener('click',()=>{
-const input=document.createElement('input');input.type='file';input.accept='.csv';
-input.addEventListener('change',async(e)=>{
-const file=e.target.files[0];const text=await file.text();const lines=text.split('\n').slice(1);
-let count=0;
-for(const line of lines){
-const parts=line.match(/(".*?"|[^,]+)/g);if(!parts||parts.length<1)continue;
-const name=parts[0].replace(/"/g,'').trim();if(!name)continue;
-const member={id:'m'+Date.now()+count,name,dgroup:parts[1]?parts[1].replace(/"/g,'').trim():'',phone:parts[2]?parts[2].replace(/"/g,'').trim():'',birthday:parts[3]?parts[3].replace(/"/g,'').trim():'',photo:null,status:parts[4]?parts[4].replace(/"/g,'').trim():'active',dateRegistered:today()};
-await dbPut('members',member);allMembers.push(member);count++;
-}
-showToast(`Imported ${count} members`);updateCounter();
-});input.click();
-});
+
 
 document.getElementById('addMinistryBtn').addEventListener('click',async()=>{
 const input=document.getElementById('newMinistryInput');const name=input.value.trim();
