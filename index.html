@@ -1046,12 +1046,9 @@ document.getElementById('scriptUrl').disabled=true;
 document.getElementById('testConnection').style.display='none';
 document.getElementById('unlockUrlBtn').style.display='inline-block';
 const status=document.getElementById('connectionStatus');status.textContent='Testing...';status.style.color='#8b8b9e';
-try{const r=await fetch(url+'?action=ping');if(r.ok){status.textContent='Connected';status.style.color='var(--success)';
-const access=await checkDeviceAccess();
-if(access==='unregistered'||access==='unknown'){showAccessGate('register')}
-else if(access==='Pending'){showAccessGate('pending')}
-else if(access==='Blocked'){showAccessGate('blocked')}
-}else throw 0}
+try{const r=await fetch(url+'?action=getMembers');const j=await r.json();
+if(j.success!==false){status.textContent='Connected! Reloading...';status.style.color='var(--success)';setTimeout(()=>location.reload(),1000)}
+else throw 0}
 catch(e){status.textContent='Failed';status.style.color='var(--error)'}
 });
 
