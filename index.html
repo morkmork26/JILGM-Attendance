@@ -1150,7 +1150,7 @@ document.getElementById('scriptUrl').disabled=true;
 document.getElementById('testConnection').style.display='none';
 document.getElementById('unlockUrlBtn').style.display='inline-block';
 const status=document.getElementById('connectionStatus');status.textContent='Testing...';status.style.color='#8b8b9e';
-try{const r=await fetch(url,{method:'POST',body:JSON.stringify({action:'getMembers'}),headers:{'Content-Type':'text/plain'}});const j=await r.json();
+try{const r=await fetch(url+'?action=getMembers');const j=await r.json();
 if(j.success!==false){status.textContent='Connected! Reloading...';status.style.color='var(--success)';setTimeout(()=>location.reload(),1000)}
 else throw 0}
 catch(e){status.textContent='Failed';status.style.color='var(--error)'}
@@ -1240,17 +1240,18 @@ async function checkDeviceAccess(){
 const url=await getSetting('scriptUrl');
 if(!url)return 'no-url';
 const deviceId=getDeviceId();
-const status=await getSetting('deviceStatus');
-if(status==='Approved')return 'Approved';
 try{
-const res=await fetch(url,{method:'POST',body:JSON.stringify({action:'getDeviceStatus',deviceId}),headers:{'Content-Type':'text/plain'}});
+const res=await fetch(url+'?action=getDeviceStatus&deviceId='+encodeURIComponent(deviceId));
 const json=await res.json();
 if(json.success&&json.data){
 await setSetting('deviceStatus',json.data.status);
 return json.data.status;
 }
-}catch(e){}
-return status||'unregistered';
+}catch(e){
+const status=await getSetting('deviceStatus');
+if(status)return status;
+}
+return 'unregistered';
 }
 
 function showAccessGate(state){
@@ -1277,7 +1278,7 @@ await setSetting('scriptUrl',url);
 }
 const deviceId=getDeviceId();
 showToast('Registering...','warning');
-const res=await fetch(url,{method:'POST',body:JSON.stringify({action:'registerDevice',deviceId,name}),headers:{'Content-Type':'text/plain'}});
+const res=await fetch(url+'?action=registerDevice&deviceId='+encodeURIComponent(deviceId)+'&name='+encodeURIComponent(name));
 const json=await res.json();
 if(json.success&&json.data){
 await setSetting('deviceStatus',json.data.status);
