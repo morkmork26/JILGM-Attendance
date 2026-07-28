@@ -595,25 +595,26 @@ document.getElementById('sheetOverlay').addEventListener('click',closeBottomShee
 document.getElementById('sheetClose').addEventListener('click',closeBottomSheet);
 
 function initCustomSelects(container){
-container.querySelectorAll('select').forEach(sel=>{
+container.querySelectorAll('select:not([data-cs-init])').forEach(sel=>{
+sel.setAttribute('data-cs-init','1');
 const options=Array.from(sel.options).map(o=>o.text);
-const label=sel.closest('.input-group')?.querySelector('label')?.textContent||'Select';
-const wrapper=document.createElement('div');wrapper.className='input-group';
-const trigger=document.createElement('button');trigger.type='button';trigger.className='custom-select-trigger';
-const labelEl=document.createElement('span');labelEl.className='custom-select-label';labelEl.textContent=label;
-labelEl.style.cssText='position:absolute;top:-8px;left:14px;font-size:10px;font-weight:600;color:var(--accent);background:var(--bg);padding:0 4px;text-transform:uppercase;letter-spacing:0.5px';
-trigger.innerHTML=sel.value?sel.options[sel.selectedIndex].text:`<span class="cs-placeholder">${sel.options[0].text}</span>`;
+const existingGroup=sel.closest('.input-group');
+const label=existingGroup?.querySelector('label')?.textContent||'Select';
+const trigger=document.createElement('button');
+trigger.type='button';trigger.className='custom-select-trigger';
+trigger.innerHTML=sel.selectedIndex>0?sel.options[sel.selectedIndex].text:`<span class="cs-placeholder">${sel.options[0].text}</span>`;
 trigger.addEventListener('click',()=>{
-openBottomSheet(label,options.filter(o=>o),sel.value?sel.options[sel.selectedIndex].text:'',val=>{
-const idx=options.indexOf(val);if(idx>=0)sel.selectedIndex=idx;
+const curOptions=Array.from(sel.options).map(o=>o.text).filter(o=>o);
+const curVal=sel.selectedIndex>0?sel.options[sel.selectedIndex].text:'';
+openBottomSheet(label,curOptions,curVal,val=>{
+for(let i=0;i<sel.options.length;i++){if(sel.options[i].text===val){sel.selectedIndex=i;break}}
 trigger.innerHTML=val;
 sel.dispatchEvent(new Event('change'));
 });
 });
 sel.style.display='none';
-const parent=sel.parentElement;
-wrapper.appendChild(labelEl);wrapper.appendChild(trigger);wrapper.appendChild(sel);
-parent.replaceChild(wrapper,parent.contains(sel)?sel.closest('.input-group')||sel:sel);
+if(existingGroup){existingGroup.appendChild(trigger)}
+else{sel.parentElement.insertBefore(trigger,sel)}
 });
 }
 
@@ -1523,7 +1524,7 @@ list.push(name);await saveOccasions(list);input.value='';showToast(`"${name}" ad
 });
 
 // === FEEDBACK ===
-document.getElementById('sendFeedbackBtn').addEventListener('click',asyanc()=>{
+document.getElementById('sendFeedbackBtn').addEventListener('click',async()=>{
 const category=document.getElementById('feedbackCategory').value;
 const msg=document.getElementById('feedbackMsg').value.trim();
 if(!msg){showToast('Please enter a message','warning');return}
