@@ -1267,7 +1267,7 @@ document.getElementById('gateSubmit').addEventListener('click',async()=>{
 try{
 const name=document.getElementById('gateName').value.trim();
 if(!name){showToast('Enter your name','error');return}
-let url=await getSetting('scriptUrl');
+let url=(await getSetting('scriptUrl')||'').replace(/[^\x20-\x7E]/g,'').trim();
 const gateUrlInput=document.getElementById('gateUrl');
 if(!url){
 if(gateUrlInput.style.display==='none'){gateUrlInput.style.display='block';showToast('Enter the Script URL from admin','warning');return}
