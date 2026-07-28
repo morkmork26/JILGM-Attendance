@@ -1,1579 +1,1614 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#0f0e17">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>FlockTrack</title>
-<link rel="manifest" href="manifest.json">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{--bg:#0f0e17;--card:#1a1a2e;--card-border:rgba(255,255,255,0.05);--text:#eaeaea;--text-secondary:#8b8b9e;--accent:#6c63ff;--accent2:#48c6ef;--success:#00e676;--warning:#ffab00;--error:#ff5252;--glass:rgba(26,26,46,0.8);--radius:16px;--nav-h:64px;--header-h:56px}
-body.light{--bg:#f0f2f5;--card:#ffffff;--card-border:rgba(0,0,0,0.06);--text:#1a1a2e;--text-secondary:#5a5a6e;--accent:#4f46e5;--accent2:#0ea5e9;--glass:rgba(255,255,255,0.95);--success:#16a34a;--warning:#d97706;--error:#dc2626}
-body.light .header{box-shadow:0 2px 8px rgba(0,0,0,0.06);border-bottom:none}
-body.light .header::after{opacity:0.6}
-
-body.light .card,body.light .stat-card{box-shadow:0 2px 8px rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.06)}
-body.light .btn-primary{box-shadow:0 3px 12px rgba(79,70,229,0.3)}
-body.light .avatar-item{box-shadow:0 2px 6px rgba(0,0,0,0.04)}
-body.light .nav{box-shadow:0 -2px 12px rgba(0,0,0,0.06);border-top:none;background:rgba(255,255,255,0.97)}
-body.light .counter-badge{background:#f0f2f5;border-color:rgba(0,0,0,0.08)}
-body.light .toggle-pill.active{box-shadow:0 2px 6px rgba(79,70,229,0.2)}
-body.light .settings-section{background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,0.04)}
-body.light .cmodal-overlay{background:rgba(0,0,0,0.4)}
-body.light .cmodal-box{box-shadow:0 24px 48px rgba(0,0,0,0.12);border-color:rgba(0,0,0,0.08)}
-body.light .cmodal-input{background:rgba(0,0,0,0.03);border-color:rgba(0,0,0,0.12)}
-body.light .cmodal-cancel{background:rgba(0,0,0,0.05);color:var(--text-secondary)}
-html{height:100%;overflow:hidden}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);height:100%;overflow:hidden;font-weight:400;line-height:1.5;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior-y:none}
-button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
-input,select,textarea{font-family:inherit;color:var(--text);background:transparent;border:none;outline:none;font-size:16px;-webkit-user-select:auto;user-select:auto}
-.header{position:sticky;top:0;z-index:100;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--card-border)}
-.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);opacity:0.4}
-.logo{display:flex;align-items:center;gap:8px;white-space:nowrap}
-.logo .logo-name .flock{font-family:'Raleway',-apple-system,sans-serif;color:#ffffff;font-size:17px;font-weight:700;letter-spacing:0.8px}
-.logo .logo-name .track{font-family:'Raleway',-apple-system,sans-serif;color:#48c6ef;font-size:17px;font-weight:700;letter-spacing:0.8px}
-body.light .logo .logo-name .flock{color:#1a1a2e}
-body.light .logo .logo-name .track{color:#0ea5e9}
-.header-right{display:flex;align-items:center;gap:8px}
-.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--success)}
-.sync-dot.syncing{animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.3)}}
-.counter-badge{font-size:12px;font-weight:600;background:var(--card);border:1px solid var(--card-border);border-radius:20px;padding:4px 10px}
-.content{padding:16px;padding-bottom:0;height:calc(100vh - var(--header-h) - var(--nav-h));overflow:hidden;display:flex;flex-direction:column}
-.tab-content{display:none;animation:fadeIn 0.3s ease;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:16px}
-.tab-content.active{display:flex;flex-direction:column}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-around;z-index:100}
-.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 16px;position:relative;transition:all 0.2s}
-.nav-item svg{width:22px;height:22px;stroke:var(--text-secondary);fill:none;stroke-width:1.8;transition:all 0.2s}
-.nav-item span{font-size:10px;color:var(--text-secondary);font-weight:500;transition:color 0.2s}
-.nav-item.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:32px;height:3px;border-radius:0 0 3px 3px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
-.nav-item.active svg{stroke:var(--accent);filter:drop-shadow(0 0 6px rgba(108,99,255,0.4))}
-.nav-item.active span{color:var(--text)}
-.mode-pills{display:flex;background:var(--card);border-radius:12px;padding:4px;margin-bottom:16px;position:sticky;top:0;z-index:10;border:1px solid var(--card-border);flex-shrink:0}
-.mode-pill{flex:1;text-align:center;padding:10px 8px;font-size:13px;font-weight:600;border-radius:10px;transition:all 0.3s;z-index:1;position:relative}
-.mode-pill.active{color:#fff}
-.pill-slider{position:absolute;top:4px;left:4px;height:calc(100% - 8px);border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);z-index:0}
-.avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff;flex-shrink:0;position:relative;transition:transform 0.2s}
-.avatar.small{width:36px;height:36px;font-size:13px}
-.avatar.large{width:80px;height:80px;font-size:28px;margin:0 auto}
-.avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover}
-.avatar.checked-in{box-shadow:0 0 0 3px var(--success)}
-.avatar .check-badge{position:absolute;top:-2px;right:-2px;width:16px;height:16px;background:var(--success);border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg)}
-.avatar .check-badge svg{width:10px;height:10px;stroke:#fff;stroke-width:3}
-.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px;transition:transform 0.2s,box-shadow 0.2s}
-.card:active{transform:scale(0.97)}
-.avatar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:12px}
-.avatar-grid-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:12px;transition:all 0.2s;cursor:pointer}
-.avatar-grid-item:active{transform:scale(0.93)}
-.avatar-grid-item .name{font-size:11px;color:var(--text-secondary);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72px}
-.avatar-grid-item.checked .avatar{box-shadow:0 0 0 3px var(--success)}
-@keyframes checkPulse{0%{box-shadow:0 0 0 3px var(--success)}50%{box-shadow:0 0 0 8px rgba(0,230,118,0.2)}100%{box-shadow:0 0 0 3px var(--success)}}
-.filter-bar{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
-.filter-bar select{background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:8px 12px;font-size:13px;color:var(--text);appearance:none;-webkit-appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b8b9e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
-.toggle-pills{display:flex;background:var(--card);border-radius:8px;overflow:hidden;border:1px solid var(--card-border)}
-.toggle-pill{padding:6px 12px;font-size:12px;font-weight:500;transition:all 0.2s}
-.toggle-pill.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
-.filter-count{font-size:12px;color:var(--text-secondary);margin-bottom:12px}
-.input-group{position:relative;margin-bottom:20px}
-.input-group input,.input-group textarea{width:100%;padding:14px 16px;background:var(--card);border:1.5px solid var(--card-border);border-radius:14px;font-size:15px;transition:border-color 0.2s,box-shadow 0.2s}
-.input-group input:focus,.input-group textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,0.15)}
-.input-group select{width:100%;appearance:none;-webkit-appearance:none;padding:14px 44px 14px 16px;background:var(--card);border:1.5px solid var(--card-border);border-radius:14px;font-size:15px;cursor:pointer;transition:border-color 0.2s,box-shadow 0.2s}
-.input-group select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,0.15);outline:none}
-.input-group{position:relative}
-.input-group select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238b8b9e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:18px}
-.input-group input:focus,.input-group select:focus,.input-group textarea:focus{border-bottom-color:var(--accent)}
-.input-group label{position:absolute;left:16px;top:14px;font-size:14px;color:var(--text-secondary);transition:all 0.2s;pointer-events:none}
-.input-group input:focus~label,.input-group input:not(:placeholder-shown)~label,.input-group select:focus~label,.input-group textarea:focus~label,.input-group textarea:not(:placeholder-shown)~label{top:-8px;left:12px;font-size:11px;color:var(--accent)}
-.input-group .search-icon{position:absolute;right:16px;top:14px}
-.input-group .search-icon svg{width:18px;height:18px;stroke:var(--text-secondary)}
-.btn{padding:12px 24px;border-radius:12px;font-size:14px;font-weight:600;transition:all 0.2s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
-.btn:active{transform:scale(0.97)}
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 15px rgba(108,99,255,0.3)}
-.btn-primary:hover{box-shadow:0 6px 20px rgba(108,99,255,0.4)}
-.btn-danger{background:var(--error);color:#fff}
-.btn-outline{border:1px solid var(--card-border);color:var(--text)}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:200;display:none;align-items:flex-end;justify-content:center;animation:fadeIn 0.2s}
-.modal-overlay.show{display:flex}
-.modal{background:var(--card);border-radius:24px 24px 0 0;padding:20px 16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;transform:translateY(100%);animation:slideUp 0.3s forwards}
-@keyframes slideUp{to{transform:translateY(0)}}
-.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
-.modal-header h3{font-size:18px;font-weight:700}
-.modal-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center}
-.modal-close svg{width:18px;height:18px;stroke:var(--text-secondary)}
-.fab{position:fixed;bottom:calc(var(--nav-h) + 20px);right:20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(108,99,255,0.4);z-index:50;transition:transform 0.2s}
-.fab:active{transform:scale(0.9)}
-.fab svg{width:24px;height:24px;stroke:#fff;stroke-width:2}
-.fab.pulse{animation:fabPulse 2s ease-in-out 3}
-@keyframes fabPulse{0%,100%{box-shadow:0 6px 20px rgba(108,99,255,0.4)}50%{box-shadow:0 6px 30px rgba(108,99,255,0.7)}}
-.stat-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
-.stat-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:12px;text-align:center}
-.stat-card .value{font-size:22px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.stat-card .label{font-size:11px;color:var(--text-secondary);margin-top:4px}
-.chart{margin-bottom:24px}
-.chart-title{font-size:14px;font-weight:600;margin-bottom:12px}
-.chart-bars{display:flex;align-items:flex-end;gap:8px;height:160px;padding:0 4px}
-.chart-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
-.chart-bar .bar{width:100%;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,var(--accent),var(--accent2));transition:height 1s cubic-bezier(0.4,0,0.2,1);min-height:4px}
-.chart-bar .bar-label{font-size:10px;color:var(--text-secondary)}
-.chart-bar .bar-value{font-size:11px;font-weight:600}
-.member-list{display:flex;flex-direction:column;gap:8px}
-.member-row{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border:1px solid var(--card-border);border-radius:12px;transition:all 0.2s;cursor:pointer}
-.member-row:active{transform:scale(0.98)}
-.member-row .info{flex:1;min-width:0}
-.member-row .info .name{font-weight:600;font-size:14px}
-.member-row .info .sub{font-size:12px;color:var(--text-secondary)}
-.pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
-.pill-active{background:rgba(0,230,118,0.15);color:var(--success)}
-.pill-inactive{background:rgba(255,82,82,0.15);color:var(--error)}
-.detail-panel{position:fixed;inset:0;z-index:200;background:var(--bg);transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);overflow-y:auto;padding:20px}
-.detail-panel.open{transform:translateX(0)}
-.detail-panel .back-btn{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-secondary);margin-bottom:20px}
-.detail-panel .back-btn svg{width:20px;height:20px;stroke:var(--text-secondary)}
-.streak-dots{display:flex;gap:6px;margin:12px 0}
-.streak-dots .dot{width:12px;height:12px;border-radius:50%}
-.streak-dots .dot.present{background:var(--success)}
-.streak-dots .dot.absent{background:rgba(255,255,255,0.1)}
-.toast{position:fixed;bottom:calc(var(--nav-h) + 16px);left:50%;transform:translateX(-50%) translateY(100px);background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--card-border);border-radius:12px;padding:12px 20px;font-size:14px;font-weight:500;z-index:99999;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1),opacity 0.3s;display:flex;align-items:center;gap:10px;max-width:90vw;opacity:0;pointer-events:none}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
-.toast .toast-progress{position:absolute;bottom:0;left:0;height:3px;border-radius:0 0 12px 12px;background:linear-gradient(90deg,var(--accent),var(--accent2));animation:toastProgress 3s linear forwards}
-@keyframes toastProgress{from{width:100%}to{width:0}}
-.qr-scanner{width:100%;max-width:300px;margin:0 auto;border-radius:var(--radius);overflow:hidden;position:relative;background:#000}
-.qr-scanner .scan-line{position:absolute;top:0;left:10%;width:80%;height:2px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);animation:scanLine 2s linear infinite}
-@keyframes scanLine{from{top:10%}to{top:90%}}
-.qr-overlay{position:fixed;inset:0;z-index:250;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px)}
-.qr-overlay.show{display:flex}
-.qr-overlay .result{text-align:center;animation:scaleIn 0.3s;display:flex;flex-direction:column;align-items:center}
-@keyframes scaleIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}
-.qr-overlay .result .icon{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
-.qr-overlay .result .icon.success{background:rgba(0,230,118,0.2)}
-.qr-overlay .result .icon.warning{background:rgba(255,171,0,0.2)}
-.qr-overlay .result .icon svg{width:40px;height:40px}
-.search-results{margin-top:12px;display:flex;flex-direction:column;gap:8px}
-.search-result-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border:1px solid var(--card-border);border-radius:12px;cursor:pointer;transition:all 0.2s}
-.search-result-item:active{transform:scale(0.97)}
-.visitor-card{border:2px dashed var(--card-border);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;margin-top:12px}
-.visitor-card:active{transform:scale(0.97)}
-.visitor-card svg{width:32px;height:32px;stroke:var(--text-secondary);margin-bottom:8px}
-.visitor-card p{font-size:13px;color:var(--text-secondary)}
-.empty-state{text-align:center;padding:48px 24px}
-.empty-state svg{width:64px;height:64px;stroke:var(--text-secondary);margin-bottom:16px;opacity:0.5}
-.empty-state p{color:var(--text-secondary);font-size:14px}
-.settings-section{margin-bottom:24px;padding:16px;border-radius:var(--radius);background:transparent;transition:background 0.4s,box-shadow 0.4s,padding 0.4s}
-.settings-section h4{font-size:13px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;transition:color 0.4s}
-.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--card);border:1px solid var(--card-border);border-radius:12px;margin-bottom:8px;transition:background 0.4s,border-color 0.4s,box-shadow 0.4s}
-.settings-row .label{font-size:14px;transition:color 0.4s}
-.settings-row .sublabel{font-size:12px;color:var(--text-secondary);transition:color 0.4s}
-.install-banner{position:fixed;top:var(--header-h);left:0;right:0;background:linear-gradient(135deg,var(--accent),var(--accent2));padding:10px 16px;display:none;align-items:center;justify-content:space-between;z-index:90;font-size:13px;font-weight:500}
-.install-banner.show{display:flex}
-.skeleton{background:linear-gradient(90deg,var(--card) 25%,rgba(255,255,255,0.05) 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
-@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
-.follow-up-card{background:var(--card);border:1px solid rgba(255,171,0,0.2);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px}
-.follow-up-card .info .name{font-weight:600;font-size:14px}
-.follow-up-card .info .sub{font-size:12px;color:var(--warning)}
-#qr-reader{width:100%;overflow:hidden}
-#qr-reader video{width:100%!important;height:auto!important;border-radius:var(--radius)}
-#qr-reader img{display:none}
-@media(min-width:600px){.avatar-grid{grid-template-columns:repeat(5,1fr)}.content{max-width:540px;margin:0 auto}}
-.sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:9998;opacity:0;pointer-events:none;transition:opacity 0.25s}
-.sheet-overlay.show{opacity:1;pointer-events:auto}
-.sheet{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:var(--card);border-radius:20px 20px 0 0;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);max-height:70vh;display:flex;flex-direction:column}
-.sheet.show{transform:translateY(0)}
-.sheet-handle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,0.2);margin:12px auto 0}
-.sheet-header{padding:16px 20px 12px;border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between}
-.sheet-header h3{font-size:15px;font-weight:600}
-.sheet-close{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;color:var(--text-secondary);font-size:18px}
-.sheet-body{overflow-y:auto;padding:8px 0;flex:1}
-.sheet-option{padding:14px 20px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background 0.15s}
-.sheet-option:active{background:rgba(108,99,255,0.08)}
-.sheet-option.selected{color:var(--accent)}
-.sheet-option.selected::after{content:'';width:20px;height:20px;border-radius:50%;background:var(--accent);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23fff' stroke-width='3'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");background-size:12px;background-repeat:no-repeat;background-position:center;flex-shrink:0}
-.sheet-option:not(.selected)::after{content:'';width:20px;height:20px;border-radius:50%;border:2px solid var(--card-border);flex-shrink:0}
-body.light .sheet{background:#ffffff}
-body.light .sheet-handle{background:rgba(0,0,0,0.15)}
-body.light .sheet-close{background:rgba(0,0,0,0.05)}
-body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
-.custom-select-trigger{width:100%;padding:14px 44px 14px 16px;background:var(--card);border:1.5px solid var(--card-border);border-radius:14px;font-size:15px;font-weight:500;color:var(--text);cursor:pointer;transition:border-color 0.2s;position:relative;text-align:left}
-.custom-select-trigger::after{content:'';position:absolute;right:16px;top:50%;transform:translateY(-50%);width:18px;height:18px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238b8b9e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-size:contain}
-.custom-select-trigger .cs-placeholder{color:var(--text-secondary)}
-.cmodal-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:24px}
-.cmodal-overlay.show{display:flex}
-.cmodal-box{background:var(--card);border:1px solid rgba(255,255,255,0.1);border-radius:20px;width:100%;max-width:340px;padding:28px 24px 20px;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:modalIn 0.25s ease}
-@keyframes modalIn{from{opacity:0;transform:scale(0.92) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.cmodal-header{margin-bottom:12px}
-.cmodal-title{font-size:17px;font-weight:700;color:var(--text)}
-.cmodal-msg{font-size:14px;color:var(--text-secondary);line-height:1.5;margin-bottom:20px}
-.cmodal-input-wrap{margin-bottom:20px}
-.cmodal-input{width:100%;padding:12px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;font-size:15px;color:var(--text);transition:border 0.2s}
-.cmodal-input:focus{border-color:var(--accent);outline:none}
-.cmodal-actions{display:flex;gap:10px;justify-content:flex-end}
-.cmodal-btn{padding:10px 20px;border-radius:12px;font-size:14px;font-weight:600;transition:all 0.2s}
-.cmodal-cancel{background:rgba(255,255,255,0.06);color:var(--text-secondary)}
-.cmodal-cancel:active{background:rgba(255,255,255,0.12)}
-.cmodal-ok{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
-.cmodal-ok:active{opacity:0.8}
-.cmodal-ok.danger{background:linear-gradient(135deg,var(--error),#ff7043)}
-</style>
-</head>
-<body>
-
-<!-- Bottom Sheet -->
-<div class="sheet-overlay" id="sheetOverlay"></div>
-<div class="sheet" id="bottomSheet">
-<div class="sheet-handle"></div>
-<div class="sheet-header"><h3 id="sheetTitle">Select</h3><button class="sheet-close" id="sheetClose">&times;</button></div>
-<div class="sheet-body" id="sheetBody"></div>
-</div>
-
-<!-- Custom Modal -->
-<div id="customModal" class="cmodal-overlay">
-<div class="cmodal-box">
-<div class="cmodal-header">
-<h3 class="cmodal-title" id="cmodalTitle">Confirm</h3>
-</div>
-<p class="cmodal-msg" id="cmodalMsg"></p>
-<div class="cmodal-input-wrap" id="cmodalInputWrap" style="display:none">
-<input type="text" id="cmodalInput" class="cmodal-input" autocomplete="off">
-</div>
-<div class="cmodal-actions">
-<button class="cmodal-btn cmodal-cancel" id="cmodalCancel">Cancel</button>
-<button class="cmodal-btn cmodal-ok" id="cmodalOk">Confirm</button>
-</div>
-</div>
-</div>
-
-<!-- Access Gate -->
-<div id="accessGate" style="position:fixed;inset:0;z-index:10000;background:var(--bg);display:none;align-items:center;justify-content:center;padding:24px">
-<div style="text-align:center;max-width:340px;width:100%">
-<div style="width:64px;height:64px;border-radius:50%;background:rgba(108,99,255,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 20px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
-<div id="gateRegister">
-<h3 style="font-size:20px;margin-bottom:8px">Device Registration</h3>
-<p style="color:var(--text-secondary);font-size:14px;margin-bottom:24px">Enter your name to request access</p>
-<input type="text" id="gateName" placeholder="Your name" style="width:100%;padding:14px 16px;background:var(--card);border:1px solid var(--card-border);border-radius:12px;font-size:15px;color:var(--text);margin-bottom:12px">
-<input type="url" id="gateUrl" placeholder="Script URL (from admin)" style="width:100%;padding:14px 16px;background:var(--card);border:1px solid var(--card-border);border-radius:12px;font-size:15px;color:var(--text);margin-bottom:16px;display:none">
-<button class="btn btn-primary" style="width:100%;padding:14px;font-size:15px;border-radius:12px" id="gateSubmit">Request Access</button>
-</div>
-<div id="gatePending" style="display:none">
-<h3 style="font-size:20px;margin-bottom:8px">Waiting for Approval</h3>
-<p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px">Your device has been registered. Please wait for admin approval.</p>
-<div class="sync-dot syncing" style="width:12px;height:12px;margin:0 auto;background:var(--accent)"></div>
-</div>
-<div id="gateBlocked" style="display:none">
-<h3 style="font-size:20px;margin-bottom:8px;color:var(--error)">Access Denied</h3>
-<p style="color:var(--text-secondary);font-size:14px">Your device has been blocked. Contact admin.</p>
-</div>
-</div>
-</div>
-
-<!-- What's New Modal -->
-<div id="whatsNewModal" style="position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:24px">
-<div style="background:var(--card);border:1px solid rgba(255,255,255,0.1);border-radius:20px;max-width:400px;width:100%;max-height:80vh;overflow-y:auto;padding:28px">
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-<h3 style="font-size:18px;font-weight:700">What's New</h3>
-<button onclick="document.getElementById('whatsNewModal').style.display='none'" style="background:none;border:none;color:var(--text-secondary);font-size:20px;cursor:pointer">&times;</button>
-</div>
-<div id="changelogContent"></div>
-</div>
-</div>
-
-<div class="header">
-<div class="logo"><span style="display:inline-block;width:32px;height:32px;border-radius:50%;overflow:hidden;background:#fff;flex-shrink:0"><img src="logo.jpg" alt="JILGM" style="width:100%;height:100%;object-fit:cover;transform:scale(1.55);object-position:center center"></span><span class="logo-name"><span class="flock">Flock</span><span class="track">Track</span></span></div>
-<div class="header-right">
-<div class="sync-dot" id="syncDot"></div>
-<div class="counter-badge" id="counterBadge">0/0</div>
-</div>
-</div>
-
-<div class="install-banner" id="installBanner">
-<span>Install App for offline use</span>
-<button class="btn" style="padding:6px 14px;font-size:12px;background:rgba(255,255,255,0.2);border-radius:8px" id="installBtn">Install</button>
-<button style="padding:4px" id="dismissInstall"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-</div>
-
-<div class="content">
-<div class="tab-content active" id="tabCheckin">
-<div id="occasionBanner" style="display:none;text-align:center;margin-bottom:12px">
-<span style="background:var(--accent);color:#fff;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600" id="occasionLabel"></span>
-</div>
-<div class="mode-pills" id="modePills">
-<div class="pill-slider" id="pillSlider" style="width:33.33%"></div>
-<div class="mode-pill active" data-mode="qr">QR Scan</div>
-<div class="mode-pill" data-mode="tap">Quick Tap</div>
-<div class="mode-pill" data-mode="search">Search</div>
-</div>
-
-<div id="modeQR">
-<div class="qr-scanner">
-<div id="qr-reader"></div>
-<div class="scan-line"></div>
-</div>
-<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px">
-<p style="font-size:13px;color:var(--text-secondary);margin:0">Point camera at member QR code</p>
-<button class="btn btn-outline" style="padding:6px 12px;font-size:11px;border-radius:8px" onclick="flipCamera()">Flip Camera</button>
-</div>
-</div>
-
-<div id="modeTap" style="display:none">
-<div class="filter-bar">
-<select id="ministryFilter"><option value="">All Ministries</option></select>
-<div class="toggle-pills">
-<div class="toggle-pill active" data-show="all">All</div>
-<div class="toggle-pill" data-show="nothere">Not Here</div>
-</div>
-</div>
-<div class="filter-count" id="tapCount">Showing 0 members</div>
-<div class="avatar-grid" id="avatarGrid"></div>
-</div>
-
-<div id="modeSearch" style="display:none">
-<div class="input-group">
-<input type="text" id="searchInput" placeholder=" " autocomplete="off">
-<label>Search member name...</label>
-<div class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
-</div>
-<div class="search-results" id="searchResults"></div>
-
-</div>
-</div>
-
-<div class="tab-content" id="tabMembers">
-<div class="input-group" style="margin-bottom:12px">
-<input type="text" id="memberSearch" placeholder=" " autocomplete="off">
-<label>Search members...</label>
-</div>
-<div class="filter-bar" id="memberFilters">
-<div class="toggle-pills">
-<div class="toggle-pill active" data-filter="all">All</div>
-<div class="toggle-pill" data-filter="active">Active</div>
-<div class="toggle-pill" data-filter="inactive">Inactive</div>
-</div>
-<select id="memberMinistryFilter"><option value="">All Ministries</option></select>
-<select id="memberOutreachFilter"><option value="">All Outreaches</option><option>Sto. Tomas</option><option>Tanauan</option><option>Naujan</option><option>Socorro</option></select>
-</div>
-<div class="filter-count" id="memberCount">0 members</div>
-<div class="member-list" id="memberList"></div>
-</div>
-
-<div class="tab-content" id="tabReports">
-<div style="margin-bottom:16px"><button class="btn btn-primary" style="width:100%;padding:14px;font-size:14px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2))" id="generateReportBtn">Generate Report</button></div>
-<div class="stat-cards" id="statCards">
-<div class="stat-card"><div class="value" id="statToday">0</div><div class="label">Checked In Today</div></div>
-<div class="stat-card"><div class="value" id="statMembers">0</div><div class="label">Total Members</div></div>
-<div class="stat-card"><div class="value" id="statChildren">-</div><div class="label">Children Today</div></div>
-<div class="stat-card"><div class="value" id="statVisitors">0</div><div class="label">New This Month</div></div>
-<div class="stat-card"><div class="value" id="statAvg">0</div><div class="label">Weekly Average</div></div>
-</div>
-<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px">
-<label style="font-size:13px;color:var(--text-secondary);white-space:nowrap">Children count:</label>
-<input type="number" id="childrenInput" placeholder="0" min="0" style="width:70px;padding:8px 12px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;font-size:16px;text-align:center">
-<button class="btn btn-outline" style="padding:6px 14px;font-size:12px" id="saveChildrenBtn">Save</button>
-</div>
-<div style="margin-bottom:24px">
-<div class="chart-title">Ministry Breakdown</div>
-<div id="ministryBreakdown"></div>
-</div>
-<div class="chart">
-<div class="chart-title">Weekly Attendance</div>
-<div class="chart-bars" id="chartBars"></div>
-</div>
-<div>
-<div class="chart-title" style="color:var(--warning)">Needs Follow-Up</div>
-<div id="followUpList"></div>
-</div>
-</div>
-
-<div class="tab-content" id="tabSettings">
-<div class="settings-section">
-<h4>Appearance</h4>
-<div class="settings-row" style="justify-content:space-between;align-items:center">
-<span style="font-size:14px">Dark Mode</span>
-<button id="themeToggle" style="width:36px;height:36px;border-radius:50%;background:var(--card);border:1px solid var(--card-border);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.4s,border-color 0.4s"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--text-secondary);transition:color 0.4s"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
-</div>
-</div>
-<div class="settings-section">
-<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'block':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Connection <span style="font-size:14px;color:var(--text-secondary)">+</span></h4>
-<div style="display:none">
-<div class="input-group">
-<input type="text" id="scriptUrl" placeholder=" ">
-<label>Google Apps Script URL</label>
-</div>
-<div style="display:flex;gap:8px;align-items:center">
-<button class="btn btn-outline" id="testConnection">Test Connection</button>
-<button class="btn btn-outline" id="unlockUrlBtn" style="display:none;padding:6px 12px;font-size:11px;color:var(--warning)">Edit URL</button>
-<span id="connectionStatus" style="font-size:12px"></span>
-</div>
-</div>
-</div>
-<div class="settings-section">
-<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'block':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Report <span style="font-size:14px;color:var(--text-secondary)">+</span></h4>
-<div style="display:none">
-<div class="settings-row" style="flex-direction:column;align-items:stretch;gap:8px">
-<div class="input-group"><input type="email" id="reportEmail" placeholder=" "><label>Report Email</label></div>
-<div class="input-group"><input type="text" id="defaultOutreach" placeholder=" " value="Sto. Tomas"><label>Default Outreach Location</label></div>
-</div>
-</div>
-</div>
-<div class="settings-section">
-<h4>Sync</h4>
-<div class="settings-row">
-<div><div class="label">Last Synced</div><div class="sublabel" id="lastSynced">Never</div></div>
-<button class="btn btn-primary" style="padding:8px 16px;font-size:12px" id="syncNowBtn">Sync Now</button>
-</div>
-<div class="settings-row">
-<div><div class="label">Pending Changes</div><div class="sublabel" id="pendingCount">0 items</div></div>
-</div>
-</div>
-<div class="settings-section">
-<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'block':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Data <span style="font-size:14px;color:var(--text-secondary)">+</span></h4>
-<div style="display:none">
-<div class="settings-row"><div class="label">Export Data</div><button class="btn btn-outline" style="padding:8px 16px;font-size:12px" id="exportBtn">Export CSV</button></div>
-</div>
-</div>
-<div class="settings-section">
-<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'flex':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Ministries <span style="font-size:14px;color:var(--text-secondary)">+</span></h4>
-<div class="settings-row" style="flex-wrap:wrap;gap:8px;display:none">
-<div id="ministryTags" style="display:flex;flex-wrap:wrap;gap:6px;width:100%;margin-bottom:8px"></div>
-<div style="display:flex;gap:8px;width:100%">
-<input type="text" id="newMinistryInput" placeholder="Add ministry name..." style="flex:1;padding:8px 12px;border-bottom:2px solid var(--card-border);font-size:14px">
-<button class="btn btn-primary" style="padding:8px 16px;font-size:12px" id="addMinistryBtn">Add</button>
-</div>
-</div>
-</div>
-<div class="settings-section">
-<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'flex':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Occasions <span style="font-size:14px;color:var(--text-secondary)">+</span></h4>
-<div class="settings-row" style="flex-wrap:wrap;gap:8px;display:none">
-<div id="occasionTags" style="display:flex;flex-wrap:wrap;gap:6px;width:100%;margin-bottom:8px"></div>
-<div style="display:flex;gap:8px;width:100%">
-<input type="text" id="newOccasionInput" placeholder="Add occasion name..." style="flex:1;padding:8px 12px;border-bottom:2px solid var(--card-border);font-size:14px">
-<button class="btn btn-primary" style="padding:8px 16px;font-size:12px" id="addOccasionBtn">Add</button>
-</div>
-</div>
-</div>
-<div class="settings-section">
-<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'flex':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Feedback <span style="font-size:14px;color:var(--text-secondary)">+</span></h4>
-<div style="display:none;flex-direction:column;gap:12px">
-<select id="feedbackCategory" style="padding:10px 12px;border-radius:8px;background:var(--card);border:1px solid var(--card-border);color:var(--text);font-size:13px">
-<option value="Improve App">Improve App</option>
-<option value="Report Bug">Report Bug</option>
-<option value="Suggestion">Suggestion</option>
-</select>
-<textarea id="feedbackMsg" placeholder="Tell us what you think..." style="padding:12px;border-radius:8px;background:var(--card);border:1px solid var(--card-border);color:var(--text);font-size:13px;min-height:80px;resize:vertical"></textarea>
-<button class="btn btn-primary" style="padding:10px 16px;font-size:12px" id="sendFeedbackBtn">Send Feedback</button>
-</div>
-</div>
-<div class="settings-section">
-<h4>About</h4>
-<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.2.0</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
-
-</div>
-</div>
-</div>
-
-<button class="fab pulse" id="fab" style="display:none">
-<svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-</button>
-
-<nav class="bottom-nav">
-<button class="nav-item active" data-tab="tabCheckin">
-<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-<span>Check-In</span>
-</button>
-<button class="nav-item" data-tab="tabMembers">
-<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-<span>Members</span>
-</button>
-<button class="nav-item" data-tab="tabReports">
-<svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
-<span>Reports</span>
-</button>
-<button class="nav-item" data-tab="tabSettings">
-<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68 1.65 1.65 0 0010 3.17V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-<span>Settings</span>
-</button>
-</nav>
-
-<div class="detail-panel" id="detailPanel">
-<button class="back-btn" id="detailBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back</button>
-<div id="detailContent"></div>
-</div>
-
-<div class="modal-overlay" id="modalOverlay">
-<div class="modal" id="modalContent"></div>
-</div>
-
-<div class="qr-overlay" id="qrOverlay"></div>
-
-<div class="toast" id="toast"><span id="toastMsg"></span><div class="toast-progress"></div></div>
-
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-<script>
-document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT'&&e.target.tagName!=='TEXTAREA')e.preventDefault()});
-const DB_NAME='jilgm_attendance';const DB_VERSION=1;let db;
-const today=()=>{const d=new Date();return d.toISOString().split('T')[0]};
-const formatDate=(d)=>{const opts={weekday:'short',month:'short',day:'numeric'};return new Date(d+'T00:00:00').toLocaleDateString('en-US',opts)};
-
-
-function getAvatarColor(name){
-const colors=['#6c63ff','#00bcd4','#ff6b6b','#feca57','#48dbfb','#ff9ff3','#54a0ff','#5f27cd','#01a3a4','#f368e0','#ee5a24','#009432'];
-let hash=0;for(let i=0;i<name.length;i++)hash=name.charCodeAt(i)+((hash<<5)-hash);
-return colors[Math.abs(hash)%colors.length];
-}
-function getInitials(name){return name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)}
-function getAge(birthday){
-if(!birthday)return 0;
-const b=new Date(birthday+'T00:00:00');const now=new Date();
-let age=now.getFullYear()-b.getFullYear();
-const m=now.getMonth()-b.getMonth();
-if(m<0||(m===0&&now.getDate()<b.getDate()))age--;
-return age;
-}
-function checkBirthdaysToday(){
-const now=new Date();const todayM=now.getMonth();const todayD=now.getDate();
-const bdays=allMembers.filter(m=>{
-if(!m.birthday||m.status==='inactive')return false;
-const b=new Date(m.birthday+'T00:00:00');
-return b.getMonth()===todayM&&b.getDate()===todayD;
-});
-if(bdays.length>0){
-const names=bdays.map(m=>m.name).join(', ');
-const age=bdays.length===1?getAge(bdays[0].birthday):'';
-const msg=bdays.length===1?`${names} turns ${age} today!`:`${bdays.length} birthdays today: ${names}`;
-showToast('🎂 '+msg,'success',6000);
-}
-}
-function getAgeGroup(member){
-const age=getAge(member.birthday);
-if(age<=12)return 'Children';
-if(age<=17)return 'Youth';
-const isParent=member.hasChildren==='Yes';
-const isMarriedOrSep=member.civilStatus==='Married'||member.civilStatus==='Widow'||member.civilStatus==='Separated';
-if(isParent||isMarriedOrSep){return member.gender==='Female'?'Mothers':'Fathers'}
-return 'YPro';
-}
-function createAvatar(member,size=''){
-const cls='avatar'+(size?' '+size:'');
-
-return `<div class="${cls}" style="background:${getAvatarColor(member.name)}">${getInitials(member.name)}</div>`;
-}
-
-function openDB(){return new Promise((resolve,reject)=>{
-const req=indexedDB.open(DB_NAME,DB_VERSION);
-req.onupgradeneeded=(e)=>{const d=e.target.result;
-if(!d.objectStoreNames.contains('members'))d.createObjectStore('members',{keyPath:'id'});
-if(!d.objectStoreNames.contains('attendance')){const s=d.createObjectStore('attendance',{keyPath:'id',autoIncrement:true});s.createIndex('date','date')}
-if(!d.objectStoreNames.contains('pendingSync'))d.createObjectStore('pendingSync',{keyPath:'id',autoIncrement:true});
-if(!d.objectStoreNames.contains('settings'))d.createObjectStore('settings',{keyPath:'key'});
-};req.onsuccess=(e)=>{db=e.target.result;resolve(db)};req.onerror=(e)=>reject(e);
-})}
-
-function dbGet(store){return new Promise((r)=>{const tx=db.transaction(store,'readonly');const s=tx.objectStore(store);const req=s.getAll();req.onsuccess=()=>r(req.result)})}
-function dbPut(store,data){return new Promise((r)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).put(data);tx.oncomplete=()=>r()})}
-function dbDelete(store,key){return new Promise((r)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).delete(key);tx.oncomplete=()=>r()})}
-function dbClear(store){return new Promise((r)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).clear();tx.oncomplete=()=>r()})}
-
-const DEMO_MEMBERS=[];
-
-
-
-let toastTimer=null;
-function showToast(msg,type='success'){
-const t=document.getElementById('toast');const m=document.getElementById('toastMsg');
-m.textContent=msg;t.style.borderLeft=`3px solid var(--${type})`;
-if(toastTimer)clearTimeout(toastTimer);
-t.classList.add('show');toastTimer=setTimeout(()=>{t.classList.remove('show');toastTimer=null},3000);
-}
-
-let activeSheetSelect=null;
-function openBottomSheet(title,options,currentVal,onSelect){
-const overlay=document.getElementById('sheetOverlay');
-const sheet=document.getElementById('bottomSheet');
-document.getElementById('sheetTitle').textContent=title;
-const body=document.getElementById('sheetBody');
-body.innerHTML=options.map(opt=>`<div class="sheet-option${opt===currentVal?' selected':''}" data-val="${opt}">${opt}</div>`).join('');
-body.querySelectorAll('.sheet-option').forEach(el=>{
-el.addEventListener('click',()=>{onSelect(el.dataset.val);setTimeout(closeBottomSheet,150)});
-});
-overlay.classList.add('show');sheet.classList.add('show');
-}
-function closeBottomSheet(){
-document.getElementById('sheetOverlay').classList.remove('show');
-document.getElementById('bottomSheet').classList.remove('show');
-}
-document.getElementById('sheetOverlay').addEventListener('click',closeBottomSheet);
-document.getElementById('sheetClose').addEventListener('click',closeBottomSheet);
-
-function initCustomSelects(container){
-container.querySelectorAll('select:not([data-cs-init])').forEach(sel=>{
-sel.setAttribute('data-cs-init','1');
-const options=Array.from(sel.options).map(o=>o.text);
-const existingGroup=sel.closest('.input-group');
-const label=existingGroup?.querySelector('label')?.textContent||'Select';
-const trigger=document.createElement('button');
-trigger.type='button';trigger.className='custom-select-trigger';
-trigger.innerHTML=sel.selectedIndex>0?sel.options[sel.selectedIndex].text:`<span class="cs-placeholder">${sel.options[0].text}</span>`;
-trigger.addEventListener('click',()=>{
-const curOptions=Array.from(sel.options).map(o=>o.text).filter(o=>o);
-const curVal=sel.selectedIndex>0?sel.options[sel.selectedIndex].text:'';
-openBottomSheet(label,curOptions,curVal,val=>{
-for(let i=0;i<sel.options.length;i++){if(sel.options[i].text===val){sel.selectedIndex=i;break}}
-trigger.innerHTML=val;
-sel.dispatchEvent(new Event('change'));
-});
-});
-sel.style.display='none';
-if(existingGroup){existingGroup.appendChild(trigger)}
-else{sel.parentElement.insertBefore(trigger,sel)}
-});
-}
-
-function customConfirm(msg,{title='Confirm',okText='Confirm',danger=false}={}){
-return new Promise((resolve)=>{
-const overlay=document.getElementById('customModal');
-document.getElementById('cmodalTitle').textContent=title;
-document.getElementById('cmodalMsg').textContent=msg;
-document.getElementById('cmodalInputWrap').style.display='none';
-const okBtn=document.getElementById('cmodalOk');
-okBtn.textContent=okText;
-okBtn.classList.toggle('danger',danger);
-overlay.classList.add('show');
-const cleanup=()=>{overlay.classList.remove('show');okBtn.onclick=null;document.getElementById('cmodalCancel').onclick=null};
-okBtn.onclick=()=>{cleanup();resolve(true)};
-document.getElementById('cmodalCancel').onclick=()=>{cleanup();resolve(false)};
-});
-}
-function customPrompt(msg,{title='Input Required',okText='Confirm',placeholder=''}={}){
-return new Promise((resolve)=>{
-const overlay=document.getElementById('customModal');
-document.getElementById('cmodalTitle').textContent=title;
-document.getElementById('cmodalMsg').textContent=msg;
-const inputWrap=document.getElementById('cmodalInputWrap');
-const input=document.getElementById('cmodalInput');
-inputWrap.style.display='block';
-input.value='';input.placeholder=placeholder;
-const okBtn=document.getElementById('cmodalOk');
-okBtn.textContent=okText;okBtn.classList.remove('danger');
-overlay.classList.add('show');
-setTimeout(()=>input.focus(),100);
-const cleanup=()=>{overlay.classList.remove('show');okBtn.onclick=null;document.getElementById('cmodalCancel').onclick=null};
-okBtn.onclick=()=>{cleanup();resolve(input.value)};
-document.getElementById('cmodalCancel').onclick=()=>{cleanup();resolve(null)};
-});
-}
-
-function playBeep(){
-try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const osc=ctx.createOscillator();const gain=ctx.createGain();
-osc.connect(gain);gain.connect(ctx.destination);osc.frequency.value=800;osc.type='sine';gain.gain.value=0.3;
-osc.start();osc.stop(ctx.currentTime+0.15)}catch(e){}
-}
-
-let currentTab='tabCheckin';let currentMode='qr';let qrScanner=null;let allMembers=[];let todayAttendance=[];
-
-function switchTab(tabId){
-document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-document.getElementById(tabId).classList.add('active');
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
-currentTab=tabId;
-const fab=document.getElementById('fab');
-fab.style.display=tabId==='tabMembers'?'flex':'none';
-if(tabId==='tabCheckin'&&currentMode==='tap')renderAvatarGrid();
-if(tabId==='tabMembers')renderMemberList();
-if(tabId==='tabReports')renderReports();
-if(tabId==='tabSettings')loadSettings();
-if(tabId!=='tabCheckin'&&qrScanner){try{qrScanner.stop()}catch(e){}}
-}
-
-document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>switchTab(n.dataset.tab)));
-
-function switchMode(mode){
-currentMode=mode;
-document.querySelectorAll('.mode-pill').forEach((p,i)=>{p.classList.toggle('active',p.dataset.mode===mode)});
-const idx=['qr','tap','search'].indexOf(mode);
-document.getElementById('pillSlider').style.transform=`translateX(${idx*100}%)`;
-document.getElementById('modeQR').style.display=mode==='qr'?'block':'none';
-document.getElementById('modeTap').style.display=mode==='tap'?'block':'none';
-document.getElementById('modeSearch').style.display=mode==='search'?'block':'none';
-if(mode==='qr')startQR();else if(qrScanner){try{qrScanner.stop()}catch(e){}}
-if(mode==='tap')renderAvatarGrid();
-}
-document.querySelectorAll('.mode-pill').forEach(p=>p.addEventListener('click',()=>switchMode(p.dataset.mode)));
-
-let cameraFacing='environment';
-function startQR(){
-if(qrScanner)try{qrScanner.stop()}catch(e){}
-const el=document.getElementById('qr-reader');el.innerHTML='';
-qrScanner=new Html5Qrcode('qr-reader');
-qrScanner.start({facingMode:cameraFacing},{fps:10,qrbox:220},onQRScan,()=>{}).then(()=>{
-const vid=document.querySelector('#qr-reader video');
-if(vid)vid.style.transform=cameraFacing==='user'?'scaleX(-1)':'none';
-}).catch(()=>{
-el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);font-size:13px;padding:20px;text-align:center">Camera not available. Try Quick Tap or Search mode.</div>';
-});
-}
-function flipCamera(){
-cameraFacing=cameraFacing==='environment'?'user':'environment';
-startQR();
-}
-
-async function onQRScan(decoded){
-if(qrScanner)try{qrScanner.pause(true)}catch(e){}
-const member=allMembers.find(m=>m.id===decoded);
-if(!member){setTimeout(()=>{if(qrScanner)try{qrScanner.resume()}catch(e){}},1500);return}
-const already=todayAttendance.find(a=>a.memberId===member.id);
-const overlay=document.getElementById('qrOverlay');
-if(already){
-overlay.innerHTML=`<div class="result"><div class="icon warning"><svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><h3 style="font-size:22px">${member.name.split(' ')[0]}</h3><p style="color:var(--text-secondary);margin-top:4px;font-size:13px">${member.name}</p><p style="color:var(--warning);margin-top:8px;font-size:15px;font-weight:600">Already checked in today</p></div>`;
-}else{
-const ok=await checkInMember(member);
-if(ok===false){setTimeout(()=>{if(qrScanner)try{qrScanner.resume()}catch(e){}},500);return}
-playBeep();
-const welcomeMsgs=['We\'re glad you\'re here today.','Great to see you!','You made it! Have a blessed day.','So happy you\'re here!','Your presence matters.','Good to have you with us!','Thanks for showing up today!','You\'re in the right place.','Let\'s make today count!','Let\'s worship together!','What a blessing to see you!','You\'re exactly where you need to be.','Today is better because you\'re here!','So glad you made time for this!','Glad you chose to be here!','Your faithfulness inspires us!'];
-const wMsg=welcomeMsgs[Math.floor(Math.random()*welcomeMsgs.length)];
-overlay.innerHTML=`<div class="result"><div class="icon success"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><h3 style="font-size:22px">Welcome, ${member.name.split(' ')[0]}!</h3><p style="color:var(--text-secondary);margin-top:4px;font-size:13px">${member.name}</p><p style="color:var(--text-secondary);margin-top:8px;font-size:15px">${wMsg}</p><p style="color:var(--success);margin-top:6px;font-size:13px;font-weight:600">Checked in successfully</p></div>`;
-}
-overlay.classList.add('show');
-setTimeout(()=>{overlay.classList.remove('show');if(qrScanner)try{qrScanner.resume()}catch(e){}},2000);
-}
-
-let sundayConfirmed=false;
-function isSunday(){return new Date().getDay()===0}
-async function checkInMember(member){
-if(!isSunday()&&!sundayConfirmed&&currentOccasion==='Sunday Service'){
-if(!await customConfirm('Today is not Sunday. Are you sure you want to record attendance?',{title:'Non-Sunday Check-In',okText:'Proceed'}))return false;
-sundayConfirmed=true;
-}
-if(isSunday()&&currentOccasion!=='Sunday Service'&&!sundayConfirmed){
-if(!await customConfirm(`Today is Sunday. Are you sure you want to proceed with "${currentOccasion}"?`,{title:'Non-Default Occasion',okText:'Proceed'}))return false;
-sundayConfirmed=true;
-}
-if(member.status==='inactive'){
-member.status='active';
-member.membershipStatus='Returning Guest';
-await dbPut('members',member);
-const idx=allMembers.findIndex(m=>m.id===member.id);
-if(idx>=0)allMembers[idx]=member;
-}
-const record={memberId:member.id,memberName:member.name,date:today(),timestamp:Date.now(),checkedInBy:'app',occasion:currentOccasion};
-await dbPut('attendance',record);todayAttendance.push(record);updateCounter();
-await checkAndGraduate(member);
-const url=await getSetting('scriptUrl');
-if(url){
-try{await fetch(url,{method:'POST',body:JSON.stringify({action:'checkIn',...record}),headers:{'Content-Type':'text/plain'}});
-}catch(e){await dbPut('pendingSync',{action:'checkIn',payload:record,createdAt:Date.now()})}
-}
-return true;
-}
-
-async function loadTodayAttendance(){
-const all=await dbGet('attendance');todayAttendance=all.filter(a=>a.date===today());updateCounter();
-}
-
-async function getMemberAttendCount(memberId){
-const all=await dbGet('attendance');
-const unique=new Set(all.filter(a=>a.memberId===memberId).map(a=>a.date));
-return unique.size;
-}
-
-function isNewMember(member){
-return member.membershipStatus==='First Time Guest';
-}
-function isNewOrReturning(member){
-return member.membershipStatus==='First Time Guest'||member.membershipStatus==='Returning Guest';
-}
-
-async function checkAndGraduate(member){
-if(!isNewOrReturning(member))return;
-const count=await getMemberAttendCount(member.id);
-if(count>=4){
-member.membershipStatus='Regular Attendee';
-await dbPut('members',member);
-const idx=allMembers.findIndex(m=>m.id===member.id);
-if(idx>=0)allMembers[idx]=member;
-}
-}
-
-function getFirstSundays(count){
-const result=[];const now=new Date();
-for(let i=0;i<count;i++){
-const d=new Date(now.getFullYear(),now.getMonth()-i,1);
-while(d.getDay()!==0)d.setDate(d.getDate()+1);
-result.push(d.toISOString().split('T')[0]);
-}
-return result;
-}
-
-async function checkInactiveMembers(){
-const allAtt=await dbGet('attendance');
-const d=new Date();
-const sundays=[];
-for(let i=0;i<8;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);sundays.push(sun.toISOString().split('T')[0])}
-const firstSundays=getFirstSundays(8);
-const sixMonthsAgo=new Date(d);sixMonthsAgo.setMonth(sixMonthsAgo.getMonth()-6);
-for(const member of allMembers){
-if(member.status==='inactive')continue;
-const memberAtt=allAtt.filter(a=>a.memberId===member.id);
-if(memberAtt.length===0)continue;
-if(member.outreach==='Naujan'||member.outreach==='Socorro'){
-continue;
-}else if(member.outreach==='Tanauan'){
-const attended=memberAtt.filter(a=>firstSundays.includes(a.date));
-if(attended.length===0)member.status='inactive';
-}else{
-const attended=memberAtt.filter(a=>sundays.includes(a.date));
-if(attended.length===0)member.status='inactive';
-}
-if(member.status==='inactive')await dbPut('members',member);
-}
-}
-
-function updateCounter(){
-const total=allMembers.length;const checked=todayAttendance.length;
-document.getElementById('counterBadge').textContent=`${checked}/${total}`;
-}
-
-async function renderAvatarGrid(){
-const ministry=document.getElementById('ministryFilter').value;
-const showAll=document.querySelector('#modeTap .toggle-pill.active').dataset.show==='all';
-let filtered=allMembers.filter(m=>m.status==='active'||m.status==='Active');
-if(ministry)filtered=filtered.filter(m=>m.ministry===ministry);
-if(!showAll)filtered=filtered.filter(m=>!todayAttendance.find(a=>a.memberId===m.id));
-document.getElementById('tapCount').textContent=`Showing ${filtered.length} members`;
-const grid=document.getElementById('avatarGrid');
-grid.innerHTML=filtered.map(m=>{
-const checked=todayAttendance.find(a=>a.memberId===m.id);
-const isNew=isNewOrReturning(m);
-return `<div class="avatar-grid-item${checked?' checked':''}" data-id="${m.id}">
-<div class="avatar" style="background:${getAvatarColor(m.name)}">${getInitials(m.name)}${checked?'<div class="check-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="3"/></svg></div>':''}${isNew?'<div class="check-badge" style="background:var(--warning);left:-2px;right:auto"><span style="font-size:7px;font-weight:700;color:#000">N</span></div>':''}</div>
-<div class="name">${m.name.split(' ')[0]}</div></div>`;
-}).join('');
-grid.querySelectorAll('.avatar-grid-item').forEach(item=>{
-item.addEventListener('click',async()=>{
-const id=item.dataset.id;const member=allMembers.find(m=>m.id===id);
-if(todayAttendance.find(a=>a.memberId===id)){showToast(`${member.name} already checked in`,'warning');return}
-const ok2=await checkInMember(member);if(ok2===false)return;
-playBeep();showToast(`${member.name} checked in!`);
-item.classList.add('checked');
-const av=item.querySelector('.avatar');av.style.animation='checkPulse 0.6s';
-av.insertAdjacentHTML('beforeend','<div class="check-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="3"/></svg></div>');
-});
-});
-}
-
-document.getElementById('ministryFilter').addEventListener('change',renderAvatarGrid);
-initCustomSelects(document.getElementById('tabCheckin'));
-document.querySelectorAll('#modeTap .toggle-pill').forEach(p=>p.addEventListener('click',(e)=>{
-document.querySelectorAll('#modeTap .toggle-pill').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');renderAvatarGrid();
-}));
-
-let searchTimeout;
-document.getElementById('searchInput').addEventListener('input',(e)=>{
-clearTimeout(searchTimeout);searchTimeout=setTimeout(()=>{
-const q=e.target.value.toLowerCase().trim();const res=document.getElementById('searchResults');
-if(!q){res.innerHTML='';return}
-const matches=allMembers.filter(m=>m.name.toLowerCase().includes(q)).slice(0,10);
-res.innerHTML=matches.map(m=>{
-const checked=todayAttendance.find(a=>a.memberId===m.id);
-return `<div class="search-result-item" data-id="${m.id}">${createAvatar(m,'small')}<div class="info"><div class="name">${m.name}</div><div class="sub">${m.dgroup}${m.ministry?' / '+m.ministry:''}${checked?' - Already here':''}</div></div></div>`;
-}).join('');
-res.querySelectorAll('.search-result-item').forEach(item=>{
-item.addEventListener('click',async()=>{
-const id=item.dataset.id;const member=allMembers.find(m=>m.id===id);
-if(todayAttendance.find(a=>a.memberId===id)){showToast(`${member.name} already checked in`,'warning');return}
-const ok3=await checkInMember(member);if(ok3===false)return;
-playBeep();showToast(`${member.name} checked in!`);
-e.target.value='';res.innerHTML='';
-});
-});
-},200);
-});
-
-
-
-function showModal(type,data=null){
-const overlay=document.getElementById('modalOverlay');const content=document.getElementById('modalContent');
-if(type==='member'){
-const classes=['Class 101','Class 102','Class 201','Class 301','Class 401','SOP 1','SOP 2','SOW','PCS'];
-const memberClasses=data&&data.classes?data.classes:[];
-content.innerHTML=`<div class="modal-header"><h3>${data?'Edit Member':'Add Member'}</h3><button class="modal-close" id="closeModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-<div class="input-group"><input type="text" id="memName" placeholder=" " value="${data?data.name:''}"><label>Full Name</label></div>
-<div class="input-group"><select id="memOutreach"><option value="">Select Outreach</option><option${data&&data.outreach==='Sto. Tomas'?' selected':''}>Sto. Tomas</option><option${data&&data.outreach==='Tanauan'?' selected':''}>Tanauan</option><option${data&&data.outreach==='Naujan'?' selected':''}>Naujan</option><option${data&&data.outreach==='Socorro'?' selected':''}>Socorro</option></select></div>
-<div class="input-group"><input type="email" id="memEmail" placeholder=" " value="${data?data.email||'':''}"><label>Email</label></div>
-<div class="input-group"><input type="tel" id="memPhone" placeholder=" " value="${data?data.phone||'':''}"><label>Phone</label></div>
-<div class="input-group"><input type="text" id="memAddress" placeholder=" " value="${data?data.address||'':''}"><label>Address</label></div>
-<div class="input-group"><input type="date" id="memBday" value="${data?data.birthday||'':''}"><label style="top:-8px;font-size:11px;color:var(--accent)">Birthday</label></div>
-<div class="input-group"><select id="memGender"><option value="">Select Gender</option><option${data&&data.gender==='Male'?' selected':''}>Male</option><option${data&&data.gender==='Female'?' selected':''}>Female</option></select></div>
-<div class="input-group"><select id="memCivilStatus"><option value="">Civil Status</option><option${data&&data.civilStatus==='Single'?' selected':''}>Single</option><option${data&&data.civilStatus==='Married'?' selected':''}>Married</option><option${data&&data.civilStatus==='Widow'?' selected':''}>Widow</option><option${data&&data.civilStatus==='Separated'?' selected':''}>Separated</option></select></div>
-<div class="input-group"><select id="memHasChildren"><option value="">Do you have children?</option><option${data&&data.hasChildren==='Yes'?' selected':''}>Yes</option><option${data&&data.hasChildren==='No'?' selected':''}>No</option></select></div>
-<div class="input-group"><input type="text" id="memEmergencyContact" placeholder=" " value="${data?data.emergencyContact||'':''}"><label>Emergency Contact Person</label></div>
-<div class="input-group"><input type="tel" id="memEmergencyPhone" placeholder=" " value="${data?data.emergencyPhone||'':''}"><label>Emergency Contact Number</label></div>
-<div class="input-group"><input type="text" id="memDgroupLeader" placeholder=" " value="${data?data.dgroupLeader||'':''}"><label>D-Group Leader</label></div>
-<div class="input-group"><select id="memMinistry" required><option value="">Select Ministry</option></select></div>
-<div class="input-group"><select id="memMembershipStatus"><option value="">Membership Status</option><option${data&&data.membershipStatus==='First Time Guest'?' selected':''}>First Time Guest</option><option${data&&data.membershipStatus==='Regular Attendee'?' selected':''}>Regular Attendee</option><option${data&&data.membershipStatus==='Returning Guest'?' selected':''}>Returning Guest</option></select></div>
-<div class="input-group"><input type="date" id="memMembershipDate" value="${data?data.membershipDate||'':''}"><label style="top:-8px;font-size:11px;color:var(--accent)">Membership Date (optional)</label></div>
-<div class="input-group"><input type="date" id="memBaptismDate" value="${data?data.baptismDate||'':''}"><label style="top:-8px;font-size:11px;color:var(--accent)">Date of Baptism (optional)</label></div>
-<div class="input-group"><input type="text" id="memBaptismPlace" placeholder=" " value="${data?data.baptismPlace||'':''}"><label>Place of Baptism (optional)</label></div>
-<div style="margin:12px 0"><label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:8px">Classes Attended</label><div style="display:flex;flex-wrap:wrap;gap:8px" id="memClassesContainer">${classes.map(c=>`<label style="display:flex;align-items:center;gap:4px;font-size:13px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px 10px;cursor:pointer"><input type="checkbox" value="${c}"${memberClasses.includes(c)?' checked':''}>${c}</label>`).join('')}</div></div>
-
-<button class="btn btn-primary" style="width:100%;margin-top:8px" id="saveMember">Save</button>`;
-}
-overlay.classList.add('show');
-setTimeout(()=>{
-document.getElementById('closeModal').addEventListener('click',closeModal);
-
-if(type==='member'){
-getMinistries().then(list=>{
-const el=document.getElementById('memMinistry');
-el.innerHTML=`<option value="">Select Ministry</option>`+['None',...list].map(m=>`<option${data&&data.ministry===m?' selected':''}>${m}</option>`).join('');
-initCustomSelects(document.getElementById('modalContent'));
-});
-document.getElementById('saveMember').addEventListener('click',()=>saveMember(data));
-}
-},50);
-}
-
-function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
-
-
-
-async function saveMember(existing){
-const name=document.getElementById('memName').value.trim();if(!name){showToast('Name is required','error');return}
-if(existing){const typed=await customPrompt(`To confirm edit, type "${existing.name}"`,{title:'Confirm Edit',okText:'Save',placeholder:existing.name});if(!typed||typed.trim().toLowerCase()!==existing.name.toLowerCase()){showToast('Edit cancelled','warning');return}}
-const classCheckboxes=document.querySelectorAll('#memClassesContainer input[type=checkbox]:checked');
-const classes=Array.from(classCheckboxes).map(cb=>cb.value);
-const member={id:existing?existing.id:'m'+Date.now(),name,outreach:document.getElementById('memOutreach').value,address:document.getElementById('memAddress').value.trim(),email:document.getElementById('memEmail').value.trim(),ministry:document.getElementById('memMinistry').value,dgroupLeader:document.getElementById('memDgroupLeader').value.trim(),phone:document.getElementById('memPhone').value.trim(),birthday:document.getElementById('memBday').value,gender:document.getElementById('memGender').value,civilStatus:document.getElementById('memCivilStatus').value,hasChildren:document.getElementById('memHasChildren').value,emergencyContact:document.getElementById('memEmergencyContact').value.trim(),emergencyPhone:document.getElementById('memEmergencyPhone').value.trim(),membershipStatus:document.getElementById('memMembershipStatus').value,membershipDate:document.getElementById('memMembershipDate').value,baptismDate:document.getElementById('memBaptismDate').value,baptismPlace:document.getElementById('memBaptismPlace').value.trim(),classes:classes,status:existing?existing.status:'active',addedLocally:existing?existing.addedLocally||false:true,dateRegistered:existing?existing.dateRegistered:today()};
-
-await dbPut('members',member);
-if(existing){const idx=allMembers.findIndex(m=>m.id===existing.id);if(idx>=0)allMembers[idx]=member}
-else allMembers.push(member);
-const url=await getSetting('scriptUrl');
-if(url&&!existing){
-const payload={action:'addMember',...member,classes:member.classes?member.classes.join(', '):''};
-try{const res=await fetch(url,{method:'POST',body:JSON.stringify(payload),headers:{'Content-Type':'text/plain'}});
-const json=await res.json();
-if(json.success&&json.data&&json.data.id){
-member.id=json.data.id;member.addedLocally=false;
-await dbPut('members',member);allMembers.push(member);
-closeModal();showToast('Member added');updateCounter();renderMemberList();
-}else{showToast(json.error||'Failed to add member','error')}
-}catch(e){await dbPut('members',member);allMembers.push(member);
-await dbPut('pendingSync',{action:'addMember',payload,createdAt:Date.now()});
-closeModal();showToast('Member saved offline');updateCounter();renderMemberList()}
-}else if(existing){
-await dbPut('members',member);
-const idx=allMembers.findIndex(m=>m.id===existing.id);if(idx>=0)allMembers[idx]=member;
-closeModal();showToast('Member updated');updateCounter();renderMemberList();
-if(url){const payload={action:'updateMember',...member,classes:member.classes?member.classes.join(', '):''};
-try{await fetch(url,{method:'POST',body:JSON.stringify(payload),headers:{'Content-Type':'text/plain'}})}catch(e){}}
-}else{await dbPut('members',member);allMembers.push(member);
-closeModal();showToast('Member saved locally');updateCounter();renderMemberList()}
-}
-
-document.getElementById('fab').addEventListener('click',()=>showModal('member'));
-
-function renderMemberList(){
-const q=document.getElementById('memberSearch').value.toLowerCase().trim();
-const filter=document.querySelector('#memberFilters .toggle-pill.active').dataset.filter;
-const ministry=document.getElementById('memberMinistryFilter').value;
-let filtered=[...allMembers];
-if(q)filtered=filtered.filter(m=>m.name.toLowerCase().includes(q));
-if(filter==='active')filtered=filtered.filter(m=>m.status==='active'||m.status==='Active');
-if(filter==='inactive')filtered=filtered.filter(m=>m.status==='inactive'||m.status==='Inactive');
-if(ministry)filtered=filtered.filter(m=>m.ministry===ministry);
-const outreachF=document.getElementById('memberOutreachFilter').value;
-if(outreachF)filtered=filtered.filter(m=>m.outreach===outreachF);
-document.getElementById('memberCount').textContent=`${filtered.length} members`;
-const list=document.getElementById('memberList');
-list.innerHTML=filtered.map(m=>`<div class="member-row" data-id="${m.id}">${createAvatar(m,'small')}<div class="info"><div class="name">${m.name}</div><div class="sub">${m.outreach||'No outreach'}${m.ministry?' / '+m.ministry:''}</div></div><span class="pill pill-${m.status.toLowerCase()}">${m.status}</span></div>`).join('');
-list.querySelectorAll('.member-row').forEach(row=>row.addEventListener('click',()=>showDetail(row.dataset.id)));
-}
-
-document.getElementById('memberSearch').addEventListener('input',renderMemberList);
-document.querySelectorAll('#memberFilters .toggle-pill').forEach(p=>p.addEventListener('click',(e)=>{
-document.querySelectorAll('#memberFilters .toggle-pill').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');renderMemberList();
-}));
-document.getElementById('memberOutreachFilter').addEventListener('change',renderMemberList);
-
-async function showDetail(id){
-const member=allMembers.find(m=>m.id===id);if(!member)return;
-const panel=document.getElementById('detailPanel');const content=document.getElementById('detailContent');
-const allAtt=await dbGet('attendance');const memberAtt=allAtt.filter(a=>a.memberId===id);
-const age=getAge(member.birthday);
-const ageGroup=getAgeGroup(member);
-const d=new Date();
-const last10=[];
-for(let i=0;i<10;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);last10.push(sun.toISOString().split('T')[0])}
-const attendDots=last10.reverse().map(s=>allAtt.find(a=>a.memberId===member.id&&a.date===s)?'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--success);margin:0 2px"></span>':'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--card-border);margin:0 2px;border:1px solid var(--card-border)"></span>').join('');
-content.innerHTML=`<div style="text-align:center;margin-bottom:24px">${createAvatar(member,'large')}
-<h2 style="margin-top:12px">${member.name}</h2>
-<span style="display:inline-block;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;background:rgba(108,99,255,0.15);color:var(--accent);margin-top:6px">${member.outreach||'No outreach'}</span>
-</div>
-<div style="margin-top:16px;display:grid;gap:12px">
-<div class="card"><span style="font-size:12px;color:var(--text-secondary)">Phone</span><div>${member.phone||'-'}</div></div>
-<div class="card"><span style="font-size:12px;color:var(--text-secondary)">Address</span><div>${member.address||'-'}</div></div>
-<div class="card"><span style="font-size:12px;color:var(--text-secondary)">Birthday</span><div>${member.birthday?formatDate(member.birthday):'-'} (Age: ${age})</div></div>
-<div class="card"><span style="font-size:12px;color:var(--text-secondary)">Age Group</span><div>${ageGroup}</div></div>
-<div class="card"><span style="font-size:12px;color:var(--text-secondary)">Attendance (last 10 Sundays)</span><div style="margin-top:6px">${attendDots}</div></div>
-<div class="card" style="text-align:center"><div id="memberQRCode" style="margin-top:8px;background:#fff;padding:12px;border-radius:8px;display:inline-block"></div></div>
-</div>
-<div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap"><button class="btn btn-primary" style="flex:1" id="editMemberBtn">Edit</button><button class="btn btn-outline" style="flex:1" id="showQRBtn">Show QR</button><button class="btn btn-outline" style="flex:1" id="resendQRBtn">Resend QR</button><button class="btn btn-danger" style="flex:1" id="deleteMemberBtn">Delete</button></div>`;
-panel.classList.add('open');
-setTimeout(()=>{
-if(typeof QRCode!=='undefined')new QRCode(document.getElementById('memberQRCode'),{text:member.id,width:120,height:120});
-document.getElementById('editMemberBtn').addEventListener('click',()=>{panel.classList.remove('open');showModal('member',member)});
-document.getElementById('showQRBtn').addEventListener('click',()=>{const overlay=document.getElementById('qrOverlay');overlay.innerHTML='<div class="result" style="background:var(--card);padding:32px;border-radius:16px;text-align:center"><h3 style="margin-bottom:16px">'+member.name+'</h3><div id="qrPopupDisplay"></div><button class="btn btn-outline" style="margin-top:16px" onclick="document.getElementById(\'qrOverlay\').classList.remove(\'show\')">Close</button></div>';overlay.classList.add('show');setTimeout(()=>{new QRCode(document.getElementById('qrPopupDisplay'),{text:member.id,width:200,height:200,colorDark:'#ffffff',colorLight:'#1a1a2e'})},50)});
-document.getElementById('resendQRBtn').addEventListener('click',async()=>{const url=await getSetting('scriptUrl');if(!url){showToast('No sync URL configured','warning');return}try{await fetch(url,{method:'POST',body:JSON.stringify({action:'resendQR',memberId:member.id,memberName:member.name,phone:member.phone}),headers:{'Content-Type':'text/plain'}});showToast('QR resent to '+member.name)}catch(e){showToast('Failed to resend QR','error')}});
-document.getElementById('deleteMemberBtn').addEventListener('click',()=>{
-const overlay=document.getElementById('modalOverlay');const content=document.getElementById('modalContent');
-content.innerHTML=`<div class="modal-header"><h3>Delete Member</h3><button class="modal-close" id="closeModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-<p style="margin-bottom:12px;color:var(--text-secondary)">To delete <strong>${member.name}</strong>, type their full name below to confirm:</p>
-<div class="input-group"><input type="text" id="deleteConfirmInput" placeholder=" " autocomplete="off"><label>${member.name}</label></div>
-<p style="font-size:12px;color:var(--error);margin:8px 0">This action cannot be undone.</p>
-<button class="btn btn-danger" style="width:100%;margin-top:8px;opacity:0.5;pointer-events:none" id="confirmDeleteBtn">Delete Member</button>`;
-overlay.classList.add('show');
-setTimeout(()=>{
-document.getElementById('closeModal').addEventListener('click',closeModal);
-const input=document.getElementById('deleteConfirmInput');
-const btn=document.getElementById('confirmDeleteBtn');
-input.addEventListener('input',()=>{
-const match=input.value.trim().toLowerCase()===member.name.toLowerCase();
-btn.style.opacity=match?'1':'0.5';btn.style.pointerEvents=match?'auto':'none';
-});
-btn.addEventListener('click',async()=>{
-await dbDelete('members',member.id);allMembers=allMembers.filter(m=>m.id!==member.id);
-closeModal();panel.classList.remove('open');renderMemberList();updateCounter();showToast('Member deleted');
-});
-},50);
-});
-},100);
-}
-document.getElementById('detailBack').addEventListener('click',()=>document.getElementById('detailPanel').classList.remove('open'));
-
-async function renderReports(){
-const allAtt=await dbGet('attendance');const todayCount=allAtt.filter(a=>a.date===today()).length;
-document.getElementById('statToday').textContent=todayCount;
-document.getElementById('statMembers').textContent=allMembers.filter(m=>m.status==='active'||m.status==='Active').length;
-const childrenCount=await getSetting('children_'+today());
-document.getElementById('statChildren').textContent=childrenCount||'-';
-if(childrenCount)document.getElementById('childrenInput').value=childrenCount;
-const thisMonth=today().slice(0,7);const visitors=allMembers.filter(m=>m.dateRegistered&&m.dateRegistered.startsWith(thisMonth));
-document.getElementById('statVisitors').textContent=visitors.length;
-const sundays=[];const d=new Date();
-for(let i=7;i>=0;i--){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);sundays.push(sun.toISOString().split('T')[0])}
-const weeklyCounts=sundays.map(s=>allAtt.filter(a=>a.date===s).length);
-const max=Math.max(...weeklyCounts,1);
-const avg=weeklyCounts.length?Math.round(weeklyCounts.reduce((a,b)=>a+b,0)/weeklyCounts.length):0;
-document.getElementById('statAvg').textContent=avg;
-document.getElementById('chartBars').innerHTML=sundays.map((s,i)=>{
-const pct=(weeklyCounts[i]/max)*100;
-return `<div class="chart-bar"><div class="bar-value">${weeklyCounts[i]}</div><div class="bar" style="height:${pct}%"></div><div class="bar-label">${s.slice(5)}</div></div>`;
-}).join('');
-const ministrySection=document.getElementById('ministryBreakdown');
-if(ministrySection){
-const activeMembers=allMembers.filter(m=>m.status==='active'||m.status==='Active');
-const todayIds=new Set(todayAttendance.map(a=>a.memberId));
-const ministryMap={};
-activeMembers.forEach(m=>{const key=m.ministry||'(unassigned)';if(!ministryMap[key])ministryMap[key]={total:0,present:0};ministryMap[key].total++;if(todayIds.has(m.id))ministryMap[key].present++});
-ministrySection.innerHTML=Object.entries(ministryMap).sort((a,b)=>b[1].total-a[1].total).map(([name,data])=>{
-const pct=data.total?Math.round((data.present/data.total)*100):0;
-return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${name}</span><span style="color:var(--text-secondary)">${data.present}/${data.total}</span></div><div style="height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width 0.6s"></div></div></div>`;
-}).join('');
-}
-const absentMembers=allMembers.filter(m=>{
-if(m.status!=='active')return false;
-let consecutive=0;
-for(let i=0;i<3;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);const ds=sun.toISOString().split('T')[0];
-if(!allAtt.find(a=>a.memberId===m.id&&a.date===ds))consecutive++;else break}
-return consecutive>=3;
-});
-const followUp=document.getElementById('followUpList');
-if(allAtt.length===0){followUp.innerHTML='<div class="empty-state"><p>Not enough data yet</p></div>'}
-else{followUp.innerHTML=absentMembers.length?absentMembers.map(m=>{
-const lastAtt=allAtt.filter(a=>a.memberId===m.id).sort((a,b)=>b.timestamp-a.timestamp)[0];
-return `<div class="follow-up-card">${createAvatar(m,'small')}<div class="info"><div class="name">${m.name}</div><div class="sub">${m.ministry||'No ministry'} | Last seen: ${lastAtt?formatDate(lastAtt.date):'Never'}</div></div></div>`;
-}).join(''):'<div class="empty-state"><p>Everyone is attending regularly!</p></div>';}
-}
-
-async function getSetting(key){const all=await dbGet('settings');const s=all.find(x=>x.key===key);return s?s.value:null}
-async function setSetting(key,value){await dbPut('settings',{key,value})}
-
-async function getMinistries(){
-const val=await getSetting('ministries');
-return val?JSON.parse(val):['Abraham','Admin','Children','Christian Education','Dance','Engineering','Evangelism','Finance','Kitchen','Media Arts','Prayer','Social Concern',"Sunday's Crew",'Well Watered Women (W3)','Worship','Young Professional','Youth'];
-}
-async function saveMinistries(list){await setSetting('ministries',JSON.stringify(list));populateMinistryDropdowns(list)}
-function populateMinistryDropdowns(list){
-['ministryFilter','memberMinistryFilter','memMinistry'].forEach(id=>{
-const el=document.getElementById(id);if(!el)return;
-const val=el.value;
-const isForm=id==='memMinistry';
-el.innerHTML=`<option value="">${isForm?'Select Ministry':'All Ministries'}</option>`+['None',...list].map(m=>`<option${val===m?' selected':''}>${m}</option>`).join('');
-});
-}
-async function renderMinistryTags(){
-const list=await getMinistries();
-const container=document.getElementById('ministryTags');
-container.innerHTML=list.map(m=>`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--card-border);border-radius:20px;padding:6px 12px;font-size:13px">${m}<button onclick="removeMinistry('${m.replace(/'/g,"\\'")}')" style="background:none;border:none;color:var(--error);font-size:16px;cursor:pointer;line-height:1">&times;</button></span>`).join('');
-populateMinistryDropdowns(list);
-}
-async function removeMinistry(name){
-if(!await customConfirm(`Remove "${name}" ministry?`,{title:'Remove Ministry',okText:'Remove',danger:true}))return;
-const list=await getMinistries();
-await saveMinistries(list.filter(m=>m!==name));renderMinistryTags();
-}
-async function loadSettings(){
-const url=await getSetting('scriptUrl');
-if(url){document.getElementById('scriptUrl').value=url;document.getElementById('scriptUrl').disabled=true;document.getElementById('testConnection').style.display='none';document.getElementById('unlockUrlBtn').style.display='inline-block'}
-const lastSync=await getSetting('lastSynced');document.getElementById('lastSynced').textContent=lastSync||'Never';
-const pending=await dbGet('pendingSync');document.getElementById('pendingCount').textContent=`${pending.length} items`;
-const reportEmail=await getSetting('reportEmail');if(reportEmail)document.getElementById('reportEmail').value=reportEmail;
-const outreach=await getSetting('defaultOutreach');if(outreach)document.getElementById('defaultOutreach').value=outreach;
-await renderMinistryTags();
-}
-
-document.getElementById('unlockUrlBtn').addEventListener('click',async()=>{
-if(!await customConfirm('Are you sure you want to edit the Script URL?',{title:'Edit Script URL',okText:'Unlock'}))return;
-document.getElementById('scriptUrl').disabled=false;
-document.getElementById('testConnection').style.display='inline-block';
-document.getElementById('unlockUrlBtn').style.display='none';
-});
-
-document.getElementById('testConnection').addEventListener('click',async()=>{
-const url=document.getElementById('scriptUrl').value.trim();if(!url){showToast('Enter a URL first','error');return}
-await setSetting('scriptUrl',url);
-document.getElementById('scriptUrl').disabled=true;
-document.getElementById('testConnection').style.display='none';
-document.getElementById('unlockUrlBtn').style.display='inline-block';
-const status=document.getElementById('connectionStatus');status.textContent='Testing...';status.style.color='#8b8b9e';
-try{const r=await fetch(url+'?action=getMembers');const j=await r.json();
-if(j.success!==false){status.textContent='Connected! Reloading...';status.style.color='var(--success)';setTimeout(()=>location.reload(),1000)}
-else throw 0}
-catch(e){status.textContent='Failed';status.style.color='var(--error)'}
-});
-
-document.getElementById('reportEmail').addEventListener('change',async(e)=>{await setSetting('reportEmail',e.target.value.trim())});
-document.getElementById('defaultOutreach').addEventListener('change',async(e)=>{await setSetting('defaultOutreach',e.target.value.trim())});
-
-document.getElementById('syncNowBtn').addEventListener('click',async()=>{
-const dot=document.getElementById('syncDot');dot.classList.add('syncing');
-const url=await getSetting('scriptUrl');
-if(!url){showToast('No sync URL configured','warning');dot.classList.remove('syncing');return}
-try{
-let synced=0;
-const pending=await dbGet('pendingSync');
-for(const item of pending){
-try{await fetch(url,{method:'POST',body:JSON.stringify(item.payload),headers:{'Content-Type':'text/plain'}});await dbDelete('pendingSync',item.id);synced++}catch(e){break}
-}
-const r=await fetch(url,{method:'POST',body:JSON.stringify({action:'getMembers'}),headers:{'Content-Type':'text/plain'}});
-const json=await r.json();
-if(json.success&&json.data){
-await dbClear('members');
-for(const m of json.data)await dbPut('members',m);
-allMembers=json.data;
-}
-const r2=await fetch(url,{method:'POST',body:JSON.stringify({action:'getAttendance',date:today()}),headers:{'Content-Type':'text/plain'}});
-const json2=await r2.json();
-if(json2.success&&json2.data){
-const existing=new Set(todayAttendance.map(a=>a.memberId));
-for(const rec of json2.data){
-if(!existing.has(rec.memberId)){
-await dbPut('attendance',{memberId:rec.memberId,memberName:rec.memberName,date:rec.date,timestamp:rec.timestamp||Date.now(),checkedInBy:rec.checkedInBy||'sync'});
-todayAttendance.push(rec);
-}}
-}
-updateCounter();
-await setSetting('lastSynced',new Date().toLocaleString());
-showToast(`Synced! ${allMembers.length} members, ${todayAttendance.length} checked in`);loadSettings();renderAvatarGrid();
-}catch(e){showToast('Sync failed, try again','error')}
-finally{dot.classList.remove('syncing')}
-});
-
-document.getElementById('exportBtn').addEventListener('click',async()=>{
-const members=await dbGet('members');
-const csv='Name,D-Group,Ministry,Phone,Birthday,Status\n'+members.map(m=>`"${m.name}","${m.dgroup}","${m.ministry||''}","${m.phone||''}","${m.birthday||''}","${m.status}"`).join('\n');
-const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='jilgm_members.csv';a.click();
-});
-
-
-
-document.getElementById('addMinistryBtn').addEventListener('click',async()=>{
-const input=document.getElementById('newMinistryInput');const name=input.value.trim();
-if(!name){showToast('Enter a ministry name','error');return}
-const list=await getMinistries();
-if(list.includes(name)){showToast('Already exists','warning');return}
-list.push(name);await saveMinistries(list);renderMinistryTags();
-input.value='';showToast(`"${name}" added`);
-});
-
-document.getElementById('memberMinistryFilter').addEventListener('change',renderMemberList);
-initCustomSelects(document.getElementById('tabMembers'));
-
-document.getElementById('saveChildrenBtn').addEventListener('click',async()=>{
-const val=document.getElementById('childrenInput').value;
-if(!val||val<0){showToast('Enter a valid number','error');return}
-await setSetting('children_'+today(),val);
-document.getElementById('statChildren').textContent=val;
-showToast('Children count saved');
-});
-
-
-
-
-
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBanner').classList.add('show')});
-document.getElementById('installBtn').addEventListener('click',()=>{if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null}document.getElementById('installBanner').classList.remove('show')});
-document.getElementById('dismissInstall').addEventListener('click',()=>document.getElementById('installBanner').classList.remove('show'));
-
-function getDeviceId(){
-let id=localStorage.getItem('jilgm_deviceId');
-if(!id){id='dev-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);localStorage.setItem('jilgm_deviceId',id)}
-return id;
-}
-
-async function checkDeviceAccess(){
-const url=await getSetting('scriptUrl');
-if(!url)return 'no-url';
-const deviceId=getDeviceId();
-try{
-const res=await fetch(url+'?action=getDeviceStatus&deviceId='+encodeURIComponent(deviceId));
-const json=await res.json();
-if(json.success&&json.data){
-await setSetting('deviceStatus',json.data.status);
-return json.data.status;
-}
-}catch(e){
-const status=await getSetting('deviceStatus');
-if(status)return status;
-}
-return 'unregistered';
-}
-
-function showAccessGate(state){
-const gate=document.getElementById('accessGate');
-gate.style.display='flex';
-document.getElementById('gateRegister').style.display=state==='register'?'block':'none';
-document.getElementById('gatePending').style.display=state==='pending'?'block':'none';
-document.getElementById('gateBlocked').style.display=state==='blocked'?'block':'none';
-}
-
-function hideAccessGate(){document.getElementById('accessGate').style.display='none'}
-
-document.getElementById('gateSubmit').addEventListener('click',async()=>{
-try{
-const name=document.getElementById('gateName').value.trim();
-if(!name){showToast('Enter your name','error');return}
-let url=(await getSetting('scriptUrl')||'').replace(/[^\x20-\x7E]/g,'').trim();
-const gateUrlInput=document.getElementById('gateUrl');
-if(!url){
-if(gateUrlInput.style.display==='none'){gateUrlInput.style.display='block';showToast('Enter the Script URL from admin','warning');return}
-url=gateUrlInput.value.trim();
-if(!url){showToast('Script URL required','error');return}
-await setSetting('scriptUrl',url);
-}
-const deviceId=getDeviceId();
-showToast('Registering...','warning');
-const res=await fetch(url+'?action=registerDevice&deviceId='+encodeURIComponent(deviceId)+'&name='+encodeURIComponent(name));
-const json=await res.json();
-if(json.success&&json.data){
-await setSetting('deviceStatus',json.data.status);
-if(json.data.status==='Approved'){hideAccessGate();location.reload();return}
-showAccessGate('pending');
-const poll=setInterval(async()=>{
-const s=await checkDeviceAccess();
-if(s==='Approved'){clearInterval(poll);hideAccessGate();location.reload()}
-else if(s==='Blocked'){clearInterval(poll);showAccessGate('blocked')}
-},5000);
-}else{showToast(json.error||'Registration failed','error')}
-}catch(e){showToast('Error: '+e.message,'error')}
-});
-
-async function init(){
-try{
-await openDB();
-const theme=await getSetting('theme');
-if(theme==='light'){document.body.classList.add('light');document.getElementById('themeIcon').innerHTML='<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';}
-const access=await checkDeviceAccess();
-if(access==='no-url'||access==='Approved'){
-hideAccessGate();
-}else if(access==='Blocked'){
-showAccessGate('blocked');return;
-}else if(access==='unregistered'||access==='unknown'){
-showAccessGate('register');return;
-}else if(access==='Pending'){
-showAccessGate('pending');
-const poll=setInterval(async()=>{
-const s=await checkDeviceAccess();
-if(s==='Approved'){clearInterval(poll);hideAccessGate();location.reload()}
-else if(s==='Blocked'){clearInterval(poll);showAccessGate('blocked')}
-},5000);
-return;
-}
-allMembers=await dbGet('members');await loadTodayAttendance();
-await checkInactiveMembers();
-allMembers=await dbGet('members');
-const ministries=await getMinistries();populateMinistryDropdowns(ministries);
-renderAvatarGrid();
-checkBirthdaysToday();
-await initExtras();
-}catch(e){document.body.innerHTML='<div style="padding:40px;text-align:center;color:#ff5252"><h3>App Error</h3><p style="margin-top:12px;color:#8b8b9e;font-size:14px">'+e.message+'</p><button onclick="location.reload()" style="margin-top:20px;padding:12px 24px;background:#6c63ff;color:#fff;border:none;border-radius:12px;font-size:14px">Retry</button></div>'}
-}
-init();
-
-document.getElementById('themeToggle').addEventListener('click',async()=>{
-const isLight=document.body.classList.toggle('light');
-await setSetting('theme',isLight?'light':'dark');
-const icon=document.getElementById('themeIcon');
-icon.innerHTML=isLight?'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>':'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
-});
-
-async function autoSync(){
-const url=await getSetting('scriptUrl');if(!url)return;
-try{
-const r=await fetch(url,{method:'POST',body:JSON.stringify({action:'getAttendance',date:today()}),headers:{'Content-Type':'text/plain'}});
-const json=await r.json();
-if(json.success&&json.data){
-const existing=new Set(todayAttendance.map(a=>a.memberId));
-for(const rec of json.data){
-if(!existing.has(rec.memberId)){
-await dbPut('attendance',{memberId:rec.memberId,memberName:rec.memberName,date:rec.date,timestamp:rec.timestamp||Date.now(),checkedInBy:rec.checkedInBy||'sync'});
-todayAttendance.push(rec);
-}}
-updateCounter();
-if(currentTab==='tabCheckin'&&currentMode==='tap')renderAvatarGrid();
-}}catch(e){}
-try{
-const r2=await fetch(url,{method:'POST',body:JSON.stringify({action:'getMembers'}),headers:{'Content-Type':'text/plain'}});
-const json2=await r2.json();
-if(json2.success&&json2.data&&json2.data.length!==allMembers.length){
-await dbClear('members');
-for(const m of json2.data)await dbPut('members',m);
-allMembers=json2.data;
-updateCounter();
-if(currentTab==='tabCheckin'&&currentMode==='tap')renderAvatarGrid();
-if(currentTab==='tabMembers')renderMemberList();
-}}catch(e){}
-try{
-const r3=await fetch(url,{method:'POST',body:JSON.stringify({action:'getOccasion'}),headers:{'Content-Type':'text/plain'}});
-const json3=await r3.json();
-if(json3.success&&json3.data){
-if(json3.data.active&&json3.data.active!==currentOccasion){currentOccasion=json3.data.active;await setSetting('activeOccasion',currentOccasion);updateOccasionBanner();renderOccasionTags()}
-if(json3.data.list){await setSetting('occasions',JSON.stringify(json3.data.list));renderOccasionTags(json3.data.list)}
-}}catch(e){}
-}
-setInterval(autoSync,10000);
-
-document.getElementById('generateReportBtn').addEventListener('click',async()=>{
-const todayStr=today();
-const allAtt=await dbGet('attendance');
-const checkedIn=todayAttendance.map(a=>allMembers.find(m=>m.id===a.memberId)).filter(Boolean);
-const stoTomasMembers=checkedIn.filter(m=>!m.outreach||m.outreach==='Sto. Tomas');
-const outreachGroups={};
-checkedIn.filter(m=>m.outreach&&m.outreach!=='Sto. Tomas').forEach(m=>{
-if(!outreachGroups[m.outreach])outreachGroups[m.outreach]=0;
-outreachGroups[m.outreach]++;
-});
-const counts={Youth:0,YPro:0,Mothers:0,Fathers:0};
-stoTomasMembers.forEach(m=>{
-const isFirstAttend=m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1;
-if(!isFirstAttend){const g=getAgeGroup(m);if(counts[g]!==undefined)counts[g]++}
-});
-const childrenVal=await getSetting('children_'+todayStr);
-const newCount=stoTomasMembers.filter(m=>isNewMember(m)).length;
-const outreach=(await getSetting('defaultOutreach'))||'Sto. Tomas';
-const adultTotal=counts.Youth+counts.YPro+counts.Mothers+counts.Fathers;
-const childNum=parseInt(childrenVal)||0;
-const outreachTotal=Object.values(outreachGroups).reduce((a,b)=>a+b,0);
-const grandTotal=adultTotal+childNum+outreachTotal;
-const outreachHTML=Object.entries(outreachGroups).map(([name,count])=>`<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--accent2)">${name} Outreach</div><div style="font-size:16px;font-weight:700">${count}</div></div>`).join('');
-const overlay=document.getElementById('modalOverlay');const content=document.getElementById('modalContent');
-content.innerHTML=`<div class="modal-header"><h3>Send Report</h3><button class="modal-close" id="closeModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-<div style="margin-bottom:12px"><label style="font-size:12px;color:var(--text-secondary)">Date</label><div style="font-size:16px;font-weight:600">${formatDate(todayStr)}</div></div>
-<div class="input-group"><input type="text" id="rptOutreach" placeholder=" " value="${outreach}"><label>Outreach</label></div>
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0">
-<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px 4px;text-align:center"><div style="font-size:9px;color:var(--text-secondary)">Youth</div><div style="font-size:16px;font-weight:700">${counts.Youth}</div></div>
-<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px 4px;text-align:center"><div style="font-size:9px;color:var(--text-secondary)">YPro</div><div style="font-size:16px;font-weight:700">${counts.YPro}</div></div>
-<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px 4px;text-align:center"><div style="font-size:9px;color:var(--text-secondary)">Mothers</div><div style="font-size:16px;font-weight:700">${counts.Mothers}</div></div>
-<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px 4px;text-align:center"><div style="font-size:9px;color:var(--text-secondary)">Fathers</div><div style="font-size:16px;font-weight:700">${counts.Fathers}</div></div>
-${outreachHTML}
-</div>
-<div style="display:flex;align-items:center;gap:10px;margin:8px 0"><label style="font-size:12px;color:var(--text-secondary);white-space:nowrap">Children:</label><input type="number" id="rptChildren" placeholder="0" min="0" value="${childNum||''}" style="width:60px;padding:6px 8px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;font-size:14px;text-align:center"></div>
-<div style="margin:6px 0;padding:10px;background:var(--card);border-radius:8px;text-align:center;font-weight:700;font-size:15px" id="rptTotalDisplay">Total: ${adultTotal} + ${childNum}${outreachTotal?' + '+outreachTotal+' (outreach)':''} = ${grandTotal}</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0">
-<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px;text-align:center"><div style="font-size:9px;color:var(--success)">New (First Time)</div><div style="font-size:16px;font-weight:700;color:var(--success)">${newCount}</div></div>
-<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px;text-align:center"><div style="font-size:9px;color:var(--text-secondary)">Others</div><input type="text" id="rptOthers" placeholder="Notes..." style="width:100%;text-align:center;font-size:12px;margin-top:2px;padding:3px;background:transparent;border-bottom:1px solid var(--card-border)"></div>
-</div>
-<p style="font-size:10px;color:var(--text-secondary);margin:4px 0;text-align:center">Report will be emailed to configured Report Email.</p>
-<button class="btn btn-primary" style="width:100%;margin-top:6px;padding:12px;font-size:13px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px" id="sendReportBtn">Send Now</button>`;
-overlay.classList.add('show');
-setTimeout(()=>{
-document.getElementById('closeModal').addEventListener('click',closeModal);
-document.getElementById('rptChildren').addEventListener('input',(e)=>{
-const c=parseInt(e.target.value)||0;
-setSetting('children_'+todayStr,c.toString());
-document.getElementById('statChildren').textContent=c||'-';
-document.getElementById('childrenInput').value=c;
-});
-document.getElementById('sendReportBtn').addEventListener('click',async()=>{
-const url=await getSetting('scriptUrl');const email=await getSetting('reportEmail');
-if(!url||!email){showToast('Configure Script URL and Report Email in Settings first','error');return}
-const report={action:'sendReport',date:todayStr,occasion:currentOccasion,outreach:document.getElementById('rptOutreach').value,youth:counts.Youth,ypro:counts.YPro,mothers:counts.Mothers,fathers:counts.Fathers,children:parseInt(document.getElementById('rptChildren').value)||0,newCount:newCount,outreachGroups:outreachGroups,others:document.getElementById('rptOthers').value,email:email,grandTotal:grandTotal};
-try{
-const r=await fetch(url,{method:'POST',body:JSON.stringify(report),headers:{'Content-Type':'text/plain'}});
-const json=await r.json();
-if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.error||'Failed to send','error')}
-}catch(e){showToast('Network error, try again','error')}
-});
-},50);
-});
-
-// === APP VERSION & CHANGELOG ===
-const APP_VERSION='1.2.0';
-const CHANGELOG=[
-{version:'1.2.0',date:'July 28, 2026',changes:[
-{type:'Fix',text:'Text alignment in search boxes and member forms'},
-{type:'Fix',text:'Reports dashboard cards now in grid layout (no more cut-off labels)'},
-{type:'Improve',text:'Send Report modal compacted to fit without scrolling'},
-{type:'New',text:'Reports now tagged with occasion name (not just Sunday Service)'},
-{type:'Fix',text:'iOS compatibility: all fetches now use POST (fixes redirect issue)'},
-{type:'Improve',text:'Custom bottom-sheet dropdowns for mobile'},
-{type:'Improve',text:'Fixed page layout (no unnecessary page scrolling)'},
-]},
-{version:'1.1.0',date:'July 27, 2026',changes:[
-{type:'New',text:'Google Sign-In access control'},
-{type:'New',text:'Occasion selector (Prayer Connect, Midweek, etc.)'},
-{type:'New',text:'Feedback system (send from Settings)'},
-{type:'New',text:"What's New popup on updates"},
-{type:'New',text:'Sunday-only check-in confirmation'},
-{type:'Improve',text:'Auto-sync every 10 seconds (near real-time)'},
-{type:'Improve',text:'Front/back camera flip for QR scanner'},
-{type:'Fix',text:'Toast notifications no longer stick on screen'},
-{type:'Fix',text:'Members tab now renders correctly'},
-]}
-];
-
-function renderChangelog(){
-const el=document.getElementById('changelogContent');
-el.innerHTML=CHANGELOG.map(v=>`
-<div style="margin-bottom:24px">
-<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-<span style="background:linear-gradient(135deg,#7b2ff7,#00d4ff);padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700">v${v.version}</span>
-<span style="font-size:11px;color:var(--text-secondary)">${v.date}</span>
-</div>
-<div style="display:flex;flex-direction:column;gap:8px">
-${v.changes.map(c=>{
-const colors={New:'#4caf50',Fix:'#ff9800',Improve:'#00d4ff'};
-return `<div style="display:flex;align-items:center;gap:8px;font-size:12px">
-<span style="background:${colors[c.type]}22;color:${colors[c.type]};padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;min-width:50px;text-align:center">${c.type.toUpperCase()}</span>
-<span style="color:var(--text-secondary)">${c.text}</span>
-</div>`;
-}).join('')}
-</div>
-</div>`).join('');
-}
-
-async function checkWhatsNew(){
-const stored=await getSetting('appVersion');
-if(stored!==APP_VERSION){
-renderChangelog();
-document.getElementById('whatsNewModal').style.display='flex';
-await setSetting('appVersion',APP_VERSION);
-}
-}
-document.getElementById('whatsNewBtn').addEventListener('click',()=>{renderChangelog();document.getElementById('whatsNewModal').style.display='flex'});
-
-// === OCCASIONS ===
-let currentOccasion='Sunday Service';
-async function getOccasions(){
-const val=await getSetting('occasions');
-return val?JSON.parse(val):['Sunday Service'];
-}
-async function saveOccasions(list){
-await setSetting('occasions',JSON.stringify(list));
-renderOccasionTags(list);
-const url=await getSetting('scriptUrl');
-if(url)try{await fetch(url,{method:'POST',body:JSON.stringify({action:'setOccasion',list}),headers:{'Content-Type':'text/plain'}})}catch(e){}
-}
-async function setActiveOccasion(name){
-if(isSunday()&&name!=='Sunday Service'){
-const typed=await customPrompt(`Today is Sunday. To switch to "${name}", type CONFIRM below:`,{title:'Sunday Override',okText:'Switch',placeholder:'Type CONFIRM'});
-if(!typed||typed.trim().toUpperCase()!=='CONFIRM'){showToast('Occasion not changed','warning');return}
-}
-currentOccasion=name;
-await setSetting('activeOccasion',name);
-updateOccasionBanner();
-const url=await getSetting('scriptUrl');
-if(url)try{await fetch(url,{method:'POST',body:JSON.stringify({action:'setOccasion',active:name}),headers:{'Content-Type':'text/plain'}})}catch(e){}
-}
-function updateOccasionBanner(){
-const banner=document.getElementById('occasionBanner');
-const label=document.getElementById('occasionLabel');
-if(currentOccasion&&currentOccasion!=='Sunday Service'){
-label.textContent=currentOccasion;
-banner.style.display='block';
-}else{
-banner.style.display='none';
-}
-}
-async function renderOccasionTags(list){
-if(!list)list=await getOccasions();
-const el=document.getElementById('occasionTags');
-el.innerHTML=list.map(o=>`<span style="background:${o===currentOccasion?'var(--accent)':'var(--surface)'};color:${o===currentOccasion?'#fff':'var(--text)'};border:1px solid var(--card-border);border-radius:8px;padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:6px;cursor:pointer" data-occasion="${o}">${o}${o!=='Sunday Service'?`<span style="cursor:pointer;opacity:0.6" data-remove-occasion="${o}">&times;</span>`:''}</span>`).join('');
-el.querySelectorAll('[data-occasion]').forEach(x=>x.addEventListener('click',async(e)=>{
-if(e.target.dataset.removeOccasion)return;
-await setActiveOccasion(x.dataset.occasion);
-renderOccasionTags();
-}));
-el.querySelectorAll('[data-remove-occasion]').forEach(x=>x.addEventListener('click',async(e)=>{
-e.stopPropagation();
-const name=x.dataset.removeOccasion;
-if(!await customConfirm(`Remove "${name}"?`,{title:'Remove Occasion',okText:'Remove',danger:true}))return;
-const l=await getOccasions();
-const newList=l.filter(o=>o!==name);
-if(currentOccasion===name)await setActiveOccasion('Sunday Service');
-await saveOccasions(newList);
-}));
-}
-document.getElementById('addOccasionBtn').addEventListener('click',async()=>{
-const input=document.getElementById('newOccasionInput');
-const name=input.value.trim();if(!name)return;
-const list=await getOccasions();if(list.includes(name)){showToast('Already exists','warning');return}
-list.push(name);await saveOccasions(list);input.value='';showToast(`"${name}" added`);
-});
-
-// === FEEDBACK ===
-document.getElementById('sendFeedbackBtn').addEventListener('click',async()=>{
-const category=document.getElementById('feedbackCategory').value;
-const msg=document.getElementById('feedbackMsg').value.trim();
-if(!msg){showToast('Please enter a message','warning');return}
-const url=await getSetting('scriptUrl');
-if(!url){showToast('No sync URL configured','warning');return}
-const userEmail=await getSetting('userEmail')||'anonymous';
-try{
-await fetch(url,{method:'POST',body:JSON.stringify({action:'submitFeedback',category,message:msg,userEmail}),headers:{'Content-Type':'text/plain'}});
-document.getElementById('feedbackMsg').value='';
-showToast('Feedback sent! Thank you.');
-}catch(e){showToast('Failed to send feedback','error')}
-});
-
-// === INIT UPDATES ===
-async function initExtras(){
-await checkWhatsNew();
-const occasions=await getOccasions();
-const savedOccasion=await getSetting('activeOccasion');
-if(savedOccasion)currentOccasion=savedOccasion;
-updateOccasionBanner();
-renderOccasionTags(occasions);
-}
-
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
-</script>
-
-
-</body>
-</html>
+// =============================================================================
+//  CHURCH ATTENDANCE PWA - Google Apps Script Backend
+//  Deploy as: Web App (Execute as: Me, Who has access: Anyone)
+//  Version: 2.0.0
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+//  CONFIGURATION — update SHEET_ID and ADMIN_EMAIL before deploying
+// ---------------------------------------------------------------------------
+const SHEET_ID    = "1WEbBBFh-_GeBNAn-mQ3vMQhkZ4jAHejaFd2YS5ZKP-Y";
+const ADMIN_EMAIL = "";                           // <-- Fill in admin email for weekly backup
+
+// Sheet names (must match exactly)
+const SHEET_MEMBERS    = "Members";
+const SHEET_ATTENDANCE = "Attendance";
+const SHEET_VISITORS   = "Visitors";
+const SHEET_CONFIG     = "Config";
+const SHEET_DEVICES    = "Devices";
+
+// Column indices (0-based) for Members sheet
+// ID | Name | Outreach | DGroup | DGroupLeader | Ministry | Phone | Address | Birthday | Gender | CivilStatus | HasChildren | EmergencyContact | EmergencyPhone | Email | MembershipStatus | MembershipDate | BaptismDate | BaptismPlace | Classes | QRCodeURL | Status | DateRegistered
+const COL_MEM = {
+  ID:               0,
+  NAME:             1,
+  OUTREACH:         2,
+  DGROUP:           3,
+  DGROUP_LEADER:    4,
+  MINISTRY:         5,
+  PHONE:            6,
+  ADDRESS:          7,
+  BIRTHDAY:         8,
+  GENDER:           9,
+  CIVIL_STATUS:     10,
+  HAS_CHILDREN:     11,
+  EMERGENCY_CONTACT:12,
+  EMERGENCY_PHONE:  13,
+  EMAIL:            14,
+  MEMBERSHIP_STATUS:15,
+  MEMBERSHIP_DATE:  16,
+  BAPTISM_DATE:     17,
+  BAPTISM_PLACE:    18,
+  CLASSES:          19,
+  QR_CODE:          20,
+  STATUS:           21,
+  DATE_REGISTERED:  22
+};
+
+// Column indices (0-based) for Attendance sheet
+const COL_ATT = {
+  MEMBER_ID:      0,
+  MEMBER_NAME:    1,
+  DATE:           2,
+  TIMESTAMP:      3,
+  CHECKED_IN_BY:  4,
+  OCCASION:       5
+};
+
+// Column indices (0-based) for Visitors sheet
+const COL_VIS = {
+  NAME:   0,
+  PHONE:  1,
+  DATE:   2,
+  NOTES:  3
+};
+
+
+// =============================================================================
+//  ENTRY POINTS
+// =============================================================================
+
+/**
+ * Handles all GET requests.
+ * Supported actions:
+ *   - getMembers
+ *   - getAttendance&date=YYYY-MM-DD
+ *   - getSummary&month=YYYY-MM
+ */
+function doGet(e) {
+  try {
+    const action = (e.parameter && e.parameter.action) || "";
+
+    // Handle POST-like requests via GET with encoded data parameter
+    if (e.parameter && e.parameter.data) {
+      const body = JSON.parse(decodeURIComponent(e.parameter.data));
+      const dataAction = body.action || action;
+      switch (dataAction) {
+        case "checkIn": return respond(checkIn(body));
+        case "addMember": return respond(addMember(body));
+        case "updateMember": return respond(updateMember(body));
+        case "addVisitor": return respond(addVisitor(body));
+        case "bulkSync": return respond(bulkSync(body));
+        case "resendQR": return respond(resendQR(body));
+        case "sendReport": return respond(sendReport(body));
+        case "submitFeedback": return respond(submitFeedback(body));
+        case "checkAccess": return respond(checkAccess(body));
+        case "setOccasion": return respond(setOccasionConfig(body));
+        case "registerDevice": return respond(registerDevice(body));
+        default: return respondError("Unknown data action: " + dataAction, 400);
+      }
+    }
+
+    switch (action) {
+
+      case "getMembers":
+        return respond(getMembers());
+
+      case "getAttendance": {
+        const date = e.parameter.date || "";
+        if (!isValidDate(date)) return respondError("Invalid or missing date parameter (expected YYYY-MM-DD)");
+        return respond(getAttendance(date));
+      }
+
+      case "getSummary": {
+        const month = e.parameter.month || "";
+        if (!isValidMonth(month)) return respondError("Invalid or missing month parameter (expected YYYY-MM)");
+        return respond(getSummary(month));
+      }
+
+      case "getMemberQR": {
+        const memberId = e.parameter.memberId || "";
+        if (!memberId) return respondError("memberId is required");
+        return respond(getMemberQR(memberId));
+      }
+
+      case "getOccasion":
+        return respond(getOccasionConfig());
+
+      case "getDeviceStatus": {
+        const deviceId = e.parameter.deviceId || "";
+        if (!deviceId) return respondError("deviceId is required");
+        return respond(getDeviceStatus(deviceId));
+      }
+
+      case "registerDevice": {
+        const deviceId = e.parameter.deviceId || "";
+        const name = e.parameter.name || "";
+        if (!deviceId || !name) return respondError("deviceId and name are required");
+        return respond(registerDevice({ deviceId, name }));
+      }
+
+      default:
+        return respondError("Unknown action: " + action, 400);
+    }
+
+  } catch (err) {
+    logError("doGet", err);
+    return respondError("Internal server error: " + err.message, 500);
+  }
+}
+
+
+/**
+ * Handles all POST requests.
+ * Supported actions (sent in JSON body):
+ *   - checkIn
+ *   - addMember
+ *   - updateMember
+ *   - addVisitor
+ *   - bulkSync
+ */
+function doPost(e) {
+  try {
+    // Parse JSON body
+    let body = {};
+    if (e.postData && e.postData.contents) {
+      body = JSON.parse(e.postData.contents);
+    }
+
+    const action = body.action || (e.parameter && e.parameter.action) || "";
+
+    switch (action) {
+
+      case "checkIn":
+        return respond(checkIn(body));
+
+      case "addMember":
+        return respond(addMember(body));
+
+      case "updateMember":
+        return respond(updateMember(body));
+
+      case "addVisitor":
+        return respond(addVisitor(body));
+
+      case "bulkSync":
+        return respond(bulkSync(body));
+
+      case "resendQR":
+        return respond(resendQR(body));
+
+      case "sendReport":
+        return respond(sendReport(body));
+
+      case "submitFeedback":
+        return respond(submitFeedback(body));
+
+      case "checkAccess":
+        return respond(checkAccess(body));
+
+      case "setOccasion":
+        return respond(setOccasionConfig(body));
+
+      case "registerDevice":
+        return respond(registerDevice(body));
+
+      case "getMembers":
+        return respond(getMembers());
+
+      case "getAttendance": {
+        const date = body.date || "";
+        if (!isValidDate(date)) return respondError("Invalid or missing date parameter (expected YYYY-MM-DD)");
+        return respond(getAttendance(date));
+      }
+
+      case "getOccasion":
+        return respond(getOccasionConfig());
+
+      case "getDeviceStatus": {
+        const deviceId = body.deviceId || "";
+        if (!deviceId) return respondError("deviceId is required");
+        return respond(getDeviceStatus(deviceId));
+      }
+
+      default:
+        return respondError("Unknown action: " + action, 400);
+    }
+
+  } catch (err) {
+    logError("doPost", err);
+    return respondError("Internal server error: " + err.message, 500);
+  }
+}
+
+
+// =============================================================================
+//  GET HANDLERS
+// =============================================================================
+
+/**
+ * Returns all members from the Members sheet.
+ * @returns {Object} { success: true, data: [ memberObject, ... ] }
+ */
+function getMembers() {
+  const sheet = getSheet(SHEET_MEMBERS);
+  const rows  = getDataRows(sheet);
+
+  const members = rows.map(row => rowToMember(row));
+  return { success: true, data: members };
+}
+
+
+/**
+ * Returns all attendance records for a specific date.
+ * @param {string} date - Format YYYY-MM-DD
+ * @returns {Object} { success: true, data: [ attendanceObject, ... ] }
+ */
+function getAttendance(date) {
+  const sheet    = getSheet(SHEET_ATTENDANCE);
+  const rows     = getDataRows(sheet);
+  const filtered = rows.filter(row => normDate(row[COL_ATT.DATE]) === date);
+
+  const records = filtered.map(row => rowToAttendance(row));
+  return { success: true, data: records };
+}
+
+
+/**
+ * Returns per-Sunday attendance counts for the given month.
+ * @param {string} month - Format YYYY-MM
+ * @returns {Object} { success: true, data: [ { date, count, memberIds: [] }, ... ] }
+ */
+function getSummary(month) {
+  const sheet = getSheet(SHEET_ATTENDANCE);
+  const rows  = getDataRows(sheet);
+
+  // Filter rows belonging to this month
+  const monthRows = rows.filter(row => {
+    const d = normDate(row[COL_ATT.DATE]);
+    return d.startsWith(month);
+  });
+
+  // Group by date
+  const map = {};
+  monthRows.forEach(row => {
+    const d  = normDate(row[COL_ATT.DATE]);
+    const id = String(row[COL_ATT.MEMBER_ID]).trim();
+    if (!map[d]) map[d] = { date: d, count: 0, memberIds: [] };
+    map[d].count++;
+    map[d].memberIds.push(id);
+  });
+
+  // Sort by date and return
+  const summary = Object.values(map).sort((a, b) => a.date.localeCompare(b.date));
+  return { success: true, data: summary };
+}
+
+
+// =============================================================================
+//  POST HANDLERS
+// =============================================================================
+
+/**
+ * Records a single attendance check-in.
+ * Prevents duplicate check-ins for the same member on the same date.
+ *
+ * @param {Object} body - { memberId, date, checkedInBy }
+ * @returns {Object} { success: true, data: { status: "checked-in" | "already-checked-in" } }
+ */
+function checkIn(body) {
+  const { memberId, date, checkedInBy } = body;
+
+  if (!memberId)    throw new Error("memberId is required");
+  if (!isValidDate(date)) throw new Error("date must be YYYY-MM-DD");
+
+  // Look up member name
+  const memberName = getMemberName(memberId);
+  if (!memberName) throw new Error("Member not found: " + memberId);
+
+  // Duplicate check
+  if (isAlreadyCheckedIn(memberId, date)) {
+    return { success: true, data: { status: "already-checked-in", memberId, date } };
+  }
+
+  const sheet     = getSheet(SHEET_ATTENDANCE);
+  const timestamp = new Date().toISOString();
+  sheet.appendRow([
+    memberId,
+    memberName,
+    date,
+    timestamp,
+    checkedInBy || "manual",
+    body.occasion || "Sunday Service"
+  ]);
+
+  return { success: true, data: { status: "checked-in", memberId, memberName, date, timestamp } };
+}
+
+
+/**
+ * Adds a new member to the Members sheet.
+ * Generates a unique ID in the format MEM-001.
+ *
+ * @param {Object} body - { name, dgroup, ministry, phone, birthday, email }
+ * @returns {Object} { success: true, data: memberObject }
+ */
+function addMember(body) {
+  const { name, outreach, dgroup, dgroupLeader, ministry, phone, address, birthday, gender, civilStatus, hasChildren, emergencyContact, emergencyPhone, email, membershipStatus, membershipDate, baptismDate, baptismPlace, classes } = body;
+
+  if (!name) throw new Error("name is required");
+
+  const existing = findMemberByName(name);
+  if (existing) {
+    return { success: false, error: 'Member "' + existing.name + '" already exists (' + existing.id + ')' };
+  }
+
+  const sheet  = getSheet(SHEET_MEMBERS);
+  const newId  = generateMemberId(sheet);
+  const today  = formatDate(new Date());
+  const qrCode = generateQRUrl(newId);
+
+  sheet.appendRow([
+    newId,
+    name             || "",
+    outreach         || "",
+    dgroup           || "",
+    dgroupLeader     || "",
+    ministry         || "",
+    phone            || "",
+    address          || "",
+    birthday         || "",
+    gender           || "",
+    civilStatus      || "",
+    hasChildren      || "",
+    emergencyContact || "",
+    emergencyPhone   || "",
+    email            || "",
+    membershipStatus || "",
+    membershipDate   || "",
+    baptismDate      || "",
+    baptismPlace     || "",
+    classes          || "",
+    qrCode,
+    "Active",
+    today
+  ]);
+
+  const member = {
+    id: newId, name, outreach: outreach||"", dgroup: dgroup||"", dgroupLeader: dgroupLeader||"",
+    ministry: ministry||"", phone: phone||"", address: address||"", birthday: birthday||"",
+    gender: gender||"", civilStatus: civilStatus||"", hasChildren: hasChildren||"",
+    emergencyContact: emergencyContact||"", emergencyPhone: emergencyPhone||"",
+    email: email||"", membershipStatus: membershipStatus||"", membershipDate: membershipDate||"",
+    baptismDate: baptismDate||"", baptismPlace: baptismPlace||"", classes: classes||"",
+    qrCode, status: "Active", dateRegistered: today
+  };
+
+  return { success: true, data: member };
+}
+
+
+/**
+ * Updates one or more fields for an existing member.
+ * Only provided fields are overwritten; others remain unchanged.
+ *
+ * @param {Object} body - { id, name?, dgroup?, phone?, birthday?, status?, photoUrl? }
+ * @returns {Object} { success: true, data: updatedMemberObject }
+ */
+function updateMember(body) {
+  const { id } = body;
+  if (!id) throw new Error("id is required");
+
+  const sheet = getSheet(SHEET_MEMBERS);
+  const data  = sheet.getDataRange().getValues();
+
+  // Find the row (skip header at index 0)
+  let rowIndex = -1;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][COL_MEM.ID]).trim() === String(id).trim()) {
+      rowIndex = i;
+      break;
+    }
+  }
+  if (rowIndex === -1) throw new Error("Member not found: " + id);
+
+  // Map of field names to column indices
+  const fieldMap = {
+    name:             COL_MEM.NAME,
+    outreach:         COL_MEM.OUTREACH,
+    dgroup:           COL_MEM.DGROUP,
+    dgroupLeader:     COL_MEM.DGROUP_LEADER,
+    ministry:         COL_MEM.MINISTRY,
+    phone:            COL_MEM.PHONE,
+    address:          COL_MEM.ADDRESS,
+    birthday:         COL_MEM.BIRTHDAY,
+    gender:           COL_MEM.GENDER,
+    civilStatus:      COL_MEM.CIVIL_STATUS,
+    hasChildren:      COL_MEM.HAS_CHILDREN,
+    emergencyContact: COL_MEM.EMERGENCY_CONTACT,
+    emergencyPhone:   COL_MEM.EMERGENCY_PHONE,
+    email:            COL_MEM.EMAIL,
+    membershipStatus: COL_MEM.MEMBERSHIP_STATUS,
+    membershipDate:   COL_MEM.MEMBERSHIP_DATE,
+    baptismDate:      COL_MEM.BAPTISM_DATE,
+    baptismPlace:     COL_MEM.BAPTISM_PLACE,
+    classes:          COL_MEM.CLASSES,
+    status:           COL_MEM.STATUS
+  };
+
+  // Update only the supplied fields
+  Object.entries(fieldMap).forEach(([field, col]) => {
+    if (body[field] !== undefined) {
+      sheet.getRange(rowIndex + 1, col + 1).setValue(body[field]);
+    }
+  });
+
+  // Return the updated row (23 columns)
+  const updatedRow = sheet.getRange(rowIndex + 1, 1, 1, 23).getValues()[0];
+  return { success: true, data: rowToMember(updatedRow) };
+}
+
+
+/**
+ * Adds a walk-in visitor to the Visitors sheet.
+ *
+ * @param {Object} body - { name, phone, notes? }
+ * @returns {Object} { success: true, data: visitorRecord }
+ */
+function addVisitor(body) {
+  const { name, phone, notes } = body;
+  if (!name) throw new Error("name is required");
+
+  const sheet = getSheet(SHEET_VISITORS);
+  const date  = formatDate(new Date());
+
+  sheet.appendRow([name, phone || "", date, notes || ""]);
+
+  return {
+    success: true,
+    data: { name, phone: phone || "", date, notes: notes || "" }
+  };
+}
+
+
+/**
+ * Bulk-syncs offline check-ins in a single call.
+ * Skips any records that are already present (idempotent).
+ *
+ * @param {Object} body - { checkins: [{ memberId, date, timestamp, checkedInBy }, ...] }
+ * @returns {Object} { success: true, data: { synced, skipped, errors } }
+ */
+function bulkSync(body) {
+  const checkins = body.checkins || [];
+  if (!Array.isArray(checkins)) throw new Error("checkins must be an array");
+
+  const sheet   = getSheet(SHEET_ATTENDANCE);
+  let synced    = 0;
+  let skipped   = 0;
+  const errors  = [];
+
+  // Pre-load existing check-in keys for fast duplicate lookup
+  const existingKeys = buildExistingCheckinKeys(sheet);
+
+  checkins.forEach((item, idx) => {
+    try {
+      const { memberId, date, timestamp, checkedInBy } = item;
+
+      if (!memberId || !isValidDate(date)) {
+        errors.push({ index: idx, reason: "Invalid memberId or date", item });
+        return;
+      }
+
+      const key = `${memberId}__${date}`;
+      if (existingKeys.has(key)) {
+        skipped++;
+        return;
+      }
+
+      const memberName = getMemberName(memberId) || "Unknown";
+      sheet.appendRow([
+        memberId,
+        memberName,
+        date,
+        timestamp || new Date().toISOString(),
+        checkedInBy || "sync"
+      ]);
+      existingKeys.add(key); // Prevent intra-batch duplicates
+      synced++;
+
+    } catch (err) {
+      errors.push({ index: idx, reason: err.message });
+    }
+  });
+
+  return { success: true, data: { synced, skipped, errors } };
+}
+
+
+// =============================================================================
+//  FEEDBACK
+// =============================================================================
+
+function submitFeedback(body) {
+  const { category, message, userEmail } = body;
+  if (!message) throw new Error("message is required");
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheet = ss.getSheetByName('Feedback');
+  if (!sheet) {
+    sheet = ss.insertSheet('Feedback');
+    sheet.appendRow(["Date", "Category", "Message", "UserEmail", "Status"]);
+    sheet.setFrozenRows(1);
+  }
+  sheet.appendRow([new Date().toISOString(), category || "General", message, userEmail || "anonymous", "New"]);
+  return { success: true, data: { status: "received" } };
+}
+
+
+// =============================================================================
+//  ACCESS CONTROL
+// =============================================================================
+
+function checkAccess(body) {
+  const { email, name } = body;
+  if (!email) throw new Error("email is required");
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheet = ss.getSheetByName('ApprovedUsers');
+  if (!sheet) {
+    sheet = ss.insertSheet('ApprovedUsers');
+    sheet.appendRow(["Email", "Name", "Role", "ApprovedDate", "Status"]);
+    sheet.setFrozenRows(1);
+  }
+  const rows = sheet.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]).toLowerCase().trim() === email.toLowerCase().trim()) {
+      var status = String(rows[i][4]).toLowerCase().trim();
+      if (status === "approved") {
+        return { success: true, approved: true, role: rows[i][2] };
+      } else {
+        return { success: true, approved: false, pending: status === "pending" };
+      }
+    }
+  }
+  sheet.appendRow([email, name || "", "usher", "", "pending"]);
+  return { success: true, approved: false, pending: true };
+}
+
+
+// =============================================================================
+//  OCCASION CONFIG
+// =============================================================================
+
+function getOccasionConfig() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheet = ss.getSheetByName("Config");
+  if (!sheet) return { success: true, data: { active: "Sunday Service", list: ["Sunday Service"] } };
+  const rows = sheet.getDataRange().getValues();
+  var active = "Sunday Service";
+  var list = ["Sunday Service"];
+  for (var i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]).trim() === "activeOccasion") active = String(rows[i][1]).trim() || "Sunday Service";
+    if (String(rows[i][0]).trim() === "occasionList") {
+      try { list = JSON.parse(String(rows[i][1])); } catch(e) {}
+    }
+  }
+  return { success: true, data: { active: active, list: list } };
+}
+
+function setOccasionConfig(body) {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheet = ss.getSheetByName("Config");
+  if (!sheet) {
+    sheet = ss.insertSheet("Config");
+    sheet.appendRow(["Key", "Value"]);
+    sheet.setFrozenRows(1);
+  }
+  const rows = sheet.getDataRange().getValues();
+  var activeRow = -1, listRow = -1;
+  for (var i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]).trim() === "activeOccasion") activeRow = i + 1;
+    if (String(rows[i][0]).trim() === "occasionList") listRow = i + 1;
+  }
+  if (body.active !== undefined) {
+    if (activeRow > 0) sheet.getRange(activeRow, 2).setValue(body.active);
+    else sheet.appendRow(["activeOccasion", body.active]);
+  }
+  if (body.list !== undefined) {
+    var listStr = JSON.stringify(body.list);
+    if (listRow > 0) sheet.getRange(listRow, 2).setValue(listStr);
+    else sheet.appendRow(["occasionList", listStr]);
+  }
+  return { success: true };
+}
+
+
+// =============================================================================
+//  DEVICE ACCESS CONTROL
+// =============================================================================
+
+function getOrCreateDevicesSheet() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  let sheet = ss.getSheetByName(SHEET_DEVICES);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_DEVICES);
+    sheet.appendRow(["DeviceID", "Name", "Status", "RegisteredDate"]);
+    sheet.getRange("1:1").setFontWeight("bold");
+    const statusRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(["Pending", "Approved", "Blocked"], true)
+      .setAllowInvalid(false)
+      .build();
+    sheet.getRange("C2:C1000").setDataValidation(statusRule);
+    sheet.setColumnWidth(1, 180);
+    sheet.setColumnWidth(2, 150);
+    sheet.setColumnWidth(3, 100);
+    sheet.setColumnWidth(4, 130);
+  }
+  return sheet;
+}
+
+function registerDevice(body) {
+  const { deviceId, name } = body;
+  if (!deviceId || !name) throw new Error("deviceId and name are required");
+
+  const sheet = getOrCreateDevicesSheet();
+  const rows = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]).trim() === deviceId) {
+      return { success: true, data: { status: String(rows[i][2]).trim(), alreadyRegistered: true } };
+    }
+  }
+
+  const isFirst = rows.length <= 1;
+  const status = isFirst ? "Approved" : "Pending";
+  sheet.appendRow([deviceId, name, status, formatDate(new Date())]);
+
+  return { success: true, data: { status: status, alreadyRegistered: false } };
+}
+
+function getDeviceStatus(deviceId) {
+  const sheet = getOrCreateDevicesSheet();
+  const rows = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]).trim() === deviceId) {
+      return { success: true, data: { status: String(rows[i][2]).trim() } };
+    }
+  }
+  return { success: true, data: { status: "unknown" } };
+}
+
+// =============================================================================
+//  SETUP FUNCTION
+//  Run this manually once from the Apps Script editor to initialize the sheet.
+// =============================================================================
+
+/**
+ * Creates the required sheets with headers if they do not already exist.
+ * Also initializes the Config sheet with default key-value pairs.
+ * Run from the Apps Script editor: Extensions > Apps Script > Run > setup
+ */
+function setup() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+
+  // --- Members (updated schema) ---
+  ensureSheet(ss, SHEET_MEMBERS, [
+    "ID", "Name", "Outreach", "DGroup", "DGroupLeader", "Ministry",
+    "Phone", "Address", "Birthday", "Gender", "CivilStatus", "HasChildren",
+    "EmergencyContact", "EmergencyPhone", "Email", "MembershipStatus",
+    "MembershipDate", "BaptismDate", "BaptismPlace", "Classes",
+    "QRCodeURL", "Status", "DateRegistered"
+  ]);
+
+  // --- Attendance ---
+  ensureSheet(ss, SHEET_ATTENDANCE, [
+    "MemberID", "MemberName", "Date", "Timestamp", "CheckedInBy", "Occasion"
+  ]);
+
+  // --- Visitors ---
+  ensureSheet(ss, SHEET_VISITORS, [
+    "Name", "Phone", "Date", "Notes"
+  ]);
+
+  // --- Config ---
+  const configSheet = ensureSheet(ss, SHEET_CONFIG, ["Key", "Value"]);
+
+  // Populate default config rows only if the sheet was just created (1 row = header only)
+  if (configSheet.getLastRow() <= 1) {
+    configSheet.appendRow(["ADMIN_EMAIL",  ADMIN_EMAIL || ""]);
+    configSheet.appendRow(["CHURCH_NAME",  "JILGM"]);
+    Logger.log("Config sheet initialized with default values.");
+  }
+
+  // --- Reports ---
+  if (!ss.getSheetByName('Reports')) {
+    var reportsSheet = ss.insertSheet('Reports');
+    reportsSheet.appendRow(['Date', 'Outreach', 'Youth', 'YPro', 'Mothers', 'Fathers', 'Children', 'Total', 'New', 'Others', 'SentTo', 'Timestamp']);
+    reportsSheet.getRange(1, 1, 1, 12).setFontWeight('bold');
+    reportsSheet.setFrozenRows(1);
+    Logger.log("Created sheet: Reports");
+  }
+
+  // --- Feedback ---
+  ensureSheet(ss, 'Feedback', [
+    "Date", "Category", "Message", "UserEmail", "Status"
+  ]);
+
+  // --- ApprovedUsers ---
+  ensureSheet(ss, 'ApprovedUsers', [
+    "Email", "Name", "Role", "ApprovedDate", "Status"
+  ]);
+
+  Logger.log("Setup complete. Sheets ready.");
+}
+
+
+// =============================================================================
+//  HELPER UTILITIES
+// =============================================================================
+
+/**
+ * Opens the spreadsheet and returns the named sheet.
+ * Throws if the sheet does not exist.
+ */
+function getSheet(sheetName) {
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) throw new Error(`Sheet "${sheetName}" not found. Run setup() first.`);
+  return sheet;
+}
+
+
+/**
+ * Returns all data rows (excluding the header row) from a sheet.
+ * @returns {Array[]} 2-D array of values
+ */
+function getDataRows(sheet) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return []; // No data rows
+  return sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
+}
+
+/**
+ * Normalizes a date value (Date object or string) to YYYY-MM-DD format.
+ */
+function normDate(val) {
+  if (val instanceof Date) {
+    return Utilities.formatDate(val, Session.getScriptTimeZone(), "yyyy-MM-dd");
+  }
+  return String(val || "").trim();
+}
+
+
+/**
+ * Converts a raw Members row array to a plain object.
+ */
+function rowToMember(row) {
+  return {
+    id:               String(row[COL_MEM.ID]               || "").trim(),
+    name:             String(row[COL_MEM.NAME]             || "").trim(),
+    outreach:         String(row[COL_MEM.OUTREACH]         || "").trim(),
+    dgroup:           String(row[COL_MEM.DGROUP]           || "").trim(),
+    dgroupLeader:     String(row[COL_MEM.DGROUP_LEADER]    || "").trim(),
+    ministry:         String(row[COL_MEM.MINISTRY]         || "").trim(),
+    phone:            String(row[COL_MEM.PHONE]            || "").trim(),
+    address:          String(row[COL_MEM.ADDRESS]          || "").trim(),
+    birthday:         normDate(row[COL_MEM.BIRTHDAY]),
+    gender:           String(row[COL_MEM.GENDER]           || "").trim(),
+    civilStatus:      String(row[COL_MEM.CIVIL_STATUS]     || "").trim(),
+    hasChildren:      String(row[COL_MEM.HAS_CHILDREN]     || "").trim(),
+    emergencyContact: String(row[COL_MEM.EMERGENCY_CONTACT]|| "").trim(),
+    emergencyPhone:   String(row[COL_MEM.EMERGENCY_PHONE]  || "").trim(),
+    email:            String(row[COL_MEM.EMAIL]            || "").trim(),
+    membershipStatus: String(row[COL_MEM.MEMBERSHIP_STATUS]|| "").trim(),
+    membershipDate:   normDate(row[COL_MEM.MEMBERSHIP_DATE]),
+    baptismDate:      normDate(row[COL_MEM.BAPTISM_DATE]),
+    baptismPlace:     String(row[COL_MEM.BAPTISM_PLACE]    || "").trim(),
+    classes:          String(row[COL_MEM.CLASSES]          || "").trim(),
+    qrCode:           String(row[COL_MEM.QR_CODE]          || "").trim(),
+    status:           String(row[COL_MEM.STATUS]           || "").trim(),
+    dateRegistered:   String(row[COL_MEM.DATE_REGISTERED]  || "").trim()
+  };
+}
+
+
+/**
+ * Converts a raw Attendance row array to a plain object.
+ */
+function rowToAttendance(row) {
+  return {
+    memberId:    String(row[COL_ATT.MEMBER_ID]    || "").trim(),
+    memberName:  String(row[COL_ATT.MEMBER_NAME]  || "").trim(),
+    date:        normDate(row[COL_ATT.DATE]),
+    timestamp:   String(row[COL_ATT.TIMESTAMP]    || "").trim(),
+    checkedInBy: String(row[COL_ATT.CHECKED_IN_BY]|| "").trim(),
+    occasion:    String(row[COL_ATT.OCCASION]     || "Sunday Service").trim()
+  };
+}
+
+
+/**
+ * Finds a member by full name (case-insensitive).
+ * Returns {id, name, email} or null if not found.
+ */
+function findMemberByName(name) {
+  const sheet = getSheet(SHEET_MEMBERS);
+  const rows = getDataRows(sheet);
+  const target = String(name).trim().toLowerCase();
+  for (let i = 0; i < rows.length; i++) {
+    if (String(rows[i][COL_MEM.NAME]).trim().toLowerCase() === target) {
+      return {
+        id: String(rows[i][COL_MEM.ID]).trim(),
+        name: String(rows[i][COL_MEM.NAME]).trim(),
+        email: String(rows[i][COL_MEM.EMAIL]).trim()
+      };
+    }
+  }
+  return null;
+}
+
+/**
+ * Sends email to a person who tried to register again.
+ */
+function sendDuplicateNotice(email, name, existingId) {
+  try {
+    const subject = "FlockTrack - You're Already Registered";
+    const body = "Hi " + name + ",\n\n" +
+      "You are already registered in our system (ID: " + existingId + ").\n\n" +
+      "Your QR code was previously sent to this email. If you lost it, please ask an usher to resend it.\n\n" +
+      "God bless!\nFlockTrack - JILGM STBC";
+    MailApp.sendEmail(email, subject, body);
+  } catch (err) {
+    Logger.log("sendDuplicateNotice error: " + err.message);
+  }
+}
+
+/**
+ * Looks up the display name of a member by their ID.
+ * Returns null if not found.
+ */
+function getMemberName(memberId) {
+  const sheet = getSheet(SHEET_MEMBERS);
+  const rows  = getDataRows(sheet);
+  const found = rows.find(row => String(row[COL_MEM.ID]).trim() === String(memberId).trim());
+  return found ? String(found[COL_MEM.NAME]).trim() : null;
+}
+
+
+/**
+ * Returns true if the member is already checked in for the given date.
+ */
+function isAlreadyCheckedIn(memberId, date) {
+  const sheet = getSheet(SHEET_ATTENDANCE);
+  const keys  = buildExistingCheckinKeys(sheet);
+  return keys.has(`${memberId}__${date}`);
+}
+
+
+/**
+ * Builds a Set of "memberId__date" keys from the Attendance sheet for O(1) lookups.
+ */
+function buildExistingCheckinKeys(sheet) {
+  const rows = getDataRows(sheet);
+  const keys = new Set();
+  rows.forEach(row => {
+    const id   = String(row[COL_ATT.MEMBER_ID]).trim();
+    const date = normDate(row[COL_ATT.DATE]);
+    if (id && date) keys.add(`${id}__${date}`);
+  });
+  return keys;
+}
+
+
+/**
+ * Generates the next sequential member ID (e.g. MEM-042).
+ * Scans existing IDs and increments the highest numeric suffix.
+ */
+function generateMemberId(sheet) {
+  const rows   = getDataRows(sheet);
+  let   maxNum = 0;
+
+  rows.forEach(row => {
+    const id    = String(row[COL_MEM.ID]).trim();
+    const match = id.match(/^MEM-(\d+)$/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (num > maxNum) maxNum = num;
+    }
+  });
+
+  const nextNum = maxNum + 1;
+  return "MEM-" + String(nextNum).padStart(3, "0");
+}
+
+
+/**
+ * Saves a base64-encoded image to Google Drive and returns a public URL.
+ * Stores photos in a folder named "ChurchApp_Photos".
+ *
+ * @param {string} base64Data - Data URL (data:image/jpeg;base64,...) or raw base64
+ * @param {string} memberId   - Used as the filename
+ * @returns {string} Public view URL of the uploaded file
+ */
+function savePhotoToDrive(base64Data, memberId) {
+  try {
+    // Strip data URL prefix if present
+    const base64 = base64Data.replace(/^data:image\/\w+;base64,/, "");
+    const blob   = Utilities.newBlob(
+      Utilities.base64Decode(base64),
+      "image/jpeg",
+      memberId + ".jpg"
+    );
+
+    // Get or create the photos folder
+    const folderName = "ChurchApp_Photos";
+    let   folder;
+    const folders = DriveApp.getFoldersByName(folderName);
+    if (folders.hasNext()) {
+      folder = folders.next();
+    } else {
+      folder = DriveApp.createFolder(folderName);
+    }
+
+    const file = folder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return file.getDownloadUrl();
+
+  } catch (err) {
+    logError("savePhotoToDrive", err);
+    return ""; // Non-fatal: return empty string if photo upload fails
+  }
+}
+
+
+/**
+ * Generates a QR code URL for a member ID using the free qrserver API.
+ * The QR encodes the member ID string directly.
+ *
+ * @param {string} memberId
+ * @returns {string} QR code image URL (300x300)
+ */
+function generateQRUrl(memberId) {
+  const encodedId = encodeURIComponent(memberId);
+  return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedId}`;
+}
+
+
+/**
+ * Creates a sheet with the given header row if it does not already exist.
+ */
+function ensureSheet(ss, name, headers) {
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+    sheet.appendRow(headers);
+
+    // Style the header row
+    const headerRange = sheet.getRange(1, 1, 1, headers.length);
+    headerRange.setFontWeight("bold");
+    headerRange.setBackground("#4a86e8");
+    headerRange.setFontColor("#ffffff");
+    sheet.setFrozenRows(1);
+
+    Logger.log(`Created sheet: ${name}`);
+  } else {
+    Logger.log(`Sheet already exists: ${name}`);
+  }
+  return sheet;
+}
+
+
+/**
+ * Formats a Date object as YYYY-MM-DD.
+ */
+function formatDate(d) {
+  const year  = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day   = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+
+/**
+ * Validates a YYYY-MM-DD date string.
+ */
+function isValidDate(str) {
+  return typeof str === "string" && /^\d{4}-\d{2}-\d{2}$/.test(str);
+}
+
+
+/**
+ * Validates a YYYY-MM month string.
+ */
+function isValidMonth(str) {
+  return typeof str === "string" && /^\d{4}-\d{2}$/.test(str);
+}
+
+
+/**
+ * Logs an error to the Apps Script Logger for debugging.
+ */
+function logError(context, err) {
+  Logger.log(`[ERROR] ${context}: ${err.message}\n${err.stack || ""}`);
+}
+
+
+// =============================================================================
+//  RESPONSE BUILDERS
+//  All responses include CORS headers (Access-Control-Allow-Origin: *)
+// =============================================================================
+
+/**
+ * Builds a successful JSON response with CORS headers.
+ * @param {Object} payload - Must have { success, data } shape
+ */
+function respond(payload) {
+  const output = ContentService
+    .createTextOutput(JSON.stringify(payload))
+    .setMimeType(ContentService.MimeType.JSON);
+  return output;
+}
+
+
+/**
+ * Builds an error JSON response.
+ * Note: Apps Script Web Apps do not support custom HTTP status codes;
+ * the status field in the body conveys the error code to the client.
+ *
+ * @param {string} message
+ * @param {number} [status=400]
+ */
+function respondError(message, status) {
+  const payload = {
+    success: false,
+    error:   message,
+    status:  status || 400
+  };
+  return ContentService
+    .createTextOutput(JSON.stringify(payload))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// =============================================================================
+//  FORM SUBMIT TRIGGER
+//  Install as an installable trigger: Triggers > onFormSubmit > From spreadsheet
+//  or bind to the linked Google Form's "On form submit" trigger.
+// =============================================================================
+
+/**
+ * Installable trigger fired when a member registration Google Form is submitted.
+ * Extracts fields, generates a member ID and QR code, saves the QR image to
+ * Drive, writes the member row, and emails the member their QR code.
+ *
+ * Expected form fields (case-insensitive match on title):
+ *   Full Name | Email | Phone | Birthday | D-Group Leader | Ministry
+ *
+ * @param {GoogleAppsScript.Events.SheetsOnFormSubmit} e
+ */
+function onFormSubmit(e) {
+  try {
+    const responses = e.namedValues; // { "Field Title": ["value"], ... }
+
+    // Helper to safely pull first response value by a case-insensitive key match
+    function getField(label) {
+      const key = Object.keys(responses).find(
+        k => k.toLowerCase().trim() === label.toLowerCase().trim()
+      );
+      return key ? (responses[key][0] || "").trim() : "";
+    }
+
+    const fullName        = getField("Full Name");
+    const email           = getField("Email");
+    const phone           = getField("Phone");
+    const address         = getField("Address");
+    const birthday        = getField("Birthday");
+    const gender          = getField("Gender");
+    const civilStatus     = getField("Civil Status");
+    const hasChildren     = getField("Do you have children?");
+    const emergencyContact= getField("Emergency Contact Person");
+    const emergencyPhone  = getField("Emergency Contact Number");
+    const outreach        = getField("Outreach");
+    const dgroup          = getField("D-Group");
+    const dgroupLeader    = getField("D-Group Leader");
+    const ministry        = getField("Ministry");
+    const membershipStatus= getField("Membership Status");
+    const membershipDate  = getField("Membership Date");
+    const baptismDate     = getField("Date of Baptism");
+    const baptismPlace    = getField("Place of Baptism");
+    const classes         = getField("Classes Attended");
+
+    if (!fullName) {
+      Logger.log("onFormSubmit: No Full Name found in form response. Skipping.");
+      return;
+    }
+
+    const existing = findMemberByName(fullName);
+    if (existing) {
+      Logger.log("Duplicate registration blocked: " + fullName + " (matches " + existing.id + ")");
+      if (email) { sendDuplicateNotice(email, fullName, existing.id); }
+      return;
+    }
+
+    const sheet  = getSheet(SHEET_MEMBERS);
+    const newId  = generateMemberId(sheet);
+    const today  = formatDate(new Date());
+    const qrUrl  = generateQRUrl(newId);
+    const qrImageUrl = saveQRToDrive(newId, qrUrl);
+
+    sheet.appendRow([
+      newId,
+      fullName,
+      outreach,
+      dgroup,
+      dgroupLeader,
+      ministry,
+      phone,
+      address,
+      birthday,
+      gender,
+      civilStatus,
+      hasChildren,
+      emergencyContact,
+      emergencyPhone,
+      email,
+      membershipStatus,
+      membershipDate,
+      baptismDate,
+      baptismPlace,
+      classes,
+      qrImageUrl || qrUrl,
+      "Active",
+      today
+    ]);
+
+    Logger.log("onFormSubmit: Registered member " + newId + " - " + fullName);
+
+    // Send QR email if email provided
+    if (email) {
+      sendQREmail(email, fullName, newId, qrImageUrl || qrUrl);
+    }
+
+  } catch (err) {
+    logError("onFormSubmit", err);
+  }
+}
+
+
+// =============================================================================
+//  NEW GET HANDLERS
+// =============================================================================
+
+/**
+ * Returns the QR code URL and name for a given member ID.
+ *
+ * @param {string} memberId
+ * @returns {Object} { success: true, data: { qrUrl, name } }
+ */
+function getMemberQR(memberId) {
+  const sheet = getSheet(SHEET_MEMBERS);
+  const rows  = getDataRows(sheet);
+  const row   = rows.find(r => String(r[COL_MEM.ID]).trim() === memberId.trim());
+
+  if (!row) throw new Error("Member not found: " + memberId);
+
+  return {
+    success: true,
+    data: {
+      qrUrl: String(row[COL_MEM.QR_CODE] || "").trim(),
+      name:  String(row[COL_MEM.NAME]    || "").trim()
+    }
+  };
+}
+
+
+// =============================================================================
+//  NEW POST HANDLERS
+// =============================================================================
+
+/**
+ * Re-sends the QR code email to a member.
+ *
+ * @param {Object} body - { memberId }
+ * @returns {Object} { success: true } or throws on error
+ */
+function resendQR(body) {
+  const { memberId } = body;
+  if (!memberId) throw new Error("memberId is required");
+
+  const sheet = getSheet(SHEET_MEMBERS);
+  const rows  = getDataRows(sheet);
+  const row   = rows.find(r => String(r[COL_MEM.ID]).trim() === memberId.trim());
+
+  if (!row) throw new Error("Member not found: " + memberId);
+
+  const email  = String(row[COL_MEM.EMAIL]   || "").trim();
+  const name   = String(row[COL_MEM.NAME]    || "").trim();
+  const qrUrl  = String(row[COL_MEM.QR_CODE] || "").trim();
+
+  if (!email) throw new Error("No email address on file for member: " + memberId);
+
+  sendQREmail(email, name, memberId, qrUrl);
+
+  return { success: true, data: { message: "QR code resent to " + email } };
+}
+
+
+// =============================================================================
+//  REPORT SENDER
+// =============================================================================
+
+/**
+ * Sends a formatted attendance report email and logs it to the Reports sheet.
+ *
+ * @param {Object} body - { email, date, outreach, youth, ypro, mothers, fathers, children, newCount, others }
+ * @returns {Object} { success: true, data: { total } }
+ */
+function sendReport(body) {
+  var email = body.email;
+  if (!email) return respond({ success: false, error: 'No email configured' });
+
+  var date     = body.date     || new Date().toISOString().split('T')[0];
+  var occasion = body.occasion || 'Sunday Service';
+  var outreach = body.outreach || 'STBC';
+  var youth    = body.youth    || 0;
+  var ypro     = body.ypro     || 0;
+  var mothers  = body.mothers  || 0;
+  var fathers  = body.fathers  || 0;
+  var children = body.children || 0;
+  var total    = youth + ypro + mothers + fathers + children;
+  var newCount = body.newCount || 0;
+  var others   = body.others   || '-';
+
+  var subject  = 'JILGM Report - ' + occasion + ' - ' + date;
+  var htmlBody =
+    '<div style="font-family:Arial,sans-serif;max-width:400px;padding:20px">'
+    + '<h2 style="color:#d4a843;margin-bottom:16px">JILGM Attendance Report</h2>'
+    + '<p><strong>Date:</strong> ' + date + '</p>'
+    + '<p><strong>Occasion:</strong> ' + occasion + '</p>'
+    + '<p><strong>Outreach:</strong> ' + outreach + '</p>'
+    + '<hr style="border:1px solid #eee;margin:12px 0">'
+    + '<table style="width:100%;border-collapse:collapse">'
+    + '<tr><td style="padding:6px 0">Youth</td><td style="text-align:right;font-weight:bold">' + youth + '</td></tr>'
+    + '<tr><td style="padding:6px 0">YPro</td><td style="text-align:right;font-weight:bold">' + ypro + '</td></tr>'
+    + '<tr><td style="padding:6px 0">Mothers</td><td style="text-align:right;font-weight:bold">' + mothers + '</td></tr>'
+    + '<tr><td style="padding:6px 0">Fathers</td><td style="text-align:right;font-weight:bold">' + fathers + '</td></tr>'
+    + '<tr><td style="padding:6px 0">Children</td><td style="text-align:right;font-weight:bold">' + children + '</td></tr>'
+    + '<tr style="border-top:2px solid #333"><td style="padding:8px 0;font-weight:bold">Total</td><td style="text-align:right;font-weight:bold;font-size:18px">' + total + '</td></tr>'
+    + '</table>'
+    + '<hr style="border:1px solid #eee;margin:12px 0">'
+    + '<p><strong>New:</strong> ' + newCount + '</p>'
+    + '<p><strong>Others:</strong> ' + others + '</p>'
+    + '<hr style="border:1px solid #eee;margin:12px 0">'
+    + '<p style="color:#888;font-size:12px">Sent from JILGM Attendance Tracker</p>'
+    + '</div>';
+
+  MailApp.sendEmail({
+    to:       email,
+    subject:  subject,
+    htmlBody: htmlBody
+  });
+
+  // Log to Reports sheet
+  var ss    = SpreadsheetApp.openById(SHEET_ID);
+  var sheet = ss.getSheetByName('Reports');
+  if (!sheet) {
+    sheet = ss.insertSheet('Reports');
+    sheet.appendRow(['Date', 'Occasion', 'Outreach', 'Youth', 'YPro', 'Mothers', 'Fathers', 'Children', 'Total', 'New', 'Others', 'SentTo', 'Timestamp']);
+    sheet.getRange(1, 1, 1, 13).setFontWeight('bold');
+  }
+  sheet.appendRow([date, occasion, outreach, youth, ypro, mothers, fathers, children, total, newCount, others, email, new Date()]);
+
+  return { success: true, data: { total: total } };
+}
+
+
+// =============================================================================
+//  WEEKLY BACKUP
+//  Schedule via Triggers > weeklyBackup > Time-driven > Week timer
+// =============================================================================
+
+/**
+ * Creates a timestamped copy of the spreadsheet and emails it to ADMIN_EMAIL.
+ * Set up as a weekly time-driven trigger from the Apps Script Triggers panel.
+ */
+function weeklyBackup() {
+  try {
+    const adminEmail = getConfigValue("ADMIN_EMAIL") || ADMIN_EMAIL;
+    if (!adminEmail) {
+      Logger.log("weeklyBackup: ADMIN_EMAIL is not configured. Skipping backup email.");
+      return;
+    }
+
+    const ss         = SpreadsheetApp.openById(SHEET_ID);
+    const churchName = getConfigValue("CHURCH_NAME") || "Church";
+    const dateStr    = formatDate(new Date());
+    const copyName   = churchName + " Attendance Backup - " + dateStr;
+
+    // Duplicate the spreadsheet
+    const file     = DriveApp.getFileById(SHEET_ID);
+    const copyFile = file.makeCopy(copyName);
+    const copyUrl  = copyFile.getUrl();
+
+    // Email the admin with a link to the backup
+    const subject = churchName + " - Weekly Attendance Backup (" + dateStr + ")";
+    const body    =
+      "<p>Hello,</p>" +
+      "<p>Your weekly attendance sheet backup is ready.</p>" +
+      "<p><strong>Backup name:</strong> " + copyName + "</p>" +
+      "<p><a href='" + copyUrl + "'>Click here to open the backup in Google Sheets</a></p>" +
+      "<p>This backup was generated automatically every week.</p>" +
+      "<br><p>-- JILGM Attendance System</p>";
+
+    MailApp.sendEmail({
+      to:       adminEmail,
+      subject:  subject,
+      htmlBody: body
+    });
+
+    Logger.log("weeklyBackup: Backup created and emailed to " + adminEmail);
+
+  } catch (err) {
+    logError("weeklyBackup", err);
+  }
+}
+
+
+// =============================================================================
+//  EMAIL HELPER
+// =============================================================================
+
+/**
+ * Sends the QR code welcome email to a newly registered member.
+ * Fetches the QR image from the URL, attaches it, and embeds it in the HTML body.
+ *
+ * @param {string} toEmail   - Recipient email address
+ * @param {string} name      - Member display name
+ * @param {string} memberId  - Member ID (e.g. MEM-001)
+ * @param {string} qrUrl     - URL of the QR code image
+ */
+function sendQREmail(toEmail, name, memberId, qrUrl) {
+  try {
+    const churchName = getConfigValue("CHURCH_NAME") || "JILGM";
+
+    // Fetch QR image as a blob to attach
+    let qrBlob = null;
+    try {
+      const response = UrlFetchApp.fetch(qrUrl);
+      qrBlob = response.getBlob().setName(memberId + "_QR.png");
+    } catch (fetchErr) {
+      logError("sendQREmail - fetch QR blob", fetchErr);
+    }
+
+    const htmlBody =
+      "<!DOCTYPE html>" +
+      "<html><body style='font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;'>" +
+      "<div style='background:#1a73e8;padding:20px;border-radius:8px 8px 0 0;text-align:center;'>" +
+      "<h1 style='color:#ffffff;margin:0;'>" + churchName + "</h1>" +
+      "<p style='color:#d0e4ff;margin:4px 0 0;'>Member Registration Confirmation</p>" +
+      "</div>" +
+      "<div style='border:1px solid #ddd;border-top:none;padding:24px;border-radius:0 0 8px 8px;'>" +
+      "<p style='font-size:16px;'>Dear <strong>" + name + "</strong>,</p>" +
+      "<p>Welcome to " + churchName + "! Your member registration is confirmed.</p>" +
+      "<p><strong>Member ID:</strong> " + memberId + "</p>" +
+      "<div style='text-align:center;margin:24px 0;'>" +
+      "<img src='" + qrUrl + "' alt='QR Code' " +
+      "style='width:220px;height:220px;border:4px solid #1a73e8;border-radius:8px;'/>" +
+      "</div>" +
+      "<div style='background:#f0f7ff;border-left:4px solid #1a73e8;padding:12px 16px;border-radius:4px;margin-bottom:16px;'>" +
+      "<p style='margin:0;font-size:14px;'>" +
+      "<strong>How to use your QR code:</strong><br>" +
+      "Show this QR code at the church gate every Sunday for attendance check-in. " +
+      "You can save this image or take a screenshot for easy access." +
+      "</p>" +
+      "</div>" +
+      "<p style='font-size:13px;color:#666;'>If you have questions, please contact your D-Group Leader or the church office.</p>" +
+      "<p style='font-size:13px;color:#666;'>God bless you!</p>" +
+      "</div>" +
+      "<p style='text-align:center;font-size:11px;color:#aaa;margin-top:16px;'>" +
+      churchName + " Attendance System" +
+      "</p>" +
+      "</body></html>";
+
+    const mailOptions = {
+      to:       toEmail,
+      subject:  "Your " + churchName + " Attendance QR Code",
+      htmlBody: htmlBody
+    };
+
+    if (qrBlob) {
+      mailOptions.attachments = [qrBlob];
+    }
+
+    MailApp.sendEmail(mailOptions);
+    Logger.log("sendQREmail: Email sent to " + toEmail + " for " + memberId);
+
+  } catch (err) {
+    logError("sendQREmail", err);
+  }
+}
+
+
+// =============================================================================
+//  DRIVE HELPERS
+// =============================================================================
+
+/**
+ * Finds an existing Google Drive folder by name or creates it if not found.
+ *
+ * @param {string} folderName
+ * @returns {GoogleAppsScript.Drive.Folder}
+ */
+function getOrCreateDriveFolder(folderName) {
+  const iter = DriveApp.getFoldersByName(folderName);
+  if (iter.hasNext()) return iter.next();
+  return DriveApp.createFolder(folderName);
+}
+
+
+/**
+ * Downloads the QR code image from the API and saves it to the
+ * "JILGM_QR_Codes" Drive folder. Returns the file's download URL,
+ * or an empty string if the save fails (non-fatal).
+ *
+ * @param {string} memberId
+ * @param {string} qrUrl
+ * @returns {string} Drive file download URL or empty string
+ */
+function saveQRToDrive(memberId, qrUrl) {
+  try {
+    const folder   = getOrCreateDriveFolder("JILGM_QR_Codes");
+    const response = UrlFetchApp.fetch(qrUrl);
+    const blob     = response.getBlob().setName(memberId + "_QR.png");
+    const file     = folder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return file.getDownloadUrl();
+  } catch (err) {
+    logError("saveQRToDrive", err);
+    return "";
+  }
+}
+
+
+// =============================================================================
+//  CONFIG HELPER
+// =============================================================================
+
+/**
+ * Reads a value from the Config sheet by key.
+ * Returns null if the key is not found or the Config sheet does not exist.
+ *
+ * @param {string} key
+ * @returns {string|null}
+ */
+function getConfigValue(key) {
+  try {
+    const sheet = getSheet(SHEET_CONFIG);
+    const rows  = getDataRows(sheet);
+    const row   = rows.find(r => String(r[0]).trim().toLowerCase() === key.toLowerCase());
+    return row ? String(row[1] || "").trim() : null;
+  } catch (err) {
+    return null; // Config sheet may not exist in older setups
+  }
+}
+
+
+// =============================================================================
+//  DAILY BIRTHDAY CHECK
+//  Schedule via Triggers > checkBirthdaysDaily > Time-driven > Day timer (6-7am)
+// =============================================================================
+
+function checkBirthdaysDaily() {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheet = ss.getSheetByName(SHEET_MEMBERS);
+  if (!sheet) return;
+
+  var rows = sheet.getDataRange().getValues();
+  var today = new Date();
+  var todayMonth = today.getMonth();
+  var todayDate = today.getDate();
+
+  var birthdayMembers = [];
+  for (var i = 1; i < rows.length; i++) {
+    var bday = rows[i][COL_MEM.BIRTHDAY];
+    var status = String(rows[i][COL_MEM.STATUS] || "").toLowerCase().trim();
+    if (!bday || status === "inactive") continue;
+
+    var bdayDate = new Date(bday);
+    if (bdayDate.getMonth() === todayMonth && bdayDate.getDate() === todayDate) {
+      var name = rows[i][COL_MEM.NAME];
+      var age = today.getFullYear() - bdayDate.getFullYear();
+      birthdayMembers.push({ name: name, age: age });
+    }
+  }
+
+  if (birthdayMembers.length === 0) return;
+
+  var adminEmail = getConfigValue("ADMIN_EMAIL") || ADMIN_EMAIL;
+  if (!adminEmail) {
+    Logger.log("checkBirthdaysDaily: No ADMIN_EMAIL configured.");
+    return;
+  }
+
+  var dateStr = Utilities.formatDate(today, Session.getScriptTimeZone(), "MMMM d, yyyy");
+  var subject = "🎂 Birthday Today - " + dateStr;
+  var html = '<div style="font-family:Arial,sans-serif;max-width:400px;padding:20px">'
+    + '<h2 style="color:#d4a843;margin-bottom:16px">🎂 Birthday Celebration!</h2>'
+    + '<p style="color:#666">The following members have birthdays today (' + dateStr + '):</p>'
+    + '<ul style="padding-left:20px">';
+
+  birthdayMembers.forEach(function(m) {
+    html += '<li style="padding:4px 0"><strong>' + m.name + '</strong> - turns ' + m.age + '</li>';
+  });
+
+  html += '</ul>'
+    + '<hr style="border:1px solid #eee;margin:16px 0">'
+    + '<p style="color:#888;font-size:12px">Sent from FlockTrack Attendance Tracker</p>'
+    + '</div>';
+
+  MailApp.sendEmail({
+    to: adminEmail,
+    subject: subject,
+    htmlBody: html
+  });
+
+  Logger.log("Birthday email sent for " + birthdayMembers.length + " member(s).");
+}
+
+// =============================================================================
+//  SHEET PROTECTION
+//  Run once manually: protectAllSheets()
+//  This prevents anyone (including you) from editing sheets directly.
+//  Only the script (deployed as "Execute as: Me") can write to them.
+// =============================================================================
+
+function protectAllSheets() {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var me = Session.getEffectiveUser();
+  var lockSheets = ["Members", "Attendance", "Reports"];
+
+  lockSheets.forEach(function(name) {
+    var sheet = ss.getSheetByName(name);
+    if (!sheet) { Logger.log("Sheet not found: " + name); return; }
+    var protection = sheet.protect().setDescription('Locked by FlockTrack - ' + name);
+    var editors = protection.getEditors();
+    protection.removeEditors(editors);
+    protection.addEditor(me);
+    if (protection.canDomainEdit()) {
+      protection.setDomainEdit(false);
+    }
+    Logger.log("Locked (read-only): " + name);
+  });
+
+  Logger.log("Members, Attendance, and Reports are now read-only. Only the script can edit them.");
+}
+
+function protectAllSheetsStrict() {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheets = ss.getSheets();
+  var me = Session.getEffectiveUser();
+
+  sheets.forEach(function(sheet) {
+    var protection = sheet.protect().setDescription('Strict protection - ' + sheet.getName());
+    var editors = protection.getEditors();
+    protection.removeEditors(editors);
+    protection.addEditor(me);
+    if (protection.canDomainEdit()) {
+      protection.setDomainEdit(false);
+    }
+  });
+
+  Logger.log("All sheets strictly protected. Only script owner can edit.");
+}
+
+// =============================================================================
+//  END OF FILE
+// =============================================================================
