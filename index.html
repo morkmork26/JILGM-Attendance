@@ -28,7 +28,8 @@ body.light .cmodal-overlay{background:rgba(0,0,0,0.4)}
 body.light .cmodal-box{box-shadow:0 24px 48px rgba(0,0,0,0.12);border-color:rgba(0,0,0,0.08)}
 body.light .cmodal-input{background:rgba(0,0,0,0.03);border-color:rgba(0,0,0,0.12)}
 body.light .cmodal-cancel{background:rgba(0,0,0,0.05);color:var(--text-secondary)}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-weight:400;line-height:1.5;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior-y:contain}
+html{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);height:100%;overflow:hidden;font-weight:400;line-height:1.5;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior-y:none}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 input,select,textarea{font-family:inherit;color:var(--text);background:transparent;border:none;outline:none;font-size:16px;-webkit-user-select:auto;user-select:auto}
 .header{position:sticky;top:0;z-index:100;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--card-border)}
@@ -43,9 +44,9 @@ body.light .logo .logo-name .track{color:#0ea5e9}
 .sync-dot.syncing{animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.3)}}
 .counter-badge{font-size:12px;font-weight:600;background:var(--card);border:1px solid var(--card-border);border-radius:20px;padding:4px 10px}
-.content{padding:16px;padding-bottom:calc(var(--nav-h) + 24px);min-height:calc(100vh - var(--header-h) - var(--nav-h))}
-.tab-content{display:none;animation:fadeIn 0.3s ease}
-.tab-content.active{display:block}
+.content{padding:16px;padding-bottom:0;height:calc(100vh - var(--header-h) - var(--nav-h));overflow:hidden;display:flex;flex-direction:column}
+.tab-content{display:none;animation:fadeIn 0.3s ease;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:16px}
+.tab-content.active{display:flex;flex-direction:column}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-around;z-index:100}
 .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 16px;position:relative;transition:all 0.2s}
@@ -54,7 +55,7 @@ body.light .logo .logo-name .track{color:#0ea5e9}
 .nav-item.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:32px;height:3px;border-radius:0 0 3px 3px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
 .nav-item.active svg{stroke:var(--accent);filter:drop-shadow(0 0 6px rgba(108,99,255,0.4))}
 .nav-item.active span{color:var(--text)}
-.mode-pills{display:flex;background:var(--card);border-radius:12px;padding:4px;margin-bottom:16px;position:relative;border:1px solid var(--card-border)}
+.mode-pills{display:flex;background:var(--card);border-radius:12px;padding:4px;margin-bottom:16px;position:sticky;top:0;z-index:10;border:1px solid var(--card-border);flex-shrink:0}
 .mode-pill{flex:1;text-align:center;padding:10px 8px;font-size:13px;font-weight:600;border-radius:10px;transition:all 0.3s;z-index:1;position:relative}
 .mode-pill.active{color:#fff}
 .pill-slider{position:absolute;top:4px;left:4px;height:calc(100% - 8px);border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);z-index:0}
