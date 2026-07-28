@@ -23,7 +23,7 @@ body.light .avatar-item{box-shadow:0 2px 6px rgba(0,0,0,0.04)}
 body.light .nav{box-shadow:0 -2px 12px rgba(0,0,0,0.06);border-top:none;background:rgba(255,255,255,0.97)}
 body.light .counter-badge{background:#f0f2f5;border-color:rgba(0,0,0,0.08)}
 body.light .toggle-pill.active{box-shadow:0 2px 6px rgba(79,70,229,0.2)}
-body.light .settings-section{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.04);transition:background 0.4s,box-shadow 0.4s}
+body.light .settings-section{background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,0.04)}
 body.light .cmodal-overlay{background:rgba(0,0,0,0.4)}
 body.light .cmodal-box{box-shadow:0 24px 48px rgba(0,0,0,0.12);border-color:rgba(0,0,0,0.08)}
 body.light .cmodal-input{background:rgba(0,0,0,0.03);border-color:rgba(0,0,0,0.12)}
@@ -164,7 +164,7 @@ body.light .logo .logo-name .track{color:#0ea5e9}
 .empty-state{text-align:center;padding:48px 24px}
 .empty-state svg{width:64px;height:64px;stroke:var(--text-secondary);margin-bottom:16px;opacity:0.5}
 .empty-state p{color:var(--text-secondary);font-size:14px}
-.settings-section{margin-bottom:24px;transition:background 0.4s,box-shadow 0.4s}
+.settings-section{margin-bottom:24px;padding:16px;border-radius:var(--radius);background:transparent;transition:background 0.4s,box-shadow 0.4s,padding 0.4s}
 .settings-section h4{font-size:13px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;transition:color 0.4s}
 .settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--card);border:1px solid var(--card-border);border-radius:12px;margin-bottom:8px;transition:background 0.4s,border-color 0.4s,box-shadow 0.4s}
 .settings-row .label{font-size:14px;transition:color 0.4s}
@@ -392,7 +392,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <h4>Appearance</h4>
 <div class="settings-row" style="justify-content:space-between;align-items:center">
 <span style="font-size:14px">Dark Mode</span>
-<button id="themeToggle" style="width:48px;height:28px;border-radius:14px;background:var(--accent);position:relative;transition:background 0.3s;border:none;cursor:pointer"><span id="themeKnob" style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform 0.3s;transform:translateX(20px)"></span></button>
+<button id="themeToggle" style="width:36px;height:36px;border-radius:50%;background:var(--card);border:1px solid var(--card-border);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.4s,border-color 0.4s"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--text-secondary);transition:color 0.4s"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
 </div>
 </div>
 <div class="settings-section">
@@ -1296,7 +1296,7 @@ async function init(){
 try{
 await openDB();
 const theme=await getSetting('theme');
-if(theme==='light'){document.body.classList.add('light');document.getElementById('themeToggle').style.background='var(--card-border)';document.getElementById('themeKnob').style.transform='translateX(0)';}
+if(theme==='light'){document.body.classList.add('light');document.getElementById('themeIcon').innerHTML='<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';}
 const access=await checkDeviceAccess();
 if(access==='no-url'||access==='Approved'){
 hideAccessGate();
@@ -1327,10 +1327,8 @@ init();
 document.getElementById('themeToggle').addEventListener('click',async()=>{
 const isLight=document.body.classList.toggle('light');
 await setSetting('theme',isLight?'light':'dark');
-const toggle=document.getElementById('themeToggle');
-const knob=document.getElementById('themeKnob');
-toggle.style.background=isLight?'var(--card-border)':'var(--accent)';
-knob.style.transform=isLight?'translateX(0)':'translateX(20px)';
+const icon=document.getElementById('themeIcon');
+icon.innerHTML=isLight?'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>':'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
 });
 
 async function autoSync(){
