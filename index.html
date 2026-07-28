@@ -23,7 +23,7 @@ body.light .avatar-item{box-shadow:0 2px 6px rgba(0,0,0,0.04)}
 body.light .nav{box-shadow:0 -2px 12px rgba(0,0,0,0.06);border-top:none;background:rgba(255,255,255,0.97)}
 body.light .counter-badge{background:#f0f2f5;border-color:rgba(0,0,0,0.08)}
 body.light .toggle-pill.active{box-shadow:0 2px 6px rgba(79,70,229,0.2)}
-body.light .settings-section{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+body.light .settings-section{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.04);transition:background 0.4s,box-shadow 0.4s}
 body.light .cmodal-overlay{background:rgba(0,0,0,0.4)}
 body.light .cmodal-box{box-shadow:0 24px 48px rgba(0,0,0,0.12);border-color:rgba(0,0,0,0.08)}
 body.light .cmodal-input{background:rgba(0,0,0,0.03);border-color:rgba(0,0,0,0.12)}
@@ -88,9 +88,9 @@ body.light .logo .logo-name .track{color:#0ea5e9}
 .input-group{position:relative}
 .input-group select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238b8b9e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:18px}
 .input-group input:focus,.input-group select:focus,.input-group textarea:focus{border-bottom-color:var(--accent)}
-.input-group label{position:absolute;left:0;top:12px;font-size:14px;color:var(--text-secondary);transition:all 0.2s;pointer-events:none}
-.input-group input:focus~label,.input-group input:not(:placeholder-shown)~label,.input-group select:focus~label,.input-group textarea:focus~label,.input-group textarea:not(:placeholder-shown)~label{top:-8px;font-size:11px;color:var(--accent)}
-.input-group .search-icon{position:absolute;right:0;top:12px}
+.input-group label{position:absolute;left:16px;top:14px;font-size:14px;color:var(--text-secondary);transition:all 0.2s;pointer-events:none}
+.input-group input:focus~label,.input-group input:not(:placeholder-shown)~label,.input-group select:focus~label,.input-group textarea:focus~label,.input-group textarea:not(:placeholder-shown)~label{top:-8px;left:12px;font-size:11px;color:var(--accent)}
+.input-group .search-icon{position:absolute;right:16px;top:14px}
 .input-group .search-icon svg{width:18px;height:18px;stroke:var(--text-secondary)}
 .btn{padding:12px 24px;border-radius:12px;font-size:14px;font-weight:600;transition:all 0.2s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .btn:active{transform:scale(0.97)}
@@ -100,7 +100,7 @@ body.light .logo .logo-name .track{color:#0ea5e9}
 .btn-outline{border:1px solid var(--card-border);color:var(--text)}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:200;display:none;align-items:flex-end;justify-content:center;animation:fadeIn 0.2s}
 .modal-overlay.show{display:flex}
-.modal{background:var(--card);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;transform:translateY(100%);animation:slideUp 0.3s forwards}
+.modal{background:var(--card);border-radius:24px 24px 0 0;padding:20px 16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;transform:translateY(100%);animation:slideUp 0.3s forwards}
 @keyframes slideUp{to{transform:translateY(0)}}
 .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .modal-header h3{font-size:18px;font-weight:700}
@@ -111,11 +111,10 @@ body.light .logo .logo-name .track{color:#0ea5e9}
 .fab svg{width:24px;height:24px;stroke:#fff;stroke-width:2}
 .fab.pulse{animation:fabPulse 2s ease-in-out 3}
 @keyframes fabPulse{0%,100%{box-shadow:0 6px 20px rgba(108,99,255,0.4)}50%{box-shadow:0 6px 30px rgba(108,99,255,0.7)}}
-.stat-cards{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;margin-bottom:20px;-webkit-overflow-scrolling:touch}
-.stat-cards::-webkit-scrollbar{display:none}
-.stat-card{min-width:130px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px;flex-shrink:0}
-.stat-card .value{font-size:28px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.stat-card .label{font-size:12px;color:var(--text-secondary);margin-top:4px}
+.stat-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:12px;text-align:center}
+.stat-card .value{font-size:22px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-card .label{font-size:11px;color:var(--text-secondary);margin-top:4px}
 .chart{margin-bottom:24px}
 .chart-title{font-size:14px;font-weight:600;margin-bottom:12px}
 .chart-bars{display:flex;align-items:flex-end;gap:8px;height:160px;padding:0 4px}
@@ -165,11 +164,11 @@ body.light .logo .logo-name .track{color:#0ea5e9}
 .empty-state{text-align:center;padding:48px 24px}
 .empty-state svg{width:64px;height:64px;stroke:var(--text-secondary);margin-bottom:16px;opacity:0.5}
 .empty-state p{color:var(--text-secondary);font-size:14px}
-.settings-section{margin-bottom:24px}
-.settings-section h4{font-size:13px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px}
-.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--card);border:1px solid var(--card-border);border-radius:12px;margin-bottom:8px}
-.settings-row .label{font-size:14px}
-.settings-row .sublabel{font-size:12px;color:var(--text-secondary)}
+.settings-section{margin-bottom:24px;transition:background 0.4s,box-shadow 0.4s}
+.settings-section h4{font-size:13px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;transition:color 0.4s}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--card);border:1px solid var(--card-border);border-radius:12px;margin-bottom:8px;transition:background 0.4s,border-color 0.4s,box-shadow 0.4s}
+.settings-row .label{font-size:14px;transition:color 0.4s}
+.settings-row .sublabel{font-size:12px;color:var(--text-secondary);transition:color 0.4s}
 .install-banner{position:fixed;top:var(--header-h);left:0;right:0;background:linear-gradient(135deg,var(--accent),var(--accent2));padding:10px 16px;display:none;align-items:center;justify-content:space-between;z-index:90;font-size:13px;font-weight:500}
 .install-banner.show{display:flex}
 .skeleton{background:linear-gradient(90deg,var(--card) 25%,rgba(255,255,255,0.05) 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
@@ -469,7 +468,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 </div>
 <div class="settings-section">
 <h4>About</h4>
-<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.1.0</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
+<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.2.0</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
 
 </div>
 </div>
@@ -533,6 +532,20 @@ let age=now.getFullYear()-b.getFullYear();
 const m=now.getMonth()-b.getMonth();
 if(m<0||(m===0&&now.getDate()<b.getDate()))age--;
 return age;
+}
+function checkBirthdaysToday(){
+const now=new Date();const todayM=now.getMonth();const todayD=now.getDate();
+const bdays=allMembers.filter(m=>{
+if(!m.birthday||m.status==='inactive')return false;
+const b=new Date(m.birthday+'T00:00:00');
+return b.getMonth()===todayM&&b.getDate()===todayD;
+});
+if(bdays.length>0){
+const names=bdays.map(m=>m.name).join(', ');
+const age=bdays.length===1?getAge(bdays[0].birthday):'';
+const msg=bdays.length===1?`${names} turns ${age} today!`:`${bdays.length} birthdays today: ${names}`;
+showToast('🎂 '+msg,'success',6000);
+}
 }
 function getAgeGroup(member){
 const age=getAge(member.birthday);
@@ -1137,7 +1150,7 @@ document.getElementById('scriptUrl').disabled=true;
 document.getElementById('testConnection').style.display='none';
 document.getElementById('unlockUrlBtn').style.display='inline-block';
 const status=document.getElementById('connectionStatus');status.textContent='Testing...';status.style.color='#8b8b9e';
-try{const r=await fetch(url+'?action=getMembers');const j=await r.json();
+try{const r=await fetch(url,{method:'POST',body:JSON.stringify({action:'getMembers'}),headers:{'Content-Type':'text/plain'}});const j=await r.json();
 if(j.success!==false){status.textContent='Connected! Reloading...';status.style.color='var(--success)';setTimeout(()=>location.reload(),1000)}
 else throw 0}
 catch(e){status.textContent='Failed';status.style.color='var(--error)'}
@@ -1156,14 +1169,14 @@ const pending=await dbGet('pendingSync');
 for(const item of pending){
 try{await fetch(url,{method:'POST',body:JSON.stringify(item.payload),headers:{'Content-Type':'text/plain'}});await dbDelete('pendingSync',item.id);synced++}catch(e){break}
 }
-const r=await fetch(url+'?action=getMembers');
+const r=await fetch(url,{method:'POST',body:JSON.stringify({action:'getMembers'}),headers:{'Content-Type':'text/plain'}});
 const json=await r.json();
 if(json.success&&json.data){
 await dbClear('members');
 for(const m of json.data)await dbPut('members',m);
 allMembers=json.data;
 }
-const r2=await fetch(url+'?action=getAttendance&date='+today());
+const r2=await fetch(url,{method:'POST',body:JSON.stringify({action:'getAttendance',date:today()}),headers:{'Content-Type':'text/plain'}});
 const json2=await r2.json();
 if(json2.success&&json2.data){
 const existing=new Set(todayAttendance.map(a=>a.memberId));
@@ -1230,7 +1243,7 @@ const deviceId=getDeviceId();
 const status=await getSetting('deviceStatus');
 if(status==='Approved')return 'Approved';
 try{
-const res=await fetch(url+'?action=getDeviceStatus&deviceId='+encodeURIComponent(deviceId));
+const res=await fetch(url,{method:'POST',body:JSON.stringify({action:'getDeviceStatus',deviceId}),headers:{'Content-Type':'text/plain'}});
 const json=await res.json();
 if(json.success&&json.data){
 await setSetting('deviceStatus',json.data.status);
@@ -1305,6 +1318,7 @@ await checkInactiveMembers();
 allMembers=await dbGet('members');
 const ministries=await getMinistries();populateMinistryDropdowns(ministries);
 renderAvatarGrid();
+checkBirthdaysToday();
 await initExtras();
 }catch(e){document.body.innerHTML='<div style="padding:40px;text-align:center;color:#ff5252"><h3>App Error</h3><p style="margin-top:12px;color:#8b8b9e;font-size:14px">'+e.message+'</p><button onclick="location.reload()" style="margin-top:20px;padding:12px 24px;background:#6c63ff;color:#fff;border:none;border-radius:12px;font-size:14px">Retry</button></div>'}
 }
@@ -1322,7 +1336,7 @@ knob.style.transform=isLight?'translateX(0)':'translateX(20px)';
 async function autoSync(){
 const url=await getSetting('scriptUrl');if(!url)return;
 try{
-const r=await fetch(url+'?action=getAttendance&date='+today());
+const r=await fetch(url,{method:'POST',body:JSON.stringify({action:'getAttendance',date:today()}),headers:{'Content-Type':'text/plain'}});
 const json=await r.json();
 if(json.success&&json.data){
 const existing=new Set(todayAttendance.map(a=>a.memberId));
@@ -1335,7 +1349,7 @@ updateCounter();
 if(currentTab==='tabCheckin'&&currentMode==='tap')renderAvatarGrid();
 }}catch(e){}
 try{
-const r2=await fetch(url+'?action=getMembers');
+const r2=await fetch(url,{method:'POST',body:JSON.stringify({action:'getMembers'}),headers:{'Content-Type':'text/plain'}});
 const json2=await r2.json();
 if(json2.success&&json2.data&&json2.data.length!==allMembers.length){
 await dbClear('members');
@@ -1346,7 +1360,7 @@ if(currentTab==='tabCheckin'&&currentMode==='tap')renderAvatarGrid();
 if(currentTab==='tabMembers')renderMemberList();
 }}catch(e){}
 try{
-const r3=await fetch(url+'?action=getOccasion');
+const r3=await fetch(url,{method:'POST',body:JSON.stringify({action:'getOccasion'}),headers:{'Content-Type':'text/plain'}});
 const json3=await r3.json();
 if(json3.success&&json3.data){
 if(json3.data.active&&json3.data.active!==currentOccasion){currentOccasion=json3.data.active;await setSetting('activeOccasion',currentOccasion);updateOccasionBanner();renderOccasionTags()}
@@ -1377,26 +1391,26 @@ const adultTotal=counts.Youth+counts.YPro+counts.Mothers+counts.Fathers;
 const childNum=parseInt(childrenVal)||0;
 const outreachTotal=Object.values(outreachGroups).reduce((a,b)=>a+b,0);
 const grandTotal=adultTotal+childNum+outreachTotal;
-const outreachHTML=Object.entries(outreachGroups).map(([name,count])=>`<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--accent2)">${name} Outreach</div><div style="font-size:20px;font-weight:700">${count}</div></div>`).join('');
+const outreachHTML=Object.entries(outreachGroups).map(([name,count])=>`<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--accent2)">${name} Outreach</div><div style="font-size:16px;font-weight:700">${count}</div></div>`).join('');
 const overlay=document.getElementById('modalOverlay');const content=document.getElementById('modalContent');
 content.innerHTML=`<div class="modal-header"><h3>Send Report</h3><button class="modal-close" id="closeModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
 <div style="margin-bottom:12px"><label style="font-size:12px;color:var(--text-secondary)">Date</label><div style="font-size:16px;font-weight:600">${formatDate(todayStr)}</div></div>
 <div class="input-group"><input type="text" id="rptOutreach" placeholder=" " value="${outreach}"><label>Outreach</label></div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0">
-<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--text-secondary)">Youth</div><div style="font-size:20px;font-weight:700">${counts.Youth}</div></div>
-<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--text-secondary)">YPro</div><div style="font-size:20px;font-weight:700">${counts.YPro}</div></div>
-<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--text-secondary)">Mothers</div><div style="font-size:20px;font-weight:700">${counts.Mothers}</div></div>
-<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--text-secondary)">Fathers</div><div style="font-size:20px;font-weight:700">${counts.Fathers}</div></div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0">
+<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px 4px;text-align:center"><div style="font-size:9px;color:var(--text-secondary)">Youth</div><div style="font-size:16px;font-weight:700">${counts.Youth}</div></div>
+<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px 4px;text-align:center"><div style="font-size:9px;color:var(--text-secondary)">YPro</div><div style="font-size:16px;font-weight:700">${counts.YPro}</div></div>
+<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px 4px;text-align:center"><div style="font-size:9px;color:var(--text-secondary)">Mothers</div><div style="font-size:16px;font-weight:700">${counts.Mothers}</div></div>
+<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px 4px;text-align:center"><div style="font-size:9px;color:var(--text-secondary)">Fathers</div><div style="font-size:16px;font-weight:700">${counts.Fathers}</div></div>
 ${outreachHTML}
 </div>
-<div class="input-group"><input type="number" id="rptChildren" placeholder=" " min="0" value="${childNum||''}"><label>Children</label></div>
-<div style="margin:8px 0;padding:12px;background:var(--card);border-radius:10px;text-align:center;font-weight:700;font-size:18px" id="rptTotalDisplay">Total: ${adultTotal} + ${childNum}${outreachTotal?' + '+outreachTotal+' (outreach)':''} = ${grandTotal}</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0">
-<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--success)">New (First Time Guests)</div><div style="font-size:20px;font-weight:700;color:var(--success)">${newCount}</div></div>
-<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--text-secondary)">Others</div><input type="text" id="rptOthers" placeholder="Notes..." style="width:100%;text-align:center;font-size:14px;margin-top:4px;padding:4px;background:transparent;border-bottom:1px solid var(--card-border)"></div>
+<div style="display:flex;align-items:center;gap:10px;margin:8px 0"><label style="font-size:12px;color:var(--text-secondary);white-space:nowrap">Children:</label><input type="number" id="rptChildren" placeholder="0" min="0" value="${childNum||''}" style="width:60px;padding:6px 8px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;font-size:14px;text-align:center"></div>
+<div style="margin:6px 0;padding:10px;background:var(--card);border-radius:8px;text-align:center;font-weight:700;font-size:15px" id="rptTotalDisplay">Total: ${adultTotal} + ${childNum}${outreachTotal?' + '+outreachTotal+' (outreach)':''} = ${grandTotal}</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0">
+<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px;text-align:center"><div style="font-size:9px;color:var(--success)">New (First Time)</div><div style="font-size:16px;font-weight:700;color:var(--success)">${newCount}</div></div>
+<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px;text-align:center"><div style="font-size:9px;color:var(--text-secondary)">Others</div><input type="text" id="rptOthers" placeholder="Notes..." style="width:100%;text-align:center;font-size:12px;margin-top:2px;padding:3px;background:transparent;border-bottom:1px solid var(--card-border)"></div>
 </div>
-<p style="font-size:11px;color:var(--text-secondary);margin:8px 0;text-align:center">This report will be emailed to the configured Report Email in Settings.</p>
-<button class="btn btn-primary" style="width:100%;margin-top:8px;padding:14px;font-size:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:12px" id="sendReportBtn">Send Now</button>`;
+<p style="font-size:10px;color:var(--text-secondary);margin:4px 0;text-align:center">Report will be emailed to configured Report Email.</p>
+<button class="btn btn-primary" style="width:100%;margin-top:6px;padding:12px;font-size:13px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px" id="sendReportBtn">Send Now</button>`;
 overlay.classList.add('show');
 setTimeout(()=>{
 document.getElementById('closeModal').addEventListener('click',closeModal);
@@ -1409,7 +1423,7 @@ document.getElementById('childrenInput').value=c;
 document.getElementById('sendReportBtn').addEventListener('click',async()=>{
 const url=await getSetting('scriptUrl');const email=await getSetting('reportEmail');
 if(!url||!email){showToast('Configure Script URL and Report Email in Settings first','error');return}
-const report={action:'sendReport',date:todayStr,outreach:document.getElementById('rptOutreach').value,youth:counts.Youth,ypro:counts.YPro,mothers:counts.Mothers,fathers:counts.Fathers,children:parseInt(document.getElementById('rptChildren').value)||0,newCount:newCount,outreachGroups:outreachGroups,others:document.getElementById('rptOthers').value,email:email,grandTotal:grandTotal};
+const report={action:'sendReport',date:todayStr,occasion:currentOccasion,outreach:document.getElementById('rptOutreach').value,youth:counts.Youth,ypro:counts.YPro,mothers:counts.Mothers,fathers:counts.Fathers,children:parseInt(document.getElementById('rptChildren').value)||0,newCount:newCount,outreachGroups:outreachGroups,others:document.getElementById('rptOthers').value,email:email,grandTotal:grandTotal};
 try{
 const r=await fetch(url,{method:'POST',body:JSON.stringify(report),headers:{'Content-Type':'text/plain'}});
 const json=await r.json();
@@ -1420,8 +1434,17 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 });
 
 // === APP VERSION & CHANGELOG ===
-const APP_VERSION='1.1.0';
+const APP_VERSION='1.2.0';
 const CHANGELOG=[
+{version:'1.2.0',date:'July 28, 2026',changes:[
+{type:'Fix',text:'Text alignment in search boxes and member forms'},
+{type:'Fix',text:'Reports dashboard cards now in grid layout (no more cut-off labels)'},
+{type:'Improve',text:'Send Report modal compacted to fit without scrolling'},
+{type:'New',text:'Reports now tagged with occasion name (not just Sunday Service)'},
+{type:'Fix',text:'iOS compatibility: all fetches now use POST (fixes redirect issue)'},
+{type:'Improve',text:'Custom bottom-sheet dropdowns for mobile'},
+{type:'Improve',text:'Fixed page layout (no unnecessary page scrolling)'},
+]},
 {version:'1.1.0',date:'July 27, 2026',changes:[
 {type:'New',text:'Google Sign-In access control'},
 {type:'New',text:'Occasion selector (Prayer Connect, Midweek, etc.)'},
