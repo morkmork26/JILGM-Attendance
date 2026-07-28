@@ -11,15 +11,31 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{--bg:#0f0e17;--card:#1a1a2e;--card-border:rgba(255,255,255,0.05);--text:#eaeaea;--text-secondary:#8b8b9e;--accent:#6c63ff;--accent2:#48c6ef;--success:#00e676;--warning:#ffab00;--error:#ff5252;--glass:rgba(26,26,46,0.8);--radius:16px;--nav-h:64px;--header-h:56px}
-body.light{--bg:#f5f5f7;--card:#ffffff;--card-border:rgba(0,0,0,0.08);--text:#1a1a2e;--text-secondary:#6b6b7b;--glass:rgba(255,255,255,0.85)}
+body.light{--bg:#f0f2f5;--card:#ffffff;--card-border:rgba(0,0,0,0.06);--text:#1a1a2e;--text-secondary:#5a5a6e;--accent:#4f46e5;--accent2:#0ea5e9;--glass:rgba(255,255,255,0.95);--success:#16a34a;--warning:#d97706;--error:#dc2626}
+body.light .header{box-shadow:0 2px 8px rgba(0,0,0,0.06);border-bottom:none}
+body.light .header::after{opacity:0.6}
+body.light .logo{background:linear-gradient(135deg,#4f46e5,#0ea5e9);-webkit-background-clip:text;background-clip:text}
+body.light .card,body.light .stat-card{box-shadow:0 2px 8px rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.06)}
+body.light .btn-primary{box-shadow:0 3px 12px rgba(79,70,229,0.3)}
+body.light .avatar-item{box-shadow:0 2px 6px rgba(0,0,0,0.04)}
+body.light .nav{box-shadow:0 -2px 12px rgba(0,0,0,0.06);border-top:none;background:rgba(255,255,255,0.97)}
+body.light .counter-badge{background:#f0f2f5;border-color:rgba(0,0,0,0.08)}
+body.light .toggle-pill.active{box-shadow:0 2px 6px rgba(79,70,229,0.2)}
+body.light .settings-section{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+body.light .cmodal-overlay{background:rgba(0,0,0,0.4)}
+body.light .cmodal-box{box-shadow:0 24px 48px rgba(0,0,0,0.12);border-color:rgba(0,0,0,0.08)}
+body.light .cmodal-input{background:rgba(0,0,0,0.03);border-color:rgba(0,0,0,0.12)}
+body.light .cmodal-cancel{background:rgba(0,0,0,0.05);color:var(--text-secondary)}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-weight:400;line-height:1.5}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 input,select,textarea{font-family:inherit;color:var(--text);background:transparent;border:none;outline:none;font-size:16px}
-.header{position:sticky;top:0;z-index:100;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--card-border)}
+.header{position:sticky;top:0;z-index:100;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--card-border)}
 .header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);opacity:0.4}
-.logo{font-size:14px;font-weight:700;background:linear-gradient(135deg,#d4a843,#f5d676,#c9952c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.3px;white-space:nowrap}
-.header-date{font-size:13px;color:var(--text-secondary);font-weight:500}
-.header-right{display:flex;align-items:center;gap:10px}
+.logo{font-size:13px;font-weight:700;background:linear-gradient(135deg,#d4a843,#f5d676,#c9952c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.3px;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.logo .logo-text{display:none}
+.header-date{font-size:12px;color:var(--text-secondary);font-weight:500}
+.header-right{display:flex;align-items:center;gap:8px}
+@media(min-width:380px){.logo .logo-text{display:inline}}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--success)}
 .sync-dot.syncing{animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.3)}}
@@ -41,7 +57,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 .pill-slider{position:absolute;top:4px;left:4px;height:calc(100% - 8px);border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);z-index:0}
 .avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff;flex-shrink:0;position:relative;transition:transform 0.2s}
 .avatar.small{width:36px;height:36px;font-size:13px}
-.avatar.large{width:80px;height:80px;font-size:28px}
+.avatar.large{width:80px;height:80px;font-size:28px;margin:0 auto}
 .avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover}
 .avatar.checked-in{box-shadow:0 0 0 3px var(--success)}
 .avatar .check-badge{position:absolute;top:-2px;right:-2px;width:16px;height:16px;background:var(--success);border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg)}
@@ -124,7 +140,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 @keyframes scanLine{from{top:10%}to{top:90%}}
 .qr-overlay{position:fixed;inset:0;z-index:250;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px)}
 .qr-overlay.show{display:flex}
-.qr-overlay .result{text-align:center;animation:scaleIn 0.3s}
+.qr-overlay .result{text-align:center;animation:scaleIn 0.3s;display:flex;flex-direction:column;align-items:center}
 @keyframes scaleIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}
 .qr-overlay .result .icon{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
 .qr-overlay .result .icon.success{background:rgba(0,230,118,0.2)}
@@ -156,9 +172,43 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 #qr-reader video{width:100%!important;height:auto!important;border-radius:var(--radius)}
 #qr-reader img{display:none}
 @media(min-width:600px){.avatar-grid{grid-template-columns:repeat(5,1fr)}.content{max-width:540px;margin:0 auto}}
+.cmodal-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:24px}
+.cmodal-overlay.show{display:flex}
+.cmodal-box{background:var(--card);border:1px solid rgba(255,255,255,0.1);border-radius:20px;width:100%;max-width:340px;padding:28px 24px 20px;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:modalIn 0.25s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(0.92) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.cmodal-header{margin-bottom:12px}
+.cmodal-title{font-size:17px;font-weight:700;color:var(--text)}
+.cmodal-msg{font-size:14px;color:var(--text-secondary);line-height:1.5;margin-bottom:20px}
+.cmodal-input-wrap{margin-bottom:20px}
+.cmodal-input{width:100%;padding:12px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;font-size:15px;color:var(--text);transition:border 0.2s}
+.cmodal-input:focus{border-color:var(--accent);outline:none}
+.cmodal-actions{display:flex;gap:10px;justify-content:flex-end}
+.cmodal-btn{padding:10px 20px;border-radius:12px;font-size:14px;font-weight:600;transition:all 0.2s}
+.cmodal-cancel{background:rgba(255,255,255,0.06);color:var(--text-secondary)}
+.cmodal-cancel:active{background:rgba(255,255,255,0.12)}
+.cmodal-ok{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.cmodal-ok:active{opacity:0.8}
+.cmodal-ok.danger{background:linear-gradient(135deg,var(--error),#ff7043)}
 </style>
 </head>
 <body>
+
+<!-- Custom Modal -->
+<div id="customModal" class="cmodal-overlay">
+<div class="cmodal-box">
+<div class="cmodal-header">
+<h3 class="cmodal-title" id="cmodalTitle">Confirm</h3>
+</div>
+<p class="cmodal-msg" id="cmodalMsg"></p>
+<div class="cmodal-input-wrap" id="cmodalInputWrap" style="display:none">
+<input type="text" id="cmodalInput" class="cmodal-input" autocomplete="off">
+</div>
+<div class="cmodal-actions">
+<button class="cmodal-btn cmodal-cancel" id="cmodalCancel">Cancel</button>
+<button class="cmodal-btn cmodal-ok" id="cmodalOk">Confirm</button>
+</div>
+</div>
+</div>
 
 <!-- What's New Modal -->
 <div id="whatsNewModal" style="position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:24px">
@@ -172,7 +222,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 </div>
 
 <div class="header">
-<div class="logo"><span style="display:inline-block;width:40px;height:40px;border-radius:50%;overflow:hidden;vertical-align:middle;margin-right:8px;background:#fff"><img src="logo.jpg" alt="JILGM" style="width:100%;height:100%;object-fit:cover;transform:scale(1.55);object-position:center center"></span>Attendance Tracker</div>
+<div class="logo"><span style="display:inline-block;width:32px;height:32px;border-radius:50%;overflow:hidden;background:#fff;flex-shrink:0"><img src="logo.jpg" alt="JILGM" style="width:100%;height:100%;object-fit:cover;transform:scale(1.55);object-position:center center"></span><span class="logo-text">Attendance Tracker</span></div>
 <div class="header-date" id="headerDate"></div>
 <div class="header-right">
 <button id="themeToggle" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center"><svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
@@ -317,8 +367,8 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 
 </div>
 <div class="settings-section">
-<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'flex':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Ministries <span style="font-size:14px;color:var(--text-secondary)">-</span></h4>
-<div class="settings-row" style="flex-wrap:wrap;gap:8px">
+<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'flex':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Ministries <span style="font-size:14px;color:var(--text-secondary)">+</span></h4>
+<div class="settings-row" style="flex-wrap:wrap;gap:8px;display:none">
 <div id="ministryTags" style="display:flex;flex-wrap:wrap;gap:6px;width:100%;margin-bottom:8px"></div>
 <div style="display:flex;gap:8px;width:100%">
 <input type="text" id="newMinistryInput" placeholder="Add ministry name..." style="flex:1;padding:8px 12px;border-bottom:2px solid var(--card-border);font-size:14px">
@@ -456,6 +506,40 @@ if(toastTimer)clearTimeout(toastTimer);
 t.classList.add('show');toastTimer=setTimeout(()=>{t.classList.remove('show');toastTimer=null},3000);
 }
 
+function customConfirm(msg,{title='Confirm',okText='Confirm',danger=false}={}){
+return new Promise((resolve)=>{
+const overlay=document.getElementById('customModal');
+document.getElementById('cmodalTitle').textContent=title;
+document.getElementById('cmodalMsg').textContent=msg;
+document.getElementById('cmodalInputWrap').style.display='none';
+const okBtn=document.getElementById('cmodalOk');
+okBtn.textContent=okText;
+okBtn.classList.toggle('danger',danger);
+overlay.classList.add('show');
+const cleanup=()=>{overlay.classList.remove('show');okBtn.onclick=null;document.getElementById('cmodalCancel').onclick=null};
+okBtn.onclick=()=>{cleanup();resolve(true)};
+document.getElementById('cmodalCancel').onclick=()=>{cleanup();resolve(false)};
+});
+}
+function customPrompt(msg,{title='Input Required',okText='Confirm',placeholder=''}={}){
+return new Promise((resolve)=>{
+const overlay=document.getElementById('customModal');
+document.getElementById('cmodalTitle').textContent=title;
+document.getElementById('cmodalMsg').textContent=msg;
+const inputWrap=document.getElementById('cmodalInputWrap');
+const input=document.getElementById('cmodalInput');
+inputWrap.style.display='block';
+input.value='';input.placeholder=placeholder;
+const okBtn=document.getElementById('cmodalOk');
+okBtn.textContent=okText;okBtn.classList.remove('danger');
+overlay.classList.add('show');
+setTimeout(()=>input.focus(),100);
+const cleanup=()=>{overlay.classList.remove('show');okBtn.onclick=null;document.getElementById('cmodalCancel').onclick=null};
+okBtn.onclick=()=>{cleanup();resolve(input.value)};
+document.getElementById('cmodalCancel').onclick=()=>{cleanup();resolve(null)};
+});
+}
+
 function playBeep(){
 try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const osc=ctx.createOscillator();const gain=ctx.createGain();
 osc.connect(gain);gain.connect(ctx.destination);osc.frequency.value=800;osc.type='sine';gain.gain.value=0.3;
@@ -518,12 +602,14 @@ if(!member){setTimeout(()=>{if(qrScanner)try{qrScanner.resume()}catch(e){}},1500
 const already=todayAttendance.find(a=>a.memberId===member.id);
 const overlay=document.getElementById('qrOverlay');
 if(already){
-overlay.innerHTML=`<div class="result"><div class="icon warning"><svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></div><h3 style="margin-top:8px">${member.name}</h3><p style="color:var(--warning);margin-top:4px">Already checked in</p></div>`;
+overlay.innerHTML=`<div class="result"><div class="icon warning"><svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><h3 style="font-size:22px">${member.name.split(' ')[0]}</h3><p style="color:var(--text-secondary);margin-top:4px;font-size:13px">${member.name}</p><p style="color:var(--warning);margin-top:8px;font-size:15px;font-weight:600">Already checked in today</p></div>`;
 }else{
 const ok=await checkInMember(member);
 if(ok===false){setTimeout(()=>{if(qrScanner)try{qrScanner.resume()}catch(e){}},500);return}
 playBeep();
-overlay.innerHTML=`<div class="result"><div class="icon success"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div>${createAvatar(member,'large')}<h3 style="margin-top:12px">Welcome, ${member.name.split(' ')[0]}!</h3><p style="color:var(--success);margin-top:4px">God bless you today!</p></div>`;
+const welcomeMsgs=['We\'re glad you\'re here today.','Great to see you!','You made it! Have a blessed day.','So happy you\'re here!','Your presence matters.','Good to have you with us!','Thanks for showing up today!','You\'re in the right place.','Let\'s make today count!','Let\'s worship together!','What a blessing to see you!','You\'re exactly where you need to be.','Today is better because you\'re here!','So glad you made time for this!','Glad you chose to be here!','Your faithfulness inspires us!'];
+const wMsg=welcomeMsgs[Math.floor(Math.random()*welcomeMsgs.length)];
+overlay.innerHTML=`<div class="result"><div class="icon success"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><h3 style="font-size:22px">Welcome, ${member.name.split(' ')[0]}!</h3><p style="color:var(--text-secondary);margin-top:4px;font-size:13px">${member.name}</p><p style="color:var(--text-secondary);margin-top:8px;font-size:15px">${wMsg}</p><p style="color:var(--success);margin-top:6px;font-size:13px;font-weight:600">Checked in successfully</p></div>`;
 }
 overlay.classList.add('show');
 setTimeout(()=>{overlay.classList.remove('show');if(qrScanner)try{qrScanner.resume()}catch(e){}},2000);
@@ -532,8 +618,12 @@ setTimeout(()=>{overlay.classList.remove('show');if(qrScanner)try{qrScanner.resu
 let sundayConfirmed=false;
 function isSunday(){return new Date().getDay()===0}
 async function checkInMember(member){
-if(!isSunday()&&!sundayConfirmed){
-if(!confirm('Today is not Sunday. Are you sure you want to record attendance?'))return false;
+if(!isSunday()&&!sundayConfirmed&&currentOccasion==='Sunday Service'){
+if(!await customConfirm('Today is not Sunday. Are you sure you want to record attendance?',{title:'Non-Sunday Check-In',okText:'Proceed'}))return false;
+sundayConfirmed=true;
+}
+if(isSunday()&&currentOccasion!=='Sunday Service'&&!sundayConfirmed){
+if(!await customConfirm(`Today is Sunday. Are you sure you want to proceed with "${currentOccasion}"?`,{title:'Non-Default Occasion',okText:'Proceed'}))return false;
 sundayConfirmed=true;
 }
 if(member.status==='inactive'){
@@ -727,7 +817,7 @@ function closeModal(){document.getElementById('modalOverlay').classList.remove('
 
 async function saveMember(existing){
 const name=document.getElementById('memName').value.trim();if(!name){showToast('Name is required','error');return}
-if(existing){const confirm=prompt(`To confirm edit, type "${existing.name}"`);if(!confirm||confirm.trim().toLowerCase()!==existing.name.toLowerCase()){showToast('Edit cancelled','warning');return}}
+if(existing){const typed=await customPrompt(`To confirm edit, type "${existing.name}"`,{title:'Confirm Edit',okText:'Save',placeholder:existing.name});if(!typed||typed.trim().toLowerCase()!==existing.name.toLowerCase()){showToast('Edit cancelled','warning');return}}
 const classCheckboxes=document.querySelectorAll('#memClassesContainer input[type=checkbox]:checked');
 const classes=Array.from(classCheckboxes).map(cb=>cb.value);
 const member={id:existing?existing.id:'m'+Date.now(),name,outreach:document.getElementById('memOutreach').value,address:document.getElementById('memAddress').value.trim(),email:document.getElementById('memEmail').value.trim(),ministry:document.getElementById('memMinistry').value,dgroupLeader:document.getElementById('memDgroupLeader').value.trim(),phone:document.getElementById('memPhone').value.trim(),birthday:document.getElementById('memBday').value,gender:document.getElementById('memGender').value,civilStatus:document.getElementById('memCivilStatus').value,hasChildren:document.getElementById('memHasChildren').value,emergencyContact:document.getElementById('memEmergencyContact').value.trim(),emergencyPhone:document.getElementById('memEmergencyPhone').value.trim(),membershipStatus:document.getElementById('memMembershipStatus').value,membershipDate:document.getElementById('memMembershipDate').value,baptismDate:document.getElementById('memBaptismDate').value,baptismPlace:document.getElementById('memBaptismPlace').value.trim(),classes:classes,photo:existing?existing.photo:null,status:existing?existing.status:'active',addedLocally:existing?existing.addedLocally||false:true,dateRegistered:existing?existing.dateRegistered:today()};
@@ -740,6 +830,20 @@ await dbPut('members',member);
 if(existing){const idx=allMembers.findIndex(m=>m.id===existing.id);if(idx>=0)allMembers[idx]=member}
 else allMembers.push(member);
 closeModal();showToast(existing?'Member updated':'Member added');updateCounter();renderMemberList();
+const url=await getSetting('scriptUrl');
+if(url){
+const action=existing?'updateMember':'addMember';
+const payload={action,...member,classes:member.classes?member.classes.join(', '):''};
+try{const res=await fetch(url,{method:'POST',body:JSON.stringify(payload),headers:{'Content-Type':'text/plain'}});
+const json=await res.json();
+if(!existing&&json.success&&json.data&&json.data.id){
+member.id=json.data.id;member.addedLocally=false;
+const idx=allMembers.findIndex(m=>m.name===member.name&&m.addedLocally);
+if(idx>=0)allMembers[idx]=member;
+await dbPut('members',member);
+}
+}catch(e){if(!existing)await dbPut('pendingSync',{action:'addMember',payload,createdAt:Date.now()})}
+}
 }
 
 document.getElementById('fab').addEventListener('click',()=>showModal('member'));
@@ -776,7 +880,7 @@ const ageGroup=getAgeGroup(member);
 const d=new Date();
 const last10=[];
 for(let i=0;i<10;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);last10.push(sun.toISOString().split('T')[0])}
-const attendDots=last10.reverse().map(s=>allAtt.find(a=>a.memberId===member.id&&a.date===s)?'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--success);margin:0 2px"></span>':'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.1);margin:0 2px"></span>').join('');
+const attendDots=last10.reverse().map(s=>allAtt.find(a=>a.memberId===member.id&&a.date===s)?'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--success);margin:0 2px"></span>':'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--card-border);margin:0 2px;border:1px solid var(--card-border)"></span>').join('');
 content.innerHTML=`<div style="text-align:center;margin-bottom:24px">${createAvatar(member,'large')}
 <h2 style="margin-top:12px">${member.name}</h2>
 <span style="display:inline-block;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;background:rgba(108,99,255,0.15);color:var(--accent);margin-top:6px">${member.outreach||'No outreach'}</span>
@@ -890,7 +994,7 @@ container.innerHTML=list.map(m=>`<span style="display:inline-flex;align-items:ce
 populateMinistryDropdowns(list);
 }
 async function removeMinistry(name){
-if(!confirm(`Remove "${name}" ministry?`))return;
+if(!await customConfirm(`Remove "${name}" ministry?`,{title:'Remove Ministry',okText:'Remove',danger:true}))return;
 const list=await getMinistries();
 await saveMinistries(list.filter(m=>m!==name));renderMinistryTags();
 }
@@ -904,8 +1008,8 @@ const outreach=await getSetting('defaultOutreach');if(outreach)document.getEleme
 await renderMinistryTags();
 }
 
-document.getElementById('unlockUrlBtn').addEventListener('click',()=>{
-if(!confirm('Are you sure you want to edit the Script URL?'))return;
+document.getElementById('unlockUrlBtn').addEventListener('click',async()=>{
+if(!await customConfirm('Are you sure you want to edit the Script URL?',{title:'Edit Script URL',okText:'Unlock'}))return;
 document.getElementById('scriptUrl').disabled=false;
 document.getElementById('testConnection').style.display='inline-block';
 document.getElementById('unlockUrlBtn').style.display='none';
@@ -1188,7 +1292,7 @@ if(url)try{await fetch(url,{method:'POST',body:JSON.stringify({action:'setOccasi
 }
 async function setActiveOccasion(name){
 if(isSunday()&&name!=='Sunday Service'){
-const typed=prompt(`Today is Sunday. To switch to "${name}", type "CONFIRM" below:`);
+const typed=await customPrompt(`Today is Sunday. To switch to "${name}", type CONFIRM below:`,{title:'Sunday Override',okText:'Switch',placeholder:'Type CONFIRM'});
 if(!typed||typed.trim().toUpperCase()!=='CONFIRM'){showToast('Occasion not changed','warning');return}
 }
 currentOccasion=name;
@@ -1219,7 +1323,7 @@ renderOccasionTags();
 el.querySelectorAll('[data-remove-occasion]').forEach(x=>x.addEventListener('click',async(e)=>{
 e.stopPropagation();
 const name=x.dataset.removeOccasion;
-if(!confirm(`Remove "${name}"?`))return;
+if(!await customConfirm(`Remove "${name}"?`,{title:'Remove Occasion',okText:'Remove',danger:true}))return;
 const l=await getOccasions();
 const newList=l.filter(o=>o!==name);
 if(currentOccasion===name)await setActiveOccasion('Sunday Service');
