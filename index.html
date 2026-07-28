@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0f0e17">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>JILGM - STBC Attendance</title>
+<title>FlockTrack</title>
 <link rel="manifest" href="manifest.json">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -32,10 +32,9 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 .header{position:sticky;top:0;z-index:100;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--card-border)}
 .header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);opacity:0.4}
 .logo{font-size:13px;font-weight:700;background:linear-gradient(135deg,#d4a843,#f5d676,#c9952c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.3px;white-space:nowrap;display:flex;align-items:center;gap:6px}
-.logo .logo-text{display:none}
+.logo .logo-text{display:inline}
 .header-date{font-size:12px;color:var(--text-secondary);font-weight:500}
 .header-right{display:flex;align-items:center;gap:8px}
-@media(min-width:380px){.logo .logo-text{display:inline}}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--success)}
 .sync-dot.syncing{animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.3)}}
@@ -248,7 +247,6 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 <div class="logo"><span style="display:inline-block;width:32px;height:32px;border-radius:50%;overflow:hidden;background:#fff;flex-shrink:0"><img src="logo.jpg" alt="JILGM" style="width:100%;height:100%;object-fit:cover;transform:scale(1.55);object-position:center center"></span><span class="logo-text">Attendance Tracker</span></div>
 <div class="header-date" id="headerDate"></div>
 <div class="header-right">
-<button id="themeToggle" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center"><svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
 <div class="sync-dot" id="syncDot"></div>
 <div class="counter-badge" id="counterBadge">0/0</div>
 </div>
@@ -354,6 +352,13 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 
 <div class="tab-content" id="tabSettings">
 <div class="settings-section">
+<h4>Appearance</h4>
+<div class="settings-row" style="justify-content:space-between;align-items:center">
+<span style="font-size:14px">Dark Mode</span>
+<button id="themeToggle" style="width:48px;height:28px;border-radius:14px;background:var(--accent);position:relative;transition:background 0.3s;border:none;cursor:pointer"><span id="themeKnob" style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform 0.3s;transform:translateX(20px)"></span></button>
+</div>
+</div>
+<div class="settings-section">
 <h4>Connection</h4>
 <div class="input-group">
 <input type="text" id="scriptUrl" placeholder=" ">
@@ -369,7 +374,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 <h4>Report</h4>
 <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:8px">
 <div class="input-group"><input type="email" id="reportEmail" placeholder=" "><label>Report Email</label></div>
-<div class="input-group"><input type="text" id="defaultOutreach" placeholder=" " value="STBC"><label>Default Outreach Location</label></div>
+<div class="input-group"><input type="text" id="defaultOutreach" placeholder=" " value="Sto. Tomas"><label>Default Outreach Location</label></div>
 </div>
 </div>
 <div class="settings-section">
@@ -423,7 +428,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 </div>
 <div class="settings-section">
 <h4>About</h4>
-<div class="settings-row"><div><div class="label">JILGM - STBC Attendance</div><div class="sublabel" id="appVersionLabel">v1.1.0</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
+<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.1.0</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
 
 </div>
 </div>
@@ -1202,7 +1207,7 @@ async function init(){
 try{
 await openDB();
 const theme=await getSetting('theme');
-if(theme==='light'){document.body.classList.add('light');document.getElementById('themeIcon').innerHTML='<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';}
+if(theme==='light'){document.body.classList.add('light');document.getElementById('themeToggle').style.background='var(--card-border)';document.getElementById('themeKnob').style.transform='translateX(0)';}
 const access=await checkDeviceAccess();
 if(access==='no-url'||access==='Approved'){
 hideAccessGate();
@@ -1232,8 +1237,10 @@ init();
 document.getElementById('themeToggle').addEventListener('click',async()=>{
 const isLight=document.body.classList.toggle('light');
 await setSetting('theme',isLight?'light':'dark');
-const icon=document.getElementById('themeIcon');
-icon.innerHTML=isLight?'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>':'<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+const toggle=document.getElementById('themeToggle');
+const knob=document.getElementById('themeKnob');
+toggle.style.background=isLight?'var(--card-border)':'var(--accent)';
+knob.style.transform=isLight?'translateX(0)':'translateX(20px)';
 });
 
 async function autoSync(){
@@ -1289,7 +1296,7 @@ if(!isFirstAttend){const g=getAgeGroup(m);if(counts[g]!==undefined)counts[g]++}
 });
 const childrenVal=await getSetting('children_'+todayStr);
 const newCount=stoTomasMembers.filter(m=>isNewMember(m)).length;
-const outreach=(await getSetting('defaultOutreach'))||'STBC';
+const outreach=(await getSetting('defaultOutreach'))||'Sto. Tomas';
 const adultTotal=counts.Youth+counts.YPro+counts.Mothers+counts.Fathers;
 const childNum=parseInt(childrenVal)||0;
 const outreachTotal=Object.values(outreachGroups).reduce((a,b)=>a+b,0);
