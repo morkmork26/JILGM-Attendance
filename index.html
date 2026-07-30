@@ -1578,14 +1578,14 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').cat
 const pills=document.getElementById('modePills');
 if(!pills)return;
 let lastScroll=0;
-document.querySelectorAll('.tab-content').forEach(tc=>{
-tc.addEventListener('scroll',function(){
+const checkinTab=document.getElementById('tabCheckin');
+if(!checkinTab)return;
+checkinTab.addEventListener('scroll',function(){
 const st=this.scrollTop;
-if(st>lastScroll&&st>40){pills.classList.add('hidden-scroll')}
-else{pills.classList.remove('hidden-scroll')}
-lastScroll=st;
-});
-});
+if(st>lastScroll&&st>30){pills.classList.add('hidden-scroll')}
+else if(st<lastScroll){pills.classList.remove('hidden-scroll')}
+lastScroll=st<0?0:st;
+},{passive:true});
 })();
 </script>
 
