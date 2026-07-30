@@ -45,7 +45,8 @@ body.light .logo .logo-name .track{color:#0ea5e9}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.3)}}
 .counter-badge{font-size:12px;font-weight:600;background:var(--card);border:1px solid var(--card-border);border-radius:20px;padding:4px 10px}
 .content{padding:16px;padding-bottom:0;height:calc(100vh - var(--header-h) - var(--nav-h));overflow:hidden;display:flex;flex-direction:column}
-.tab-content{display:none;animation:fadeIn 0.3s ease;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:16px}
+.tab-content{display:none;animation:fadeIn 0.3s ease;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:16px;scrollbar-width:none;-ms-overflow-style:none}
+.tab-content::-webkit-scrollbar{display:none}
 .tab-content.active{display:flex;flex-direction:column}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-around;z-index:100}
