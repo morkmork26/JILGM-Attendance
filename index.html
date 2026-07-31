@@ -163,10 +163,12 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 .qr-overlay .result{text-align:center;animation:scaleIn 0.3s;display:flex;flex-direction:column;align-items:center}
 @keyframes scaleIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}
 @keyframes particleBurst{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0)}}
-.qr-overlay .result .icon{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
-.qr-overlay .result .icon.success{background:rgba(0,230,118,0.2)}
-.qr-overlay .result .icon.warning{background:rgba(255,171,0,0.2)}
-.qr-overlay .result .icon svg{width:40px;height:40px}
+.qr-overlay .result .icon{width:90px;height:90px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.qr-overlay .result .icon.success{background:rgba(0,230,118,0.25);box-shadow:0 0 40px rgba(0,230,118,0.3),0 0 80px rgba(0,230,118,0.1)}
+.qr-overlay .result .icon.warning{background:rgba(255,171,0,0.25);box-shadow:0 0 40px rgba(255,171,0,0.3),0 0 80px rgba(255,171,0,0.1)}
+.qr-overlay .result .icon svg{width:48px;height:48px}
+.qr-overlay .result h3{color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.3)}
+.qr-overlay .result p{color:rgba(255,255,255,0.9);text-shadow:0 1px 4px rgba(0,0,0,0.2)}
 .search-results{margin-top:12px;display:flex;flex-direction:column;gap:8px}
 .search-result-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border:1px solid var(--card-border);border-radius:12px;cursor:pointer;transition:all 0.2s}
 .search-result-item:active{transform:scale(0.97)}
