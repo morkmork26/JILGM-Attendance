@@ -170,11 +170,11 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 .empty-state{text-align:center;padding:48px 24px}
 .empty-state svg{width:64px;height:64px;stroke:var(--text-secondary);margin-bottom:16px;opacity:0.5}
 .empty-state p{color:var(--text-secondary);font-size:14px}
-.settings-section{margin-bottom:24px;padding:16px;border-radius:var(--radius);background:transparent;transition:background 0.4s,box-shadow 0.4s,padding 0.4s}
-.settings-section h4{font-size:13px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;transition:color 0.4s}
-.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--card);border:1px solid var(--card-border);border-radius:12px;margin-bottom:8px;transition:background 0.4s,border-color 0.4s,box-shadow 0.4s}
-.settings-row .label{font-size:14px;transition:color 0.4s}
-.settings-row .sublabel{font-size:12px;color:var(--text-secondary);transition:color 0.4s}
+.settings-section{margin-bottom:24px;padding:16px;border-radius:var(--radius);background:transparent;transition:none}
+.settings-section h4{font-size:13px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;transition:none}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--card);border:1px solid var(--card-border);border-radius:12px;margin-bottom:8px;transition:none}
+.settings-row .label{font-size:14px;transition:none}
+.settings-row .sublabel{font-size:12px;color:var(--text-secondary);transition:none}
 .install-banner{position:fixed;top:var(--header-h);left:0;right:0;background:linear-gradient(135deg,var(--accent),var(--accent2));padding:10px 16px;display:none;align-items:center;justify-content:space-between;z-index:90;font-size:13px;font-weight:500}
 .install-banner.show{display:flex}
 .skeleton{background:linear-gradient(90deg,var(--card) 25%,rgba(255,255,255,0.05) 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
@@ -398,7 +398,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <h4>Appearance</h4>
 <div class="settings-row" style="justify-content:space-between;align-items:center">
 <span style="font-size:14px">Dark Mode</span>
-<button id="themeToggle" style="width:36px;height:36px;border-radius:50%;background:var(--card);border:1px solid var(--card-border);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.4s,border-color 0.4s"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--text-secondary);transition:color 0.4s"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+<button id="themeToggle" style="width:36px;height:36px;border-radius:50%;background:var(--card);border:1px solid var(--card-border);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:none"><svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--text-secondary);transition:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
 </div>
 </div>
 <div class="settings-section">
