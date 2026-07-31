@@ -1579,10 +1579,18 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 });
 
 // === APP VERSION & CHANGELOG ===
-const APP_VERSION='1.3.0';
+const APP_VERSION='1.3.1';
 const CHANGELOG=[
-{version:'1.3.0',date:'July 30, 2026',changes:[
-{type:'Improve',text:'QR scanner now has glowing border, corner brackets, and smooth scan line animation'},
+{version:'1.3.0',date:'July 31, 2026',changes:[
+{type:'Improve',text:'QR scanner glowing border and smooth scan line animation'},
+{type:'Improve',text:'Check-in overlay redesigned: bigger text, cleaner layout'},
+{type:'New',text:'Attendance streak badge (fire emoji for consecutive Sundays)'},
+{type:'New',text:'Welcome back message for returning members'},
+{type:'Improve',text:'New check-in sound (rising chime instead of generic beep)'},
+{type:'Improve',text:'Haptic feedback on scan (vibration)'},
+{type:'Improve',text:'Faster dismiss (1.5s instead of 2s)'},
+{type:'Improve',text:'QR camera auto-starts on app open'},
+{type:'Improve',text:'Check-in is now instant (no network wait)'},
 ]},
 {version:'1.2.0',date:'July 28, 2026',changes:[
 {type:'Fix',text:'Text alignment in search boxes and member forms'},
