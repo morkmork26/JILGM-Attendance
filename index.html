@@ -162,6 +162,7 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 .qr-overlay.show{display:flex}
 .qr-overlay .result{text-align:center;animation:scaleIn 0.3s;display:flex;flex-direction:column;align-items:center}
 @keyframes scaleIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes particleBurst{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0)}}
 .qr-overlay .result .icon{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
 .qr-overlay .result .icon.success{background:rgba(0,230,118,0.2)}
 .qr-overlay .result .icon.warning{background:rgba(255,171,0,0.2)}
@@ -706,6 +707,16 @@ g2.gain.setValueAtTime(0,t+0.08);g2.gain.linearRampToValueAtTime(0.15,t+0.1);g2.
 o2.start(t+0.08);o2.stop(t+0.3);
 }catch(e){}
 }
+function spawnParticles(container){
+const colors=['#00e676','#22d3ee','#a78bfa','#fbbf24','#f472b6','#34d399'];
+for(let i=0;i<8;i++){
+const p=document.createElement('div');p.className='particle';
+const angle=Math.random()*Math.PI*2;const dist=60+Math.random()*40;
+const x=Math.cos(angle)*dist;const y=Math.sin(angle)*dist;
+p.style.cssText=`position:absolute;top:50%;left:50%;width:5px;height:5px;border-radius:50%;background:${colors[i%colors.length]};opacity:0;animation:particleBurst 0.7s ease-out forwards;--tx:${x}px;--ty:${y}px`;
+container.appendChild(p);
+}
+}
 function playWarn(){
 try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const g=ctx.createGain();g.connect(ctx.destination);
 const t=ctx.currentTime;
@@ -818,7 +829,8 @@ else if(isBack)badge=`<div style="margin-top:14px;font-size:12px;font-weight:600
 overlay.innerHTML=`<div class="result"><div class="icon success"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><h3 style="font-size:34px;font-weight:800;margin-top:12px">${greeting}</h3><p style="color:rgba(255,255,255,0.8);margin-top:14px;font-size:20px;line-height:1.4">${wMsg}</p>${badge}</div>`;
 }
 overlay.classList.add('show');
-setTimeout(()=>{overlay.classList.remove('show');if(qrScanner)try{qrScanner.resume()}catch(e){}},1500);
+if(!already){spawnParticles(overlay)}
+setTimeout(()=>{overlay.classList.remove('show');overlay.querySelectorAll('.particle').forEach(p=>p.remove());if(qrScanner)try{qrScanner.resume()}catch(e){}},1500);
 }
 
 let sundayConfirmed=false;
