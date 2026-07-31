@@ -144,6 +144,12 @@ function doGet(e) {
         return respond(getPendingDevices(deviceId));
       }
 
+      case "getAllDevices": {
+        const deviceId = e.parameter.deviceId || "";
+        if (!deviceId) return respondError("deviceId is required");
+        return respond(getAllDevices(deviceId));
+      }
+
       case "updateDeviceStatus": {
         const deviceId = e.parameter.deviceId || "";
         const targetDeviceId = e.parameter.targetDeviceId || "";
@@ -756,6 +762,24 @@ function getPendingDevices(requestingDeviceId) {
     }
   }
   return { success: true, data: pending };
+}
+
+function getAllDevices(requestingDeviceId) {
+  if (!isAdminDevice(requestingDeviceId)) {
+    return { success: false, error: 'unauthorized' };
+  }
+  const sheet = getOrCreateDevicesSheet();
+  const rows = sheet.getDataRange().getValues();
+  var devices = [];
+  for (let i = 1; i < rows.length; i++) {
+    devices.push({
+      deviceId: String(rows[i][0]).trim(),
+      name: String(rows[i][1]).trim(),
+      status: String(rows[i][2]).trim(),
+      registeredAt: String(rows[i][3]).trim()
+    });
+  }
+  return { success: true, data: devices };
 }
 
 function updateDeviceStatusAdmin(requestingDeviceId, targetDeviceId, newStatus) {
