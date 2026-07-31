@@ -1578,7 +1578,6 @@ else if(ss==='Blocked'){clearInterval(poll);showAccessGate('blocked')}
 return;
 }
 splashProgress(60);
-startQR();
 allMembers=await dbGet('members');await loadTodayAttendance();
 splashProgress(75);
 await checkInactiveMembers();
