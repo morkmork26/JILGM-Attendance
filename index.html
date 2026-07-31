@@ -547,7 +547,8 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 
 <div class="toast" id="toast"><span id="toastMsg"></span><div class="toast-progress"></div></div>
 
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<link rel="preload" href="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" as="script">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" onload="if(earlyStream)startQRScanner()"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT'&&e.target.tagName!=='TEXTAREA')e.preventDefault()});
@@ -825,16 +826,37 @@ if(mode==='tap')renderAvatarGrid();
 document.querySelectorAll('.mode-pill').forEach(p=>p.addEventListener('click',()=>switchMode(p.dataset.mode)));
 
 let cameraFacing='environment';
-function startQR(){
+let earlyStream=null;
+function startEarlyCamera(){
+const el=document.getElementById('qr-reader');
+if(!el)return;
+el.innerHTML='';
+const vid=document.createElement('video');
+vid.setAttribute('playsinline','');vid.setAttribute('autoplay','');
+vid.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:var(--radius)';
+el.appendChild(vid);
+navigator.mediaDevices.getUserMedia({video:{facingMode:cameraFacing}}).then(stream=>{
+earlyStream=stream;vid.srcObject=stream;
+if(typeof Html5Qrcode!=='undefined')startQRScanner();
+}).catch(()=>{
+el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);font-size:13px;padding:20px;text-align:center">Camera not available. Try Quick Tap or Search mode.</div>';
+});
+}
+function startQRScanner(){
 if(qrScanner)try{qrScanner.stop()}catch(e){}
 const el=document.getElementById('qr-reader');el.innerHTML='';
 qrScanner=new Html5Qrcode('qr-reader');
 qrScanner.start({facingMode:cameraFacing},{fps:10,qrbox:220},onQRScan,()=>{}).then(()=>{
+if(earlyStream){earlyStream.getTracks().forEach(t=>t.stop());earlyStream=null}
 const vid=document.querySelector('#qr-reader video');
 if(vid)vid.style.transform=cameraFacing==='user'?'scaleX(-1)':'none';
 }).catch(()=>{
 el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);font-size:13px;padding:20px;text-align:center">Camera not available. Try Quick Tap or Search mode.</div>';
 });
+}
+function startQR(){
+if(typeof Html5Qrcode==='undefined'){startEarlyCamera();return}
+startQRScanner();
 }
 function flipCamera(){
 cameraFacing=cameraFacing==='environment'?'user':'environment';
