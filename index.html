@@ -1407,13 +1407,13 @@ else if(ss==='Blocked'){clearInterval(poll);showAccessGate('blocked')}
 },5000);
 return;
 }
+startQR();
 allMembers=await dbGet('members');await loadTodayAttendance();
 await checkInactiveMembers();
 allMembers=await dbGet('members');
 const ministries=await getMinistries();populateMinistryDropdowns(ministries);
 renderAvatarGrid();
 checkBirthdaysToday();
-startQR();
 await initExtras();
 }catch(e){document.body.innerHTML='<div style="padding:40px;text-align:center;color:#ff5252"><h3>App Error</h3><p style="margin-top:12px;color:#8b8b9e;font-size:14px">'+e.message+'</p><button onclick="location.reload()" style="margin-top:20px;padding:12px 24px;background:#6c63ff;color:#fff;border:none;border-radius:12px;font-size:14px">Retry</button></div>'}
 }
