@@ -806,6 +806,7 @@ if(tabId==='tabMembers')renderMemberList();
 if(tabId==='tabReports')renderReports();
 if(tabId==='tabSettings')loadSettings();
 if(tabId!=='tabCheckin'&&qrScanner){try{qrScanner.stop()}catch(e){}}
+if(tabId==='tabCheckin'&&currentMode==='qr')startQR();
 }
 
 document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>switchTab(n.dataset.tab)));
