@@ -95,6 +95,7 @@ function doGet(e) {
         case "checkAccess": return respond(checkAccess(body));
         case "setOccasion": return respond(setOccasionConfig(body));
         case "registerDevice": return respond(registerDevice(body));
+        case "removeCheckIn": return respond(removeCheckIn(body));
         default: return respondError("Unknown data action: " + dataAction, 400);
       }
     }
@@ -355,6 +356,21 @@ function checkIn(body) {
   return { success: true, data: { status: "checked-in", memberId, memberName, date, timestamp } };
 }
 
+
+function removeCheckIn(body) {
+  const { memberId, date } = body;
+  if (!memberId) throw new Error("memberId is required");
+  if (!date) throw new Error("date is required");
+  const sheet = getSheet(SHEET_ATTENDANCE);
+  const data = sheet.getDataRange().getValues();
+  for (var i = data.length - 1; i >= 1; i--) {
+    if (String(data[i][COL_ATT.MEMBER_ID]) === String(memberId) && String(data[i][COL_ATT.DATE]) === date) {
+      sheet.deleteRow(i + 1);
+      return { success: true, data: { status: "removed", memberId, date } };
+    }
+  }
+  return { success: true, data: { status: "not-found", memberId, date } };
+}
 
 /**
  * Adds a new member to the Members sheet.
