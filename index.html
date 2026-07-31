@@ -754,14 +754,14 @@ if(!member){setTimeout(()=>{if(qrScanner)try{qrScanner.resume()}catch(e){}},1500
 const already=todayAttendance.find(a=>a.memberId===member.id);
 const overlay=document.getElementById('qrOverlay');
 if(already){
-overlay.innerHTML=`<div class="result"><div class="icon warning"><svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><h3 style="font-size:22px">${member.name.split(' ')[0]}</h3><p style="color:var(--text-secondary);margin-top:4px;font-size:13px">${member.name}</p><p style="color:var(--warning);margin-top:8px;font-size:15px;font-weight:600">Already checked in today</p></div>`;
+overlay.innerHTML=`<div class="result"><div class="icon warning"><svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><h3 style="font-size:26px;font-weight:700;margin-top:8px">${member.name.split(' ')[0]}</h3><p style="color:var(--text-secondary);margin-top:6px;font-size:15px">${member.name}</p><p style="color:var(--warning);margin-top:12px;font-size:16px;font-weight:600">Already checked in today</p></div>`;
 }else{
 const ok=await checkInMember(member);
 if(ok===false){setTimeout(()=>{if(qrScanner)try{qrScanner.resume()}catch(e){}},500);return}
 playBeep();
 const welcomeMsgs=['We\'re glad you\'re here today.','Great to see you!','You made it! Have a blessed day.','So happy you\'re here!','Your presence matters.','Good to have you with us!','Thanks for showing up today!','You\'re in the right place.','Let\'s make today count!','Let\'s worship together!','What a blessing to see you!','You\'re exactly where you need to be.','Today is better because you\'re here!','So glad you made time for this!','Glad you chose to be here!','Your faithfulness inspires us!'];
 const wMsg=welcomeMsgs[Math.floor(Math.random()*welcomeMsgs.length)];
-overlay.innerHTML=`<div class="result"><div class="icon success"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><h3 style="font-size:22px">Welcome, ${member.name.split(' ')[0]}!</h3><p style="color:var(--text-secondary);margin-top:4px;font-size:13px">${member.name}</p><p style="color:var(--text-secondary);margin-top:8px;font-size:15px">${wMsg}</p><p style="color:var(--success);margin-top:6px;font-size:13px;font-weight:600">Checked in successfully</p></div>`;
+overlay.innerHTML=`<div class="result"><div class="icon success"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><h3 style="font-size:28px;font-weight:700;margin-top:8px">Welcome, ${member.name.split(' ')[0]}!</h3><p style="color:var(--text-secondary);margin-top:6px;font-size:15px">${member.name}</p><p style="color:rgba(255,255,255,0.8);margin-top:12px;font-size:17px;font-style:italic">${wMsg}</p><p style="color:var(--success);margin-top:10px;font-size:14px;font-weight:600">&#10003; Checked in</p></div>`;
 }
 overlay.classList.add('show');
 setTimeout(()=>{overlay.classList.remove('show');if(qrScanner)try{qrScanner.resume()}catch(e){}},2000);
@@ -787,12 +787,10 @@ if(idx>=0)allMembers[idx]=member;
 }
 const record={memberId:member.id,memberName:member.name,date:today(),timestamp:Date.now(),checkedInBy:'app',occasion:currentOccasion};
 await dbPut('attendance',record);todayAttendance.push(record);updateCounter();
-await checkAndGraduate(member);
-const url=await getSetting('scriptUrl');
-if(url){
-try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'checkIn',...record})));
-}catch(e){await dbPut('pendingSync',{action:'checkIn',payload:record,createdAt:Date.now()})}
-}
+checkAndGraduate(member);
+getSetting('scriptUrl').then(url=>{
+if(url)fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'checkIn',...record}))).catch(()=>dbPut('pendingSync',{action:'checkIn',payload:record,createdAt:Date.now()}));
+});
 return true;
 }
 
