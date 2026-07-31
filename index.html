@@ -1347,10 +1347,12 @@ const filtered=todayAttendance.filter(a=>a.memberName.toLowerCase().includes(sea
 if(!filtered.length){list.innerHTML='<p style="font-size:13px;color:var(--text-secondary);text-align:center;padding:12px">No check-ins found</p>';return}
 list.innerHTML=filtered.map(a=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--card);border-radius:10px;margin-bottom:6px;border:1px solid var(--card-border)"><div><div style="font-size:13px;font-weight:600;color:var(--text)">${a.memberName}</div><div style="font-size:11px;color:var(--text-secondary)">${new Date(a.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} &middot; ${a.occasion||'Sunday Service'}</div></div><button onclick="removeCheckin('${a.memberId}')" style="background:none;border:none;padding:6px;cursor:pointer;border-radius:8px;color:var(--danger)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div>`).join('');
 }
+let removedCheckins=[];
 async function removeCheckin(memberId){
 const member=allMembers.find(m=>m.id===memberId);
 const name=member?member.name:memberId;
 if(!await customConfirm(`Remove check-in for ${name}?`,{title:'Remove Check-In',okText:'Remove'}))return;
+removedCheckins.push({memberId,date:today(),ts:Date.now()});
 const all=await dbGet('attendance');
 const recs=all.filter(a=>a.memberId===memberId&&a.date===today());
 for(const rec of recs){if(rec.id)await dbDelete('attendance',rec.id);}
@@ -1661,7 +1663,9 @@ const allLocal=await dbGet('attendance');
 const todayLocal=allLocal.filter(a=>a.date===today());
 for(const loc of todayLocal){await dbDelete('attendance',loc.id)}
 todayAttendance=[];
+removedCheckins=removedCheckins.filter(r=>Date.now()-r.ts<60000);
 for(const rec of json.data){
+if(removedCheckins.find(r=>r.memberId===rec.memberId&&r.date===rec.date))continue;
 const r2={memberId:rec.memberId,memberName:rec.memberName,date:rec.date,timestamp:rec.timestamp||Date.now(),checkedInBy:rec.checkedInBy||'sync',occasion:rec.occasion||''};
 await dbPut('attendance',r2);
 todayAttendance.push(r2);
