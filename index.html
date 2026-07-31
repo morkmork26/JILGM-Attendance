@@ -251,11 +251,15 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 .splash-ring2{width:150px;height:150px;border-radius:50%;position:absolute;animation:splashRingRotate 3s linear infinite reverse}
 .splash-ring2::before{content:'';position:absolute;inset:-1.5px;border-radius:50%;background:conic-gradient(from 180deg,transparent,#a78bfa,#f472b6,transparent);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 1.5px),#000 calc(100% - 1.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 1.5px),#000 calc(100% - 1.5px))}
 @keyframes splashRingRotate{to{transform:rotate(360deg)}}
+.splash-icon{animation:splashPulse 2s ease-in-out infinite}
+.splash-icon svg path,.splash-icon svg circle{stroke-dasharray:100;stroke-dashoffset:100;animation:splashDraw 1.2s 0.3s ease-out forwards}
+@keyframes splashPulse{0%,100%{box-shadow:0 0 50px rgba(99,102,241,0.4),0 0 100px rgba(34,211,238,0.15)}50%{box-shadow:0 0 70px rgba(99,102,241,0.6),0 0 140px rgba(34,211,238,0.25)}}
+@keyframes splashDraw{to{stroke-dashoffset:0}}
 </style>
 <div style="position:relative;display:flex;align-items:center;justify-content:center">
 <div class="splash-ring2"></div>
 <div class="splash-ring"></div>
-<div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#22d3ee);display:flex;align-items:center;justify-content:center;box-shadow:0 0 50px rgba(99,102,241,0.4),0 0 100px rgba(34,211,238,0.15)"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+<div class="splash-icon" style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#22d3ee);display:flex;align-items:center;justify-content:center;box-shadow:0 0 50px rgba(99,102,241,0.4),0 0 100px rgba(34,211,238,0.15)"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
 </div>
 <div style="margin-top:36px;display:flex"><span style="font-family:Raleway,-apple-system,sans-serif;font-size:38px;font-weight:800;letter-spacing:0.5px;background:linear-gradient(135deg,#fff 30%,#48c6ef 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 6px rgba(72,198,239,0.4))">Flock</span><span style="font-family:Raleway,-apple-system,sans-serif;font-size:38px;font-weight:800;letter-spacing:0.5px;background:linear-gradient(135deg,#48c6ef 0%,#6c63ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 6px rgba(108,99,255,0.4))">Track</span></div>
 <div style="margin-top:32px;width:140px;height:3px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden"><div id="splashProgress" style="height:100%;width:0%;background:linear-gradient(90deg,#6366f1,#22d3ee);border-radius:4px;transition:width 0.3s ease"></div></div>
