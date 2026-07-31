@@ -868,7 +868,7 @@ overlay.innerHTML=`<div class="result"><div class="icon success"><svg viewBox="0
 }
 overlay.classList.add('show');
 if(!already){spawnParticles(overlay)}
-setTimeout(()=>{overlay.classList.remove('show');overlay.querySelectorAll('.particle,.cel-flash,.cel-ring,.cel-sparkle,.cel-streak,.cel-confetti').forEach(p=>p.remove());if(qrScanner)try{qrScanner.resume()}catch(e){}},1500);
+setTimeout(()=>{overlay.classList.remove('show');overlay.querySelectorAll('.particle,.cel-flash,.cel-ring,.cel-sparkle,.cel-streak,.cel-confetti').forEach(p=>p.remove());if(qrScanner)try{qrScanner.resume()}catch(e){}},2000);
 }
 
 let sundayConfirmed=false;
