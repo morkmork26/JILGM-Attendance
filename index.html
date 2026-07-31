@@ -162,7 +162,12 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 .qr-overlay.show{display:flex}
 .qr-overlay .result{text-align:center;animation:scaleIn 0.3s;display:flex;flex-direction:column;align-items:center}
 @keyframes scaleIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}
-@keyframes particleBurst{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0)}}
+@keyframes particleBurst{0%{opacity:1;transform:translate(0,0) scale(1.5)}30%{opacity:1}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0)}}
+@keyframes flashBoom{0%{width:0;height:0;opacity:1}100%{width:300px;height:300px;opacity:0}}
+@keyframes ringExpand{0%{opacity:0.9;width:10px;height:10px}100%{opacity:0;width:240px;height:240px}}
+@keyframes sparkleFade{0%{opacity:0;transform:scale(0) rotate(0deg)}20%{opacity:1;transform:scale(1.5) rotate(45deg)}100%{opacity:0;transform:scale(0) rotate(90deg)}}
+@keyframes streakShoot{0%{opacity:1;height:0;transform:translate(var(--sx),var(--sy)) rotate(var(--rot))}40%{opacity:1;height:25px}100%{opacity:0;height:0;transform:translate(var(--ex),var(--ey)) rotate(var(--rot))}}
+@keyframes confettiFall{0%{opacity:1;transform:translate(var(--cx),var(--cy)) rotate(0deg) scale(1)}50%{opacity:0.9;transform:translate(calc(var(--cx) + var(--drift)),calc(var(--cy) + 60px)) rotate(180deg)}100%{opacity:0;transform:translate(calc(var(--cx) + var(--drift) * 2),calc(var(--cy) + 150px)) rotate(360deg) scale(0.5)}}
 .qr-overlay .result .icon{width:90px;height:90px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
 .qr-overlay .result .icon.success{background:rgba(0,230,118,0.25);box-shadow:0 0 40px rgba(0,230,118,0.3),0 0 80px rgba(0,230,118,0.1)}
 .qr-overlay .result .icon.warning{background:rgba(255,171,0,0.25);box-shadow:0 0 40px rgba(255,171,0,0.3),0 0 80px rgba(255,171,0,0.1)}
@@ -710,13 +715,44 @@ o2.start(t+0.08);o2.stop(t+0.3);
 }catch(e){}
 }
 function spawnParticles(container){
-const colors=['#00e676','#22d3ee','#a78bfa','#fbbf24','#f472b6','#34d399'];
-for(let i=0;i<8;i++){
+const colors=['#00e676','#22d3ee','#a78bfa','#fbbf24','#f472b6','#34d399','#818cf8','#fb923c','#4ade80','#e879f9','#38bdf8','#facc15'];
+const fl=document.createElement('div');fl.className='cel-flash';fl.style.cssText='position:absolute;top:40%;left:50%;width:0;height:0;border-radius:50%;background:radial-gradient(circle,rgba(0,230,118,0.4),transparent 70%);transform:translate(-50%,-50%);animation:flashBoom 0.5s ease-out forwards';
+container.appendChild(fl);
+for(let i=0;i<24;i++){
 const p=document.createElement('div');p.className='particle';
-const angle=Math.random()*Math.PI*2;const dist=60+Math.random()*40;
+const angle=(Math.PI*2/24)*i+(Math.random()*0.2);const dist=60+Math.random()*90;
 const x=Math.cos(angle)*dist;const y=Math.sin(angle)*dist;
-p.style.cssText=`position:absolute;top:50%;left:50%;width:5px;height:5px;border-radius:50%;background:${colors[i%colors.length]};opacity:0;animation:particleBurst 0.7s ease-out forwards;--tx:${x}px;--ty:${y}px`;
+const size=4+Math.random()*6;
+p.style.cssText=`position:absolute;top:40%;left:50%;width:${size}px;height:${size}px;border-radius:50%;background:${colors[i%colors.length]};opacity:0;animation:particleBurst 1.2s ease-out forwards;--tx:${x}px;--ty:${y}px;animation-delay:${i*0.02}s`;
 container.appendChild(p);
+}
+for(let i=0;i<4;i++){
+const r=document.createElement('div');r.className='cel-ring';
+r.style.cssText=`position:absolute;top:40%;left:50%;width:10px;height:10px;border-radius:50%;border:2.5px solid ${['rgba(0,230,118,0.7)','rgba(34,211,238,0.5)','rgba(167,139,250,0.4)','rgba(251,191,36,0.3)'][i]};transform:translate(-50%,-50%);opacity:0;animation:ringExpand 0.9s ease-out forwards;animation-delay:${i*0.15}s`;
+container.appendChild(r);
+}
+for(let i=0;i<12;i++){
+const s=document.createElement('div');s.className='cel-sparkle';
+const angle=Math.random()*Math.PI*2;const dist=35+Math.random()*90;
+s.style.cssText=`position:absolute;top:calc(40% + ${Math.sin(angle)*dist}px);left:calc(50% + ${Math.cos(angle)*dist}px);width:3px;height:3px;opacity:0;animation:sparkleFade 0.9s ease-out forwards;animation-delay:${0.1+Math.random()*0.6}s`;
+s.innerHTML='<span style="position:absolute;width:3px;height:12px;top:-6px;left:0;background:#fff;border-radius:2px"></span><span style="position:absolute;width:12px;height:3px;top:0;left:-6px;background:#fff;border-radius:2px"></span>';
+container.appendChild(s);
+}
+for(let i=0;i<12;i++){
+const s=document.createElement('div');s.className='cel-streak';
+const angle=(Math.PI*2/12)*i;
+const sd=25;const ed=100;
+const sx=Math.cos(angle)*sd;const sy=Math.sin(angle)*sd;
+const ex=Math.cos(angle)*ed;const ey=Math.sin(angle)*ed;
+const rot=angle*(180/Math.PI)+90;
+s.style.cssText=`position:absolute;top:40%;left:50%;width:2.5px;border-radius:2px;background:${colors[i%colors.length]};opacity:0;animation:streakShoot 0.7s ease-out forwards;--sx:${sx}px;--sy:${sy}px;--ex:${ex}px;--ey:${ey}px;--rot:${rot}deg;animation-delay:${0.03+i*0.03}s`;
+container.appendChild(s);
+}
+for(let i=0;i<20;i++){
+const c=document.createElement('div');c.className='cel-confetti';
+const cx=-100+Math.random()*200;const cy=-120-Math.random()*40;const drift=-20+Math.random()*40;
+c.style.cssText=`position:absolute;top:40%;left:50%;width:${4+Math.random()*4}px;height:${6+Math.random()*6}px;background:${colors[i%colors.length]};border-radius:${Math.random()>0.5?'50%':'2px'};opacity:0;animation:confettiFall 1.8s ease-in forwards;--cx:${cx}px;--cy:${cy}px;--drift:${drift}px;animation-delay:${0.2+Math.random()*0.3}s`;
+container.appendChild(c);
 }
 }
 function playWarn(){
@@ -832,7 +868,7 @@ overlay.innerHTML=`<div class="result"><div class="icon success"><svg viewBox="0
 }
 overlay.classList.add('show');
 if(!already){spawnParticles(overlay)}
-setTimeout(()=>{overlay.classList.remove('show');overlay.querySelectorAll('.particle').forEach(p=>p.remove());if(qrScanner)try{qrScanner.resume()}catch(e){}},1500);
+setTimeout(()=>{overlay.classList.remove('show');overlay.querySelectorAll('.particle,.cel-flash,.cel-ring,.cel-sparkle,.cel-streak,.cel-confetti').forEach(p=>p.remove());if(qrScanner)try{qrScanner.resume()}catch(e){}},1500);
 }
 
 let sundayConfirmed=false;
