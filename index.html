@@ -156,6 +156,10 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 .qr-scanner .scan-line{position:absolute;top:10%;left:5%;width:90%;height:2px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),var(--accent),transparent);box-shadow:0 0 12px 2px rgba(99,102,241,0.5),0 0 30px 4px rgba(34,211,238,0.2);border-radius:2px;z-index:11;pointer-events:none;animation:scanLine 2.5s ease-in-out infinite}
 @keyframes scanLine{0%{top:10%;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:88%;opacity:0}}
 .qr-overlay{position:fixed;inset:0;z-index:250;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px)}
+.light .qr-overlay{background:rgba(255,255,255,0.85)}
+.light .qr-overlay .result h3{color:#1a1a2e!important}
+.light .qr-overlay .result p{color:#4b5563!important}
+.light .qr-overlay .result p[style*="warning"]{color:#d97706!important}
 .qr-overlay.show{display:flex}
 .qr-overlay .result{text-align:center;animation:scaleIn 0.3s;display:flex;flex-direction:column;align-items:center}
 @keyframes scaleIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}
