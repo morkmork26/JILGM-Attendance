@@ -852,7 +852,7 @@ const vid=document.querySelector('#qr-reader video');
 if(vid){
 vid.style.transform=cameraFacing==='user'?'scaleX(-1)':'none';
 const track=vid.srcObject&&vid.srcObject.getVideoTracks()[0];
-if(track){const caps=track.getCapabilities&&track.getCapabilities();if(caps&&caps.zoom){const maxZoom=Math.min(4,caps.zoom.max);track.applyConstraints({advanced:[{zoom:maxZoom}]}).catch(()=>{})}}
+if(track){const caps=track.getCapabilities&&track.getCapabilities();if(caps&&caps.zoom){const maxZoom=Math.min(2,caps.zoom.max);track.applyConstraints({advanced:[{zoom:maxZoom}]}).catch(()=>{})}}
 }
 }).catch(()=>{
 el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);font-size:13px;padding:20px;text-align:center">Camera not available. Try Quick Tap or Search mode.</div>';
