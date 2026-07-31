@@ -1430,12 +1430,15 @@ try{
 const r=await fetch(url+'?action=getAttendance&date='+today());
 const json=await r.json();
 if(json.success&&json.data){
-const existing=new Set(todayAttendance.map(a=>a.memberId));
+const allLocal=await dbGet('attendance');
+const todayLocal=allLocal.filter(a=>a.date===today());
+for(const loc of todayLocal){await dbDelete('attendance',loc.id)}
+todayAttendance=[];
 for(const rec of json.data){
-if(!existing.has(rec.memberId)){
-await dbPut('attendance',{memberId:rec.memberId,memberName:rec.memberName,date:rec.date,timestamp:rec.timestamp||Date.now(),checkedInBy:rec.checkedInBy||'sync'});
-todayAttendance.push(rec);
-}}
+const r2={memberId:rec.memberId,memberName:rec.memberName,date:rec.date,timestamp:rec.timestamp||Date.now(),checkedInBy:rec.checkedInBy||'sync',occasion:rec.occasion||''};
+await dbPut('attendance',r2);
+todayAttendance.push(r2);
+}
 updateCounter();
 if(currentTab==='tabCheckin'&&currentMode==='tap')renderAvatarGrid();
 }}catch(e){}
