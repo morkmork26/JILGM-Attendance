@@ -1707,8 +1707,17 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 });
 
 // === APP VERSION & CHANGELOG ===
-const APP_VERSION='1.3.1';
+const APP_VERSION='1.4.0';
 const CHANGELOG=[
+{version:'1.4.0',date:'July 31, 2026',changes:[
+{type:'New',text:'Animated splash screen with spinning rings and progress bar'},
+{type:'New',text:'Zoom control button for QR scanner (1x to 4x)'},
+{type:'Improve',text:'Celebration animation on check-in (particles, confetti, rings)'},
+{type:'Improve',text:'iPad landscape: bigger overlay text and scaled animations'},
+{type:'Improve',text:'Camera auto-restarts when switching back to check-in tab'},
+{type:'Improve',text:'Instant camera feed on app open (no more blank screen)'},
+{type:'Fix',text:'Sync now removes deleted attendance from local cache'},
+]},
 {version:'1.3.0',date:'July 31, 2026',changes:[
 {type:'Improve',text:'QR scanner glowing border and smooth scan line animation'},
 {type:'Improve',text:'Check-in overlay redesigned: bigger text, cleaner layout'},
