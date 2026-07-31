@@ -156,10 +156,9 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 .qr-scanner .scan-line{position:absolute;top:10%;left:5%;width:90%;height:2px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),var(--accent),transparent);box-shadow:0 0 12px 2px rgba(99,102,241,0.5),0 0 30px 4px rgba(34,211,238,0.2);border-radius:2px;z-index:11;pointer-events:none;animation:scanLine 2.5s ease-in-out infinite}
 @keyframes scanLine{0%{top:10%;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:88%;opacity:0}}
 .qr-overlay{position:fixed;inset:0;z-index:250;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px)}
-.light .qr-overlay{background:rgba(255,255,255,0.85)}
-.light .qr-overlay .result h3{color:#1a1a2e!important}
-.light .qr-overlay .result p{color:#4b5563!important}
-.light .qr-overlay .result p[style*="warning"]{color:#d97706!important}
+.light .qr-overlay{background:rgba(0,0,0,0.75)}
+.qr-overlay .result h3{color:#fff}
+.qr-overlay .result p{color:rgba(255,255,255,0.8)}
 .qr-overlay.show{display:flex}
 .qr-overlay .result{text-align:center;animation:scaleIn 0.3s;display:flex;flex-direction:column;align-items:center}
 @keyframes scaleIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}
@@ -801,7 +800,7 @@ const overlay=document.getElementById('qrOverlay');
 if(already){
 navigator.vibrate&&navigator.vibrate([50,30,50]);
 playWarn();
-overlay.innerHTML=`<div class="result"><div class="icon warning"><svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><h3 style="font-size:30px;font-weight:800;margin-top:12px">Hey, ${member.name.split(' ')[0]}!</h3><p style="color:var(--warning);margin-top:14px;font-size:18px;font-weight:500">Already checked in today</p></div>`;
+overlay.innerHTML=`<div class="result"><div class="icon warning"><svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><h3 style="font-size:34px;font-weight:800;margin-top:12px">Hey, ${member.name.split(' ')[0]}!</h3><p style="color:var(--warning);margin-top:14px;font-size:20px;font-weight:500">Already checked in today</p></div>`;
 }else{
 const ok=await checkInMember(member);
 if(ok===false){setTimeout(()=>{if(qrScanner)try{qrScanner.resume()}catch(e){}},500);return}
@@ -816,7 +815,7 @@ const greeting=isBack?`Welcome back, ${member.name.split(' ')[0]}!`:`Welcome, ${
 let badge='';
 if(streak.type==='streak'&&streak.count>=2)badge=`<div style="margin-top:14px;font-size:12px;font-weight:600;padding:5px 14px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;background:rgba(0,230,118,0.1);color:var(--success)">${streak.count>=8?'&#127942;':'&#128293;'} ${streak.count} Sundays${streak.count>=8?' strong!':' in a row!'}</div>`;
 else if(isBack)badge=`<div style="margin-top:14px;font-size:12px;font-weight:600;padding:5px 14px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;background:rgba(0,230,118,0.1);color:var(--success)">&#128588; We missed you!</div>`;
-overlay.innerHTML=`<div class="result"><div class="icon success"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><h3 style="font-size:30px;font-weight:800;margin-top:12px">${greeting}</h3><p style="color:var(--text-secondary);margin-top:14px;font-size:18px;line-height:1.4">${wMsg}</p>${badge}</div>`;
+overlay.innerHTML=`<div class="result"><div class="icon success"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><h3 style="font-size:34px;font-weight:800;margin-top:12px">${greeting}</h3><p style="color:rgba(255,255,255,0.8);margin-top:14px;font-size:20px;line-height:1.4">${wMsg}</p>${badge}</div>`;
 }
 overlay.classList.add('show');
 setTimeout(()=>{overlay.classList.remove('show');if(qrScanner)try{qrScanner.resume()}catch(e){}},1500);
