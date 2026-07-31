@@ -364,7 +364,16 @@ function removeCheckIn(body) {
   const sheet = getSheet(SHEET_ATTENDANCE);
   const data = sheet.getDataRange().getValues();
   for (var i = data.length - 1; i >= 1; i--) {
-    if (String(data[i][COL_ATT.MEMBER_ID]) === String(memberId) && String(data[i][COL_ATT.DATE]) === date) {
+    var rowDate = data[i][COL_ATT.DATE];
+    if (rowDate instanceof Date) {
+      var y = rowDate.getFullYear();
+      var m = String(rowDate.getMonth() + 1).padStart(2, '0');
+      var d = String(rowDate.getDate()).padStart(2, '0');
+      rowDate = y + '-' + m + '-' + d;
+    } else {
+      rowDate = String(rowDate);
+    }
+    if (String(data[i][COL_ATT.MEMBER_ID]) === String(memberId) && rowDate === date) {
       sheet.deleteRow(i + 1);
       return { success: true, data: { status: "removed", memberId, date } };
     }
