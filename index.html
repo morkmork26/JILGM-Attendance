@@ -806,8 +806,8 @@ if(tabId==='tabCheckin'&&currentMode==='tap')renderAvatarGrid();
 if(tabId==='tabMembers')renderMemberList();
 if(tabId==='tabReports')renderReports();
 if(tabId==='tabSettings')loadSettings();
-if(tabId!=='tabCheckin'&&qrScanner){try{qrScanner.stop()}catch(e){}}
-if(tabId==='tabCheckin'&&currentMode==='qr')startQR();
+if(tabId!=='tabCheckin'){if(qrScanner){try{qrScanner.stop()}catch(e){}}if(earlyStream){earlyStream.getTracks().forEach(t=>t.stop());earlyStream=null}}
+if(tabId==='tabCheckin'&&currentMode==='qr'){setTimeout(()=>startQR(),100)}
 }
 
 document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>switchTab(n.dataset.tab)));
