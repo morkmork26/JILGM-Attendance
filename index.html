@@ -243,6 +243,16 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 </head>
 <body>
 
+<!-- Splash Screen -->
+<div id="splashScreen" style="position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;transition:opacity 0.4s">
+<div style="position:relative;display:flex;align-items:center;justify-content:center">
+<div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#22d3ee);display:flex;align-items:center;justify-content:center;box-shadow:0 0 50px rgba(99,102,241,0.4),0 0 100px rgba(34,211,238,0.15)"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+</div>
+<div style="margin-top:36px;display:flex"><span style="font-family:Raleway,-apple-system,sans-serif;font-size:38px;font-weight:800;letter-spacing:0.5px;background:linear-gradient(135deg,#fff 30%,#48c6ef 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 6px rgba(72,198,239,0.4))">Flock</span><span style="font-family:Raleway,-apple-system,sans-serif;font-size:38px;font-weight:800;letter-spacing:0.5px;background:linear-gradient(135deg,#48c6ef 0%,#6c63ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 6px rgba(108,99,255,0.4))">Track</span></div>
+<div style="margin-top:32px;width:140px;height:3px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden"><div id="splashProgress" style="height:100%;width:0%;background:linear-gradient(90deg,#6366f1,#22d3ee);border-radius:4px;transition:width 0.3s ease"></div></div>
+<div style="position:absolute;bottom:50px;font-size:11px;color:rgba(255,255,255,0.25);letter-spacing:1px;font-weight:500;text-transform:uppercase">Jesus Is Lord Global Ministry</div>
+</div>
+
 <!-- Bottom Sheet -->
 <div class="sheet-overlay" id="sheetOverlay"></div>
 <div class="sheet" id="bottomSheet">
@@ -1513,12 +1523,19 @@ else if(s==='Blocked'){clearInterval(poll);showAccessGate('blocked')}
 }catch(e){showToast('Error: '+e.message,'error')}
 });
 
+const splashStart=Date.now();
+function splashProgress(pct){const el=document.getElementById('splashProgress');if(el)el.style.width=pct+'%'}
+function hideSplash(){const elapsed=Date.now()-splashStart;const remaining=Math.max(0,1500-elapsed);setTimeout(()=>{const el=document.getElementById('splashScreen');if(el){el.style.opacity='0';setTimeout(()=>el.remove(),400)}},remaining)}
 async function init(){
 try{
+splashProgress(10);
 await openDB();
+splashProgress(20);
 const theme=await getSetting('theme');
 if(theme==='light'){document.body.classList.add('light');document.getElementById('themeIcon').innerHTML='<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';}
+splashProgress(35);
 const accessData=await checkDeviceAccess();
+splashProgress(50);
 const access=typeof accessData==='object'?accessData.status:accessData;
 if(typeof accessData==='object'&&accessData.role==='admin'){
 await setSetting('isAdmin','true');
@@ -1528,11 +1545,12 @@ loadPendingDevices();
 if(access==='no-url'||access==='Approved'){
 hideAccessGate();
 }else if(access==='Blocked'){
-showAccessGate('blocked');return;
+showAccessGate('blocked');hideSplash();return;
 }else if(access==='unregistered'||access==='unknown'){
-showAccessGate('register');return;
+showAccessGate('register');hideSplash();return;
 }else if(access==='Pending'){
 showAccessGate('pending');
+hideSplash();
 const poll=setInterval(async()=>{
 const sd=await checkDeviceAccess();
 const ss=typeof sd==='object'?sd.status:sd;
@@ -1541,15 +1559,21 @@ else if(ss==='Blocked'){clearInterval(poll);showAccessGate('blocked')}
 },5000);
 return;
 }
+splashProgress(60);
 startQR();
 allMembers=await dbGet('members');await loadTodayAttendance();
+splashProgress(75);
 await checkInactiveMembers();
 allMembers=await dbGet('members');
+splashProgress(85);
 const ministries=await getMinistries();populateMinistryDropdowns(ministries);
 renderAvatarGrid();
+splashProgress(95);
 checkBirthdaysToday();
 await initExtras();
-}catch(e){document.body.innerHTML='<div style="padding:40px;text-align:center;color:#ff5252"><h3>App Error</h3><p style="margin-top:12px;color:#8b8b9e;font-size:14px">'+e.message+'</p><button onclick="location.reload()" style="margin-top:20px;padding:12px 24px;background:#6c63ff;color:#fff;border:none;border-radius:12px;font-size:14px">Retry</button></div>'}
+splashProgress(100);
+hideSplash();
+}catch(e){hideSplash();document.body.innerHTML='<div style="padding:40px;text-align:center;color:#ff5252"><h3>App Error</h3><p style="margin-top:12px;color:#8b8b9e;font-size:14px">'+e.message+'</p><button onclick="location.reload()" style="margin-top:20px;padding:12px 24px;background:#6c63ff;color:#fff;border:none;border-radius:12px;font-size:14px">Retry</button></div>'}
 }
 startQR();
 init();
