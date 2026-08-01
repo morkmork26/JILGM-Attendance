@@ -1388,9 +1388,10 @@ document.getElementById('scriptUrl').disabled=true;
 document.getElementById('testConnection').style.display='none';
 document.getElementById('unlockUrlBtn').style.display='inline-block';
 const status=document.getElementById('connectionStatus');status.textContent='Testing...';status.style.color='#8b8b9e';
-if(!url.startsWith('https://script.google.com/')){status.textContent='Invalid URL';status.style.color='var(--error)';return}
-status.textContent='Saved! Loading...';status.style.color='var(--success)';
-setTimeout(()=>location.reload(),800)
+try{const r=await fetch(url+'?action=getMembers',{redirect:'follow'});const t=await r.text();let j;try{j=JSON.parse(t)}catch(pe){throw new Error('Not JSON: '+t.substring(0,100))}
+if(j.success!==false){status.textContent='Connected! Reloading...';status.style.color='var(--success)';setTimeout(()=>location.reload(),1000)}
+else throw new Error('success=false')}
+catch(e){status.textContent='Failed: '+e.message;status.style.color='var(--error)'}
 });
 
 document.getElementById('reportEmail').addEventListener('change',async(e)=>{await setSetting('reportEmail',e.target.value.trim())});
