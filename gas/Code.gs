@@ -1441,11 +1441,10 @@ function sendReport(body) {
     + '<p style="color:#888;font-size:12px">Sent from JILGM Attendance Tracker</p>'
     + '</div>';
 
-  // Generate full spreadsheet backup
-  var ss = SpreadsheetApp.openById(SHEET_ID);
-  var tempFile = DriveApp.getFileById(SHEET_ID).makeCopy('FlockTrack_Backup_' + date);
-  var xlsxBlob = tempFile.getBlob().setName('FlockTrack_Backup_' + date + '.xlsx');
-  DriveApp.removeFile(tempFile);
+  // Generate full spreadsheet backup as xlsx
+  var xlsxUrl = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=xlsx';
+  var xlsxBlob = UrlFetchApp.fetch(xlsxUrl, {headers: {Authorization: 'Bearer ' + ScriptApp.getOAuthToken()}}).getBlob();
+  xlsxBlob.setName('FlockTrack_Backup_' + date + '.xlsx');
 
   MailApp.sendEmail({
     to:       email,
