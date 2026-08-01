@@ -7,7 +7,7 @@
 // ---------------------------------------------------------------------------
 //  CONFIGURATION — update SHEET_ID and ADMIN_EMAIL before deploying
 // ---------------------------------------------------------------------------
-const SHEET_ID    = "1WEbBBFh-_GeBNAn-mQ3vMQhkZ4jAHejaFd2YS5ZKP-Y";
+const SHEET_ID    = "1-MzTAs0EdISPATQuqIFtf34VWbM2dBAN-bJpkxqS61Y";
 const ADMIN_EMAIL = "";                           // <-- Fill in admin email for weekly backup
 
 // Sheet names (must match exactly)
@@ -1244,17 +1244,17 @@ function onFormSubmit(e) {
     }
 
     const fullName        = getField("Full Name");
-    const email           = getField("Email");
+    const email           = getField("Email Address");
     const phone           = getField("Phone");
-    const address         = getField("Address");
+    const address         = getField("Complete Address");
     const birthday        = getField("Birthday");
     const gender          = getField("Gender");
     const civilStatus     = getField("Civil Status");
     const hasChildren     = getField("Do you have children?");
     const emergencyContact= getField("Emergency Contact Person");
-    const emergencyPhone  = getField("Emergency Contact Number");
+    const emergencyPhone  = getField("Emergency Contact Person Number");
     const outreach        = getField("Outreach");
-    const dgroup          = getField("D-Group");
+    const dgroup          = "";
     const dgroupLeader    = getField("D-Group Leader");
     const ministry        = getField("Ministry");
     const membershipStatus= getField("Membership Status");
