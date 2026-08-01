@@ -1583,9 +1583,10 @@ await setSetting('deviceStatus',json.data.status);
 if(json.data.status==='Approved'){hideAccessGate();location.reload();return}
 showAccessGate('pending');
 const poll=setInterval(async()=>{
-const s=await checkDeviceAccess();
-if(s==='Approved'){clearInterval(poll);hideAccessGate();location.reload()}
-else if(s==='Blocked'){clearInterval(poll);showAccessGate('blocked')}
+const sd=await checkDeviceAccess();
+const ss=typeof sd==='object'?sd.status:sd;
+if(ss==='Approved'){clearInterval(poll);hideAccessGate();location.reload()}
+else if(ss==='Blocked'){clearInterval(poll);showAccessGate('blocked')}
 },5000);
 }else{showToast(json.error||'Registration failed','error')}
 }catch(e){showToast('Error: '+e.message,'error')}
@@ -1629,6 +1630,7 @@ else if(ss==='Blocked'){clearInterval(poll);showAccessGate('blocked')}
 return;
 }
 splashProgress(60);
+startQR();
 allMembers=await dbGet('members');await loadTodayAttendance();
 splashProgress(75);
 await checkInactiveMembers();
@@ -1643,7 +1645,6 @@ splashProgress(100);
 hideSplash();
 }catch(e){hideSplash();document.body.innerHTML='<div style="padding:40px;text-align:center;color:#ff5252"><h3>App Error</h3><p style="margin-top:12px;color:#8b8b9e;font-size:14px">'+e.message+'</p><button onclick="location.reload()" style="margin-top:20px;padding:12px 24px;background:#6c63ff;color:#fff;border:none;border-radius:12px;font-size:14px">Retry</button></div>'}
 }
-startQR();
 init();
 
 document.getElementById('themeToggle').addEventListener('click',async()=>{
