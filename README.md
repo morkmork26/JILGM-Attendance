@@ -97,6 +97,14 @@ A Progressive Web App that runs entirely in the browser, uses Google Sheets as a
 | Zero-cost infrastructure for 500+ members | Google Sheets as DB (free), Apps Script as API (free), GitHub Pages for hosting (free) |
 | Camera not releasing on iOS when switching tabs | Explicit `stream.getTracks().forEach(t => t.stop())` on tab leave, restart on return |
 | Multiple devices syncing simultaneously | Server is authoritative - local today's attendance is cleared and replaced from server each sync cycle |
+| Flip camera (back to front to back) causes black screen | `qrScanner.stop()` is async; must `await` it before restarting with new facing mode |
+| Deleted check-ins reappear after sync | Local blacklist (60s TTL) prevents sync from re-inserting recently removed records while server processes the delete |
+| Google Sheets stores dates as Date objects, not strings | Server-side date comparison normalizes `Date` objects to `YYYY-MM-DD` before matching |
+| Duplicate `onFormSubmit` functions in Apps Script | Second function silently overrode the first; removed the legacy duplicate detection version |
+| Account lockout risk (Google flagging automated access) | Migrated to a mature personal account with real activity history; fresh accounts get flagged |
+| iOS PWA doesn't persist camera permissions across sessions | Moved camera start to after init (not cold launch); reduces permission prompts but iOS limitation remains |
+| Check-in overlay blocked by network latency (2-3s delay) | Made network fetch fire-and-forget; confirmation shows instantly from local write |
+| Splash screen too fast on cached loads | Enforced 1.5s minimum display via `Date.now()` elapsed comparison before hiding |
 
 ---
 
