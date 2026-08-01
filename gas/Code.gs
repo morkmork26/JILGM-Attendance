@@ -1825,39 +1825,7 @@ function namesMatch(a, b) {
   return true;
 }
 
-function onFormSubmit(e) {
-  var sheet = getSheet(SHEET_MEMBERS);
-  var rows = sheet.getDataRange().getValues();
-  var lastRow = sheet.getLastRow();
-  var newRow = rows[lastRow - 1];
-  var newName = newRow[COL_MEM.NAME];
 
-  if (!String(newName || "").trim()) return;
-
-  for (var i = 1; i < lastRow - 1; i++) {
-    if (namesMatch(rows[i][COL_MEM.NAME], newName)) {
-      var ss = SpreadsheetApp.openById(SHEET_ID);
-      var reviewSheet = ss.getSheetByName("Review");
-      if (!reviewSheet) {
-        reviewSheet = ss.insertSheet("Review");
-        var headers = ["Flag","New Name","Matched With","Matched ID","Timestamp"];
-        reviewSheet.appendRow(headers);
-        reviewSheet.getRange(1, 1, 1, 5).setFontWeight("bold");
-      }
-      reviewSheet.appendRow([
-        "POSSIBLE DUP",
-        String(newName).trim(),
-        String(rows[i][COL_MEM.NAME]).trim(),
-        String(rows[i][COL_MEM.ID]).trim(),
-        new Date()
-      ]);
-      sheet.deleteRow(lastRow);
-      Logger.log("Possible duplicate flagged: " + newName + " -> " + rows[i][COL_MEM.NAME]);
-      return;
-    }
-  }
-  Logger.log("Form submission accepted: " + newName);
-}
 
 // =============================================================================
 //  END OF FILE
