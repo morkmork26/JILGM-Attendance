@@ -1515,11 +1515,17 @@ function renderApprovedList(devices){
 const container=document.getElementById('approvedDeviceList');
 const approved=devices.filter(d=>d.status==='Approved');
 if(!approved.length){container.innerHTML='<p style="text-align:center;color:var(--text-secondary);font-size:12px;padding:12px">No active devices yet</p>';return}
-container.innerHTML=approved.map(d=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--card);border:1px solid var(--card-border);border-radius:10px;margin-bottom:6px">
+container.innerHTML=approved.map(d=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--card);border:1px solid var(--card-border);border-radius:10px;margin-bottom:6px" id="dev-${d.deviceId}">
 <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg></div>
 <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text)">${d.name}</div><div style="font-size:11px;color:var(--text-secondary);margin-top:1px">Since ${d.registeredAt||'N/A'}</div></div>
-<div style="width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0"></div>
+<div style="display:flex;gap:4px;align-items:center">
+<button onclick="revokeDevice('${d.deviceId}')" style="background:none;border:none;padding:6px;cursor:pointer;border-radius:8px;color:var(--warning)" title="Revoke"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg></button>
+</div>
 </div>`).join('');
+}
+async function revokeDevice(deviceId){
+if(!await customConfirm('Revoke this device? It will need re-approval to use the app again.',{title:'Revoke Device',okText:'Revoke'}))return;
+await updateDeviceAccess(deviceId,'Pending');
 }
 
 function renderPendingList(devices){
