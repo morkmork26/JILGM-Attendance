@@ -1442,9 +1442,13 @@ function sendReport(body) {
     + '</div>';
 
   // Generate full spreadsheet backup as xlsx
-  var file = DriveApp.getFileById(SHEET_ID);
-  var xlsxBlob = file.getAs('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  xlsxBlob.setName('FlockTrack_Backup_' + date + '.xlsx');
+  var token = ScriptApp.getOAuthToken();
+  var xlsxUrl = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=xlsx';
+  var response = UrlFetchApp.fetch(xlsxUrl, {
+    headers: { 'Authorization': 'Bearer ' + token },
+    muteHttpExceptions: true
+  });
+  var xlsxBlob = response.getBlob().setName('FlockTrack_Backup_' + date + '.xlsx');
 
   MailApp.sendEmail({
     to:       email,
