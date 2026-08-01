@@ -892,8 +892,8 @@ if(typeof Html5Qrcode!=='undefined')startQRScanner();
 el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);font-size:13px;padding:20px;text-align:center">Camera not available. Try Quick Tap or Search mode.</div>';
 });
 }
-function startQRScanner(){
-if(qrScanner)try{qrScanner.stop()}catch(e){}
+async function startQRScanner(){
+if(qrScanner)try{await qrScanner.stop()}catch(e){}
 const el=document.getElementById('qr-reader');el.innerHTML='';
 qrScanner=new Html5Qrcode('qr-reader');
 qrScanner.start({facingMode:cameraFacing},{fps:10,qrbox:220},onQRScan,()=>{}).then(()=>{
