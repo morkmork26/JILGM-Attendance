@@ -898,6 +898,19 @@ function setup() {
  * Opens the spreadsheet and returns the named sheet.
  * Throws if the sheet does not exist.
  */
+function sheetToCsv(sheet) {
+  var data = sheet.getDataRange().getValues();
+  return data.map(function(row) {
+    return row.map(function(cell) {
+      var val = String(cell === null || cell === undefined ? '' : cell);
+      if (val.indexOf(',') >= 0 || val.indexOf('"') >= 0 || val.indexOf('\n') >= 0) {
+        val = '"' + val.replace(/"/g, '""') + '"';
+      }
+      return val;
+    }).join(',');
+  }).join('\n');
+}
+
 function getSheet(sheetName) {
   const ss    = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName(sheetName);
@@ -1428,10 +1441,20 @@ function sendReport(body) {
     + '<p style="color:#888;font-size:12px">Sent from JILGM Attendance Tracker</p>'
     + '</div>';
 
+  // Generate CSV backups
+  var membersSheet = getSheet(SHEET_MEMBERS);
+  var attendanceSheet = getSheet(SHEET_ATTENDANCE);
+  var membersCsv = sheetToCsv(membersSheet);
+  var attendanceCsv = sheetToCsv(attendanceSheet);
+
   MailApp.sendEmail({
     to:       email,
     subject:  subject,
-    htmlBody: htmlBody
+    htmlBody: htmlBody,
+    attachments: [
+      Utilities.newBlob(membersCsv, 'text/csv', 'Members_Backup_' + date + '.csv'),
+      Utilities.newBlob(attendanceCsv, 'text/csv', 'Attendance_Backup_' + date + '.csv')
+    ]
   });
 
   // Log to Reports sheet
