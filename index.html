@@ -367,7 +367,6 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 </div>
 <div class="desktop-welcome" style="display:none">
 <div class="welcome-line">Welcome! Please scan your QR code 🙏</div>
-<div class="welcome-sub" id="desktopOccasionLine"></div>
 </div>
 
 <div id="modeTap" style="display:none">
@@ -1970,10 +1969,7 @@ updateOccasionBanner();
 const url=await getSetting('scriptUrl');
 if(url)try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'setOccasion',active:name})))}catch(e){}
 }
-function updateDesktopWelcome(){
-const el=document.getElementById('desktopOccasionLine');
-if(el)el.textContent=currentOccasion+(todayAttendance.length?' — '+todayAttendance.length+' checked in':'');
-}
+function updateDesktopWelcome(){}
 function updateOccasionBanner(){
 const banner=document.getElementById('occasionBanner');
 const label=document.getElementById('occasionLabel');
