@@ -360,7 +360,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <div class="scan-line"></div>
 </div>
 <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px">
-<button class="btn btn-outline" style="padding:6px 12px;font-size:11px;border-radius:8px;display:flex;align-items:center;gap:4px" onclick="flipCamera()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> Flip</button>
+<button class="btn btn-outline" style="padding:6px 12px;font-size:11px;border-radius:8px;display:flex;align-items:center;gap:4px" onclick="showCameraPicker()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> <span id="camLabel">Camera</span></button>
 <button class="btn btn-outline" style="padding:6px 12px;font-size:11px;border-radius:8px;display:flex;align-items:center;gap:4px" id="zoomBtn" onclick="cycleZoom()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/></svg> <span id="zoomLabel">2x</span></button>
 </div>
 </div>
@@ -887,7 +887,34 @@ else if(dx>0&&idx>0)switchMode(modes[idx-1]);
 })();
 
 let cameraFacing='environment';
+let selectedCameraId=localStorage.getItem('jilgm_cameraId')||'';
+let allCameras=[];
 let earlyStream=null;
+function getCameraConstraint(){
+if(selectedCameraId)return{deviceId:{exact:selectedCameraId}};
+return{facingMode:cameraFacing};
+}
+async function loadCameras(){
+try{const devices=await navigator.mediaDevices.enumerateDevices();
+allCameras=devices.filter(d=>d.kind==='videoinput');
+if(allCameras.length>0){
+const label=document.getElementById('camLabel');
+if(label){
+if(selectedCameraId){const cam=allCameras.find(c=>c.deviceId===selectedCameraId);label.textContent=cam?cam.label.split('(')[0].trim().slice(0,12)||'Camera':'Camera'}
+else{label.textContent='Camera ('+allCameras.length+')'}
+}}}catch(e){}
+}
+function showCameraPicker(){
+if(allCameras.length===0){showToast('No cameras found','warning');return}
+const options=allCameras.map((c,i)=>c.label||'Camera '+(i+1));
+const currentLabel=selectedCameraId?((allCameras.find(c=>c.deviceId===selectedCameraId)||{}).label||''):'';
+openBottomSheet('Select Camera',options,currentLabel,val=>{
+const cam=allCameras.find((c,i)=>(c.label||'Camera '+(i+1))===val);
+if(cam){selectedCameraId=cam.deviceId;localStorage.setItem('jilgm_cameraId',cam.deviceId);
+const label=document.getElementById('camLabel');if(label)label.textContent=val.split('(')[0].trim().slice(0,12)||'Camera';
+startQR()}
+});
+}
 function startEarlyCamera(){
 const el=document.getElementById('qr-reader');
 if(!el)return;
@@ -896,26 +923,33 @@ const vid=document.createElement('video');
 vid.setAttribute('playsinline','');vid.setAttribute('autoplay','');
 vid.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:var(--radius)';
 el.appendChild(vid);
-navigator.mediaDevices.getUserMedia({video:{facingMode:cameraFacing}}).then(stream=>{
+navigator.mediaDevices.getUserMedia({video:getCameraConstraint()}).then(stream=>{
 earlyStream=stream;vid.srcObject=stream;
+loadCameras();
 if(typeof Html5Qrcode!=='undefined')startQRScanner();
 }).catch(()=>{
-el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);font-size:13px;padding:20px;text-align:center">Camera not available. Try Quick Tap or Search mode.</div>';
+if(selectedCameraId){selectedCameraId='';localStorage.removeItem('jilgm_cameraId');
+navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(stream=>{earlyStream=stream;vid.srcObject=stream;loadCameras();if(typeof Html5Qrcode!=='undefined')startQRScanner()}).catch(()=>{
+el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);font-size:13px;padding:20px;text-align:center">Camera not available. Try Quick Tap or Search mode.</div>'})
+}else{
+el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);font-size:13px;padding:20px;text-align:center">Camera not available. Try Quick Tap or Search mode.</div>'}
 });
 }
 async function startQRScanner(){
 if(qrScanner)try{await qrScanner.stop()}catch(e){}
 const el=document.getElementById('qr-reader');el.innerHTML='';
 qrScanner=new Html5Qrcode('qr-reader');
-qrScanner.start({facingMode:cameraFacing},{fps:10,qrbox:220},onQRScan,()=>{}).then(()=>{
+qrScanner.start(getCameraConstraint(),{fps:10,qrbox:220},onQRScan,()=>{}).then(()=>{
 if(earlyStream){earlyStream.getTracks().forEach(t=>t.stop());earlyStream=null}
+loadCameras();
 const vid=document.querySelector('#qr-reader video');
 if(vid){
-vid.style.transform=cameraFacing==='user'?'scaleX(-1)':'none';
+vid.style.transform=(!selectedCameraId&&cameraFacing==='user')?'scaleX(-1)':'none';
 const track=vid.srcObject&&vid.srcObject.getVideoTracks()[0];
 if(track){const caps=track.getCapabilities&&track.getCapabilities();if(caps&&caps.zoom){const maxZoom=Math.min(2,caps.zoom.max);track.applyConstraints({advanced:[{zoom:maxZoom}]}).catch(()=>{})}}
 }
 }).catch(()=>{
+if(selectedCameraId){selectedCameraId='';localStorage.removeItem('jilgm_cameraId');startQRScanner();return}
 el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);font-size:13px;padding:20px;text-align:center">Camera not available. Try Quick Tap or Search mode.</div>';
 });
 }
@@ -932,10 +966,7 @@ document.getElementById('zoomLabel').textContent=currentZoom+'x';
 const vid=document.querySelector('#qr-reader video');
 if(vid&&vid.srcObject){const track=vid.srcObject.getVideoTracks()[0];if(track){const caps=track.getCapabilities&&track.getCapabilities();if(caps&&caps.zoom){const z=Math.min(currentZoom,caps.zoom.max);track.applyConstraints({advanced:[{zoom:z}]}).catch(()=>{})}}}
 }
-function flipCamera(){
-cameraFacing=cameraFacing==='environment'?'user':'environment';
-startQR();
-}
+
 
 async function onQRScan(decoded){
 if(qrScanner)try{qrScanner.pause(true)}catch(e){}
