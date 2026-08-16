@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0f0e17">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -584,7 +584,8 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <script>
 document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT'&&e.target.tagName!=='TEXTAREA')e.preventDefault()});
 const DB_NAME='jilgm_attendance';const DB_VERSION=1;let db;
-const today=()=>{const d=new Date();return d.toISOString().split('T')[0]};
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function localDateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 const formatDate=(d)=>{const opts={weekday:'short',month:'short',day:'numeric'};return new Date(d+'T00:00:00').toLocaleDateString('en-US',opts)};
 
 
@@ -595,7 +596,7 @@ return colors[Math.abs(hash)%colors.length];
 }
 function getInitials(name){return name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)}
 function getAge(birthday){
-if(!birthday)return 0;
+if(!birthday)return null;
 const b=new Date(birthday+'T00:00:00');const now=new Date();
 let age=now.getFullYear()-b.getFullYear();
 const m=now.getMonth()-b.getMonth();
@@ -605,7 +606,7 @@ return age;
 function checkBirthdaysToday(){
 const now=new Date();const todayM=now.getMonth();const todayD=now.getDate();
 const bdays=allMembers.filter(m=>{
-if(!m.birthday||m.status==='inactive')return false;
+if(!m.birthday||(m.status||'').toLowerCase()==='inactive')return false;
 const b=new Date(m.birthday+'T00:00:00');
 return b.getMonth()===todayM&&b.getDate()===todayD;
 });
@@ -618,6 +619,7 @@ showToast('🎂 '+msg,'success',6000);
 }
 function getAgeGroup(member){
 const age=getAge(member.birthday);
+if(age===null)return 'Unknown';
 if(age<=12)return 'Children';
 if(age<=17)return 'Youth';
 const isParent=member.hasChildren==='Yes';
@@ -954,7 +956,10 @@ overlay.innerHTML=`<div class="result"><div class="icon success"><svg viewBox="0
 }
 overlay.classList.add('show');
 if(!already){spawnParticles(overlay)}
-setTimeout(()=>{overlay.classList.remove('show');overlay.querySelectorAll('.particle,.cel-flash,.cel-ring,.cel-sparkle,.cel-streak,.cel-confetti').forEach(p=>p.remove());if(qrScanner)try{qrScanner.resume()}catch(e){}},2500);
+let _dismissed=false;
+const dismissQR=()=>{if(_dismissed)return;_dismissed=true;overlay.classList.remove('show');overlay.querySelectorAll('.particle,.cel-flash,.cel-ring,.cel-sparkle,.cel-streak,.cel-confetti').forEach(p=>p.remove());if(qrScanner)try{qrScanner.resume()}catch(e){};overlay.removeEventListener('click',dismissQR)};
+overlay.addEventListener('click',dismissQR);
+setTimeout(dismissQR,2500);
 }
 
 let sundayConfirmed=false;
@@ -968,7 +973,8 @@ if(isSunday()&&currentOccasion!=='Sunday Service'&&!sundayConfirmed){
 if(!await customConfirm(`Today is Sunday. Are you sure you want to proceed with "${currentOccasion}"?`,{title:'Non-Default Occasion',okText:'Proceed'}))return false;
 sundayConfirmed=true;
 }
-if(member.status==='inactive'){
+if((member.status||'').toLowerCase()==='inactive'){
+if(!await customConfirm(`${member.name} is inactive. Check in and reactivate?`,{title:'Inactive Member',okText:'Check In'}))return false;
 member.status='active';
 member.membershipStatus='Returning Guest';
 await dbPut('members',member);
@@ -1017,20 +1023,22 @@ const result=[];const now=new Date();
 for(let i=0;i<count;i++){
 const d=new Date(now.getFullYear(),now.getMonth()-i,1);
 while(d.getDay()!==0)d.setDate(d.getDate()+1);
-result.push(d.toISOString().split('T')[0]);
+result.push(localDateStr(d));
 }
 return result;
 }
 
 async function checkInactiveMembers(){
 const allAtt=await dbGet('attendance');
+const uniqueDates=new Set(allAtt.map(a=>a.date));
+if(uniqueDates.size<4)return;
 const d=new Date();
 const sundays=[];
-for(let i=0;i<8;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);sundays.push(sun.toISOString().split('T')[0])}
+for(let i=0;i<8;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);sundays.push(localDateStr(sun))}
 const firstSundays=getFirstSundays(8);
 const sixMonthsAgo=new Date(d);sixMonthsAgo.setMonth(sixMonthsAgo.getMonth()-6);
 for(const member of allMembers){
-if(member.status==='inactive')continue;
+if((member.status||'').toLowerCase()==='inactive')continue;
 const memberAtt=allAtt.filter(a=>a.memberId===member.id);
 if(memberAtt.length===0)continue;
 if(member.outreach==='Naujan'||member.outreach==='Socorro'){
@@ -1066,16 +1074,18 @@ return `<div class="avatar-grid-item${checked?' checked':''}" data-id="${m.id}">
 <div class="avatar" style="background:${getAvatarColor(m.name)}">${getInitials(m.name)}${checked?'<div class="check-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="3"/></svg></div>':''}${isNew?'<div class="check-badge" style="background:var(--warning);left:-2px;right:auto"><span style="font-size:7px;font-weight:700;color:#000">N</span></div>':''}</div>
 <div class="name">${m.name.split(' ')[0]}</div></div>`;
 }).join('');
+const _ciLock={};
 grid.querySelectorAll('.avatar-grid-item').forEach(item=>{
 item.addEventListener('click',async()=>{
-const id=item.dataset.id;const member=allMembers.find(m=>m.id===id);
+const id=item.dataset.id;if(_ciLock[id])return;const member=allMembers.find(m=>m.id===id);
 if(todayAttendance.find(a=>a.memberId===id)){showToast(`${member.name} already checked in`,'warning');return}
+_ciLock[id]=true;try{
 const ok2=await checkInMember(member);if(ok2===false)return;
 playBeep();showToast(`${member.name} checked in!`);
 item.classList.add('checked');
 const av=item.querySelector('.avatar');av.style.animation='checkPulse 0.6s';
 av.insertAdjacentHTML('beforeend','<div class="check-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="3"/></svg></div>');
-});
+}finally{delete _ciLock[id]}});
 });
 }
 
@@ -1162,30 +1172,35 @@ const classCheckboxes=document.querySelectorAll('#memClassesContainer input[type
 const classes=Array.from(classCheckboxes).map(cb=>cb.value);
 const member={id:existing?existing.id:'m'+Date.now(),name,outreach:document.getElementById('memOutreach').value,address:document.getElementById('memAddress').value.trim(),email:document.getElementById('memEmail').value.trim(),ministry:document.getElementById('memMinistry').value,dgroupLeader:document.getElementById('memDgroupLeader').value.trim(),phone:document.getElementById('memPhone').value.trim(),birthday:document.getElementById('memBday').value,gender:document.getElementById('memGender').value,civilStatus:document.getElementById('memCivilStatus').value,hasChildren:document.getElementById('memHasChildren').value,emergencyContact:document.getElementById('memEmergencyContact').value.trim(),emergencyPhone:document.getElementById('memEmergencyPhone').value.trim(),membershipStatus:document.getElementById('memMembershipStatus').value,membershipDate:document.getElementById('memMembershipDate').value,baptismDate:document.getElementById('memBaptismDate').value,baptismPlace:document.getElementById('memBaptismPlace').value.trim(),classes:classes,status:existing?existing.status:'active',addedLocally:existing?existing.addedLocally||false:true,dateRegistered:existing?existing.dateRegistered:today()};
 
-await dbPut('members',member);
-if(existing){const idx=allMembers.findIndex(m=>m.id===existing.id);if(idx>=0)allMembers[idx]=member}
-else allMembers.push(member);
 const url=await getSetting('scriptUrl');
-if(url&&!existing){
+if(!existing&&url){
+await dbPut('members',member);
 const payload={action:'addMember',...member,classes:member.classes?member.classes.join(', '):''};
 try{const res=await fetch(url+'?data='+encodeURIComponent(JSON.stringify(payload)));
 const json=await res.json();
 if(json.success&&json.data&&json.data.id){
+const oldId=member.id;
 member.id=json.data.id;member.addedLocally=false;
-await dbPut('members',member);allMembers.push(member);
+if(oldId!==member.id)await dbDelete('members',oldId);
+await dbPut('members',member);
+allMembers.push(member);
 closeModal();showToast('Member added');updateCounter();renderMemberList();
-}else{showToast(json.error||'Failed to add member','error')}
-}catch(e){await dbPut('members',member);allMembers.push(member);
+}else{allMembers.push(member);showToast(json.error||'Failed to add member','error')}
+}catch(e){
+allMembers.push(member);
 await dbPut('pendingSync',{action:'addMember',payload,createdAt:Date.now()});
 closeModal();showToast('Member saved offline');updateCounter();renderMemberList()}
-}else if(existing){
+}else if(!existing){
+await dbPut('members',member);
+allMembers.push(member);
+closeModal();showToast('Member saved locally');updateCounter();renderMemberList();
+}else{
 await dbPut('members',member);
 const idx=allMembers.findIndex(m=>m.id===existing.id);if(idx>=0)allMembers[idx]=member;
 closeModal();showToast('Member updated');updateCounter();renderMemberList();
 if(url){const payload={action:'updateMember',...member,classes:member.classes?member.classes.join(', '):''};
 try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify(payload)))}catch(e){}}
-}else{await dbPut('members',member);allMembers.push(member);
-closeModal();showToast('Member saved locally');updateCounter();renderMemberList()}
+}
 }
 
 document.getElementById('fab').addEventListener('click',()=>showModal('member'));
@@ -1221,7 +1236,7 @@ const age=getAge(member.birthday);
 const ageGroup=getAgeGroup(member);
 const d=new Date();
 const last10=[];
-for(let i=0;i<10;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);last10.push(sun.toISOString().split('T')[0])}
+for(let i=0;i<10;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);last10.push(localDateStr(sun))}
 const attendDots=last10.reverse().map(s=>allAtt.find(a=>a.memberId===member.id&&a.date===s)?'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--success);margin:0 2px"></span>':'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--card-border);margin:0 2px;border:1px solid var(--card-border)"></span>').join('');
 content.innerHTML=`<div style="text-align:center;margin-bottom:24px">${createAvatar(member,'large')}
 <h2 style="margin-top:12px">${member.name}</h2>
@@ -1260,6 +1275,8 @@ btn.style.opacity=match?'1':'0.5';btn.style.pointerEvents=match?'auto':'none';
 });
 btn.addEventListener('click',async()=>{
 await dbDelete('members',member.id);allMembers=allMembers.filter(m=>m.id!==member.id);
+const delUrl=await getSetting('scriptUrl');
+if(delUrl)fetch(delUrl+'?data='+encodeURIComponent(JSON.stringify({action:'deleteMember',id:member.id}))).catch(()=>dbPut('pendingSync',{action:'deleteMember',payload:{action:'deleteMember',id:member.id},createdAt:Date.now()}));
 closeModal();panel.classList.remove('open');renderMemberList();updateCounter();showToast('Member deleted');
 });
 },50);
@@ -1278,7 +1295,7 @@ if(childrenCount)document.getElementById('childrenInput').value=childrenCount;
 const thisMonth=today().slice(0,7);const visitors=allMembers.filter(m=>m.dateRegistered&&m.dateRegistered.startsWith(thisMonth));
 document.getElementById('statVisitors').textContent=visitors.length;
 const sundays=[];const d=new Date();
-for(let i=7;i>=0;i--){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);sundays.push(sun.toISOString().split('T')[0])}
+for(let i=7;i>=0;i--){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);sundays.push(localDateStr(sun))}
 const weeklyCounts=sundays.map(s=>allAtt.filter(a=>a.date===s).length);
 const max=Math.max(...weeklyCounts,1);
 const avg=weeklyCounts.length?Math.round(weeklyCounts.reduce((a,b)=>a+b,0)/weeklyCounts.length):0;
@@ -1301,7 +1318,7 @@ return `<div style="margin-bottom:10px"><div style="display:flex;justify-content
 const absentMembers=allMembers.filter(m=>{
 if(m.status!=='active')return false;
 let consecutive=0;
-for(let i=0;i<3;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);const ds=sun.toISOString().split('T')[0];
+for(let i=0;i<3;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);const ds=localDateStr(sun);
 if(!allAtt.find(a=>a.memberId===m.id&&a.date===ds))consecutive++;else break}
 return consecutive>=3;
 });
@@ -1347,12 +1364,13 @@ const filtered=todayAttendance.filter(a=>a.memberName.toLowerCase().includes(sea
 if(!filtered.length){list.innerHTML='<p style="font-size:13px;color:var(--text-secondary);text-align:center;padding:12px">No check-ins found</p>';return}
 list.innerHTML=filtered.map(a=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--card);border-radius:10px;margin-bottom:6px;border:1px solid var(--card-border)"><div><div style="font-size:13px;font-weight:600;color:var(--text)">${a.memberName}</div><div style="font-size:11px;color:var(--text-secondary)">${new Date(a.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} &middot; ${a.occasion||'Sunday Service'}</div></div><button onclick="removeCheckin('${a.memberId}')" style="background:none;border:none;padding:6px;cursor:pointer;border-radius:8px;color:var(--danger)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div>`).join('');
 }
-let removedCheckins=[];
+function getRemovedCheckins(){try{return JSON.parse(localStorage.getItem('jilgm_removed')||'[]').filter(r=>Date.now()-r.ts<300000)}catch(e){return[]}}
+function addRemovedCheckin(memberId,date){const list=getRemovedCheckins();list.push({memberId,date,ts:Date.now()});localStorage.setItem('jilgm_removed',JSON.stringify(list))}
 async function removeCheckin(memberId){
 const member=allMembers.find(m=>m.id===memberId);
 const name=member?member.name:memberId;
 if(!await customConfirm(`Remove check-in for ${name}?`,{title:'Remove Check-In',okText:'Remove'}))return;
-removedCheckins.push({memberId,date:today(),ts:Date.now()});
+addRemovedCheckin(memberId,today());
 const all=await dbGet('attendance');
 const recs=all.filter(a=>a.memberId===memberId&&a.date===today());
 for(const rec of recs){if(rec.id)await dbDelete('attendance',rec.id);}
@@ -1405,7 +1423,7 @@ try{
 let synced=0;
 const pending=await dbGet('pendingSync');
 for(const item of pending){
-try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify(item.payload)));await dbDelete('pendingSync',item.id);synced++}catch(e){break}
+try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify(item.payload)));await dbDelete('pendingSync',item.id);synced++}catch(e){continue}
 }
 const r=await fetch(url+'?action=getMembers');
 const json=await r.json();
@@ -1660,37 +1678,49 @@ const icon=document.getElementById('themeIcon');
 icon.innerHTML=isLight?'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>':'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
 });
 
+let lastMemberSync=0;
 async function autoSync(){
 const url=await getSetting('scriptUrl');if(!url)return;
 try{
 const r=await fetch(url+'?action=getAttendance&date='+today());
 const json=await r.json();
 if(json.success&&json.data){
+const serverIds=new Set(json.data.map(a=>a.memberId));
+const pendingLocal=todayAttendance.filter(a=>!serverIds.has(a.memberId)&&a.checkedInBy==='app');
 const allLocal=await dbGet('attendance');
 const todayLocal=allLocal.filter(a=>a.date===today());
 for(const loc of todayLocal){await dbDelete('attendance',loc.id)}
 todayAttendance=[];
-removedCheckins=removedCheckins.filter(r=>Date.now()-r.ts<60000);
+const removed=getRemovedCheckins();
 for(const rec of json.data){
-if(removedCheckins.find(r=>r.memberId===rec.memberId&&r.date===rec.date))continue;
+if(removed.find(r=>r.memberId===rec.memberId&&r.date===rec.date))continue;
 const r2={memberId:rec.memberId,memberName:rec.memberName,date:rec.date,timestamp:rec.timestamp||Date.now(),checkedInBy:rec.checkedInBy||'sync',occasion:rec.occasion||''};
 await dbPut('attendance',r2);
 todayAttendance.push(r2);
 }
+for(const local of pendingLocal){
+if(todayAttendance.find(a=>a.memberId===local.memberId))continue;
+if(removed.find(r=>r.memberId===local.memberId))continue;
+await dbPut('attendance',local);
+todayAttendance.push(local);
+}
 updateCounter();
 if(currentTab==='tabCheckin'&&currentMode==='tap')renderAvatarGrid();
 }}catch(e){}
+if(Date.now()-lastMemberSync>60000){
 try{
 const r2=await fetch(url+'?action=getMembers');
 const json2=await r2.json();
-if(json2.success&&json2.data&&json2.data.length!==allMembers.length){
+if(json2.success&&json2.data){
 await dbClear('members');
 for(const m of json2.data)await dbPut('members',m);
 allMembers=json2.data;
 updateCounter();
 if(currentTab==='tabCheckin'&&currentMode==='tap')renderAvatarGrid();
 if(currentTab==='tabMembers')renderMemberList();
-}}catch(e){}
+}
+lastMemberSync=Date.now();
+}catch(e){}}
 try{
 const r3=await fetch(url+'?action=getOccasion');
 const json3=await r3.json();
@@ -1699,7 +1729,7 @@ if(json3.data.active&&json3.data.active!==currentOccasion){currentOccasion=json3
 if(json3.data.list){await setSetting('occasions',JSON.stringify(json3.data.list));renderOccasionTags(json3.data.list)}
 }}catch(e){}
 }
-setInterval(autoSync,10000);
+setInterval(autoSync,30000);
 
 document.getElementById('generateReportBtn').addEventListener('click',async()=>{
 const todayStr=today();
@@ -1714,10 +1744,10 @@ outreachGroups[m.outreach]++;
 const counts={Youth:0,YPro:0,Mothers:0,Fathers:0};
 stoTomasMembers.forEach(m=>{
 const isFirstAttend=m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1;
-if(!isFirstAttend){const g=getAgeGroup(m);if(counts[g]!==undefined)counts[g]++}
+if(!isFirstAttend){const g=getAgeGroup(m);if(g!=='Unknown'&&counts[g]!==undefined)counts[g]++}
 });
 const childrenVal=await getSetting('children_'+todayStr);
-const newCount=stoTomasMembers.filter(m=>isNewMember(m)).length;
+const newCount=stoTomasMembers.filter(m=>m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1).length;
 const outreach=(await getSetting('defaultOutreach'))||'Sto. Tomas';
 const adultTotal=counts.Youth+counts.YPro+counts.Mothers+counts.Fathers;
 const childNum=parseInt(childrenVal)||0;

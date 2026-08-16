@@ -96,6 +96,7 @@ function doGet(e) {
         case "setOccasion": return respond(setOccasionConfig(body));
         case "registerDevice": return respond(registerDevice(body));
         case "removeCheckIn": return respond(removeCheckIn(body));
+        case "deleteMember": return respond(deleteMember(body));
         default: return respondError("Unknown data action: " + dataAction, 400);
       }
     }
@@ -242,6 +243,9 @@ function doPost(e) {
         return respond(getDeviceStatus(deviceId));
       }
 
+      case "deleteMember":
+        return respond(deleteMember(body));
+
       default:
         return respondError("Unknown action: " + action, 400);
     }
@@ -333,18 +337,24 @@ function checkIn(body) {
   if (!memberId)    throw new Error("memberId is required");
   if (!isValidDate(date)) throw new Error("date must be YYYY-MM-DD");
 
-  // Look up member name
-  const memberName = getMemberName(memberId);
-  if (!memberName) throw new Error("Member not found: " + memberId);
+  const memberSheet = getSheet(SHEET_MEMBERS);
+  const memberRows  = getDataRows(memberSheet);
+  const memberRow   = memberRows.find(r => String(r[COL_MEM.ID]).trim() === String(memberId).trim());
+  if (!memberRow) throw new Error("Member not found: " + memberId);
+  const memberName = String(memberRow[COL_MEM.NAME]).trim();
 
-  // Duplicate check
-  if (isAlreadyCheckedIn(memberId, date)) {
+  const attSheet = getSheet(SHEET_ATTENDANCE);
+  const attRows  = getDataRows(attSheet);
+  const isDup = attRows.some(r =>
+    String(r[COL_ATT.MEMBER_ID]).trim() === String(memberId).trim() &&
+    normDate(r[COL_ATT.DATE]) === date
+  );
+  if (isDup) {
     return { success: true, data: { status: "already-checked-in", memberId, date } };
   }
 
-  const sheet     = getSheet(SHEET_ATTENDANCE);
   const timestamp = new Date().toISOString();
-  sheet.appendRow([
+  attSheet.appendRow([
     memberId,
     memberName,
     date,
@@ -382,6 +392,24 @@ function removeCheckIn(body) {
 }
 
 /**
+ * Deletes a member from the Members sheet by ID.
+ */
+function deleteMember(body) {
+  const { id } = body;
+  if (!id) throw new Error("id is required");
+  const sheet = getSheet(SHEET_MEMBERS);
+  const data = sheet.getDataRange().getValues();
+  for (var i = data.length - 1; i >= 1; i--) {
+    if (String(data[i][COL_MEM.ID]).trim() === String(id).trim()) {
+      sheet.deleteRow(i + 1);
+      return { success: true, data: { status: "deleted", id: id } };
+    }
+  }
+  return { success: true, data: { status: "not-found", id: id } };
+}
+
+
+/**
  * Adds a new member to the Members sheet.
  * Generates a unique ID in the format MEM-001.
  *
@@ -397,6 +425,10 @@ function addMember(body) {
   if (existing) {
     return { success: false, error: 'Member "' + existing.name + '" already exists (' + existing.id + ')' };
   }
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
 
   const sheet  = getSheet(SHEET_MEMBERS);
   const newId  = generateMemberId(sheet);
@@ -440,6 +472,10 @@ function addMember(body) {
   };
 
   return { success: true, data: member };
+
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 
@@ -491,16 +527,15 @@ function updateMember(body) {
     status:           COL_MEM.STATUS
   };
 
-  // Update only the supplied fields
+  const currentRow = sheet.getRange(rowIndex + 1, 1, 1, 23).getValues()[0];
   Object.entries(fieldMap).forEach(([field, col]) => {
     if (body[field] !== undefined) {
-      sheet.getRange(rowIndex + 1, col + 1).setValue(body[field]);
+      currentRow[col] = body[field];
     }
   });
+  sheet.getRange(rowIndex + 1, 1, 1, 23).setValues([currentRow]);
 
-  // Return the updated row (23 columns)
-  const updatedRow = sheet.getRange(rowIndex + 1, 1, 1, 23).getValues()[0];
-  return { success: true, data: rowToMember(updatedRow) };
+  return { success: true, data: rowToMember(currentRow) };
 }
 
 
@@ -566,7 +601,8 @@ function bulkSync(body) {
         memberName,
         date,
         timestamp || new Date().toISOString(),
-        checkedInBy || "sync"
+        checkedInBy || "sync",
+        item.occasion || "Sunday Service"
       ]);
       existingKeys.add(key); // Prevent intra-batch duplicates
       synced++;
@@ -1288,6 +1324,10 @@ function onFormSubmit(e) {
       return;
     }
 
+    const formLock = LockService.getScriptLock();
+    formLock.waitLock(10000);
+    try {
+
     const sheet  = getSheet(SHEET_MEMBERS);
     const newId  = generateMemberId(sheet);
     const today  = formatDate(new Date());
@@ -1319,6 +1359,10 @@ function onFormSubmit(e) {
       "Active",
       today
     ]);
+
+    } finally {
+      formLock.releaseLock();
+    }
 
     Logger.log("onFormSubmit: Registered member " + newId + " - " + fullName);
 
@@ -1404,7 +1448,7 @@ function resendQR(body) {
  */
 function sendReport(body) {
   var email = body.email;
-  if (!email) return respond({ success: false, error: 'No email configured' });
+  if (!email) return { success: false, error: 'No email configured' };
 
   var date     = body.date     || new Date().toISOString().split('T')[0];
   var occasion = body.occasion || 'Sunday Service';
