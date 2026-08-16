@@ -368,6 +368,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <div id="modeTap" style="display:none">
 <div class="filter-bar">
 <select id="ministryFilter"><option value="">All Ministries</option></select>
+<select id="tapOutreachFilter"><option value="">All Outreaches</option><option>Sto. Tomas</option><option>Tanauan</option><option>Naujan</option><option>Socorro</option></select>
 <div class="toggle-pills">
 <div class="toggle-pill active" data-show="all">All</div>
 <div class="toggle-pill" data-show="nothere">Not Here</div>
@@ -378,6 +379,14 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 </div>
 
 <div id="modeSearch" style="display:none">
+<div class="filter-bar">
+<select id="searchMinistryFilter"><option value="">All Ministries</option></select>
+<select id="searchOutreachFilter"><option value="">All Outreaches</option><option>Sto. Tomas</option><option>Tanauan</option><option>Naujan</option><option>Socorro</option></select>
+<div class="toggle-pills">
+<div class="toggle-pill active" data-show="all">All</div>
+<div class="toggle-pill" data-show="nothere">Not Here</div>
+</div>
+</div>
 <div class="input-group">
 <input type="text" id="searchInput" placeholder=" " autocomplete="off">
 <label>Search member name...</label>
@@ -621,7 +630,7 @@ function getAgeGroup(member){
 const age=getAge(member.birthday);
 if(age===null)return 'Unknown';
 if(age<=12)return 'Children';
-if(age<=17)return 'Youth';
+if(age<=21)return 'Youth';
 const isParent=member.hasChildren==='Yes';
 const isMarriedOrSep=member.civilStatus==='Married'||member.civilStatus==='Widow'||member.civilStatus==='Separated';
 if(isParent||isMarriedOrSep){return member.gender==='Female'?'Mothers':'Fathers'}
@@ -1064,6 +1073,8 @@ const ministry=document.getElementById('ministryFilter').value;
 const showAll=document.querySelector('#modeTap .toggle-pill.active').dataset.show==='all';
 let filtered=allMembers.filter(m=>m.status==='active'||m.status==='Active');
 if(ministry)filtered=filtered.filter(m=>m.ministry===ministry);
+const tapOutreach=document.getElementById('tapOutreachFilter').value;
+if(tapOutreach)filtered=filtered.filter(m=>m.outreach===tapOutreach);
 if(!showAll)filtered=filtered.filter(m=>!todayAttendance.find(a=>a.memberId===m.id));
 document.getElementById('tapCount').textContent=`Showing ${filtered.length} members`;
 const grid=document.getElementById('avatarGrid');
@@ -1090,6 +1101,7 @@ av.insertAdjacentHTML('beforeend','<div class="check-badge"><svg viewBox="0 0 24
 }
 
 document.getElementById('ministryFilter').addEventListener('change',renderAvatarGrid);
+document.getElementById('tapOutreachFilter').addEventListener('change',renderAvatarGrid);
 initCustomSelects(document.getElementById('tabCheckin'));
 document.querySelectorAll('#modeTap .toggle-pill').forEach(p=>p.addEventListener('click',(e)=>{
 document.querySelectorAll('#modeTap .toggle-pill').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');renderAvatarGrid();
@@ -1100,7 +1112,14 @@ document.getElementById('searchInput').addEventListener('input',(e)=>{
 clearTimeout(searchTimeout);searchTimeout=setTimeout(()=>{
 const q=e.target.value.toLowerCase().trim();const res=document.getElementById('searchResults');
 if(!q){res.innerHTML='';return}
-const matches=allMembers.filter(m=>m.name.toLowerCase().includes(q)).slice(0,10);
+let matches=allMembers.filter(m=>m.name.toLowerCase().includes(q));
+const sMinistry=document.getElementById('searchMinistryFilter').value;
+const sOutreach=document.getElementById('searchOutreachFilter').value;
+const sShowAll=document.querySelector('#modeSearch .toggle-pill.active').dataset.show==='all';
+if(sMinistry)matches=matches.filter(m=>m.ministry===sMinistry);
+if(sOutreach)matches=matches.filter(m=>m.outreach===sOutreach);
+if(!sShowAll)matches=matches.filter(m=>!todayAttendance.find(a=>a.memberId===m.id));
+matches=matches.slice(0,10);
 res.innerHTML=matches.map(m=>{
 const checked=todayAttendance.find(a=>a.memberId===m.id);
 return `<div class="search-result-item" data-id="${m.id}">${createAvatar(m,'small')}<div class="info"><div class="name">${m.name}</div><div class="sub">${m.dgroup}${m.ministry?' / '+m.ministry:''}${checked?' - Already here':''}</div></div></div>`;
@@ -1116,6 +1135,12 @@ e.target.value='';res.innerHTML='';
 });
 },200);
 });
+document.getElementById('searchMinistryFilter').addEventListener('change',()=>{document.getElementById('searchInput').dispatchEvent(new Event('input'))});
+document.getElementById('searchOutreachFilter').addEventListener('change',()=>{document.getElementById('searchInput').dispatchEvent(new Event('input'))});
+document.querySelectorAll('#modeSearch .toggle-pill').forEach(p=>p.addEventListener('click',(e)=>{
+document.querySelectorAll('#modeSearch .toggle-pill').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');
+document.getElementById('searchInput').dispatchEvent(new Event('input'));
+}));
 
 
 
@@ -1274,6 +1299,7 @@ const match=input.value.trim().toLowerCase()===member.name.toLowerCase();
 btn.style.opacity=match?'1':'0.5';btn.style.pointerEvents=match?'auto':'none';
 });
 btn.addEventListener('click',async()=>{
+btn.style.opacity='0.5';btn.style.pointerEvents='none';btn.textContent='Deleting...';
 await dbDelete('members',member.id);allMembers=allMembers.filter(m=>m.id!==member.id);
 const delUrl=await getSetting('scriptUrl');
 if(delUrl)fetch(delUrl+'?data='+encodeURIComponent(JSON.stringify({action:'deleteMember',id:member.id}))).catch(()=>dbPut('pendingSync',{action:'deleteMember',payload:{action:'deleteMember',id:member.id},createdAt:Date.now()}));
@@ -1339,7 +1365,7 @@ return val?JSON.parse(val):['Abraham','Admin','Children','Christian Education','
 }
 async function saveMinistries(list){await setSetting('ministries',JSON.stringify(list));populateMinistryDropdowns(list)}
 function populateMinistryDropdowns(list){
-['ministryFilter','memberMinistryFilter','memMinistry'].forEach(id=>{
+['ministryFilter','memberMinistryFilter','searchMinistryFilter','memMinistry'].forEach(id=>{
 const el=document.getElementById(id);if(!el)return;
 const val=el.value;
 const isForm=id==='memMinistry';
