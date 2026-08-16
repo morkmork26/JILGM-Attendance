@@ -940,6 +940,7 @@ loadCameras();
 });
 }
 let _camHealthRetry=0;
+let _camHealthInterval=null;
 function checkCameraHealth(){
 const vid=document.querySelector('#qr-reader video');
 if(!vid||!vid.srcObject)return;
@@ -959,8 +960,10 @@ handleBadCamera();
 }
 function handleBadCamera(){
 _camHealthRetry=0;
+if(_camHealthInterval){clearInterval(_camHealthInterval);_camHealthInterval=null}
 if(selectedCameraId){selectedCameraId='';localStorage.removeItem('jilgm_cameraId');
 showToast('Camera not responding, switching...','warning');startQR()}
+else{showToast('No camera feed. Tap Camera button to retry.','warning')}
 }
 function showCameraPicker(){
 if(allCameras.length===0){showToast('No cameras found','warning');return}
@@ -1001,6 +1004,8 @@ const _qrbox=window.innerWidth>=1024?320:220;
 qrScanner.start(getCameraConstraint(),{fps:10,qrbox:_qrbox},onQRScan,()=>{}).then(()=>{
 if(earlyStream){earlyStream.getTracks().forEach(t=>t.stop());earlyStream=null}
 loadCameras();
+if(_camHealthInterval)clearInterval(_camHealthInterval);
+_camHealthInterval=setInterval(checkCameraHealth,10000);
 setTimeout(checkCameraHealth,3000);
 const vid=document.querySelector('#qr-reader video');
 if(vid){
