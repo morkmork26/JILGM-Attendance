@@ -1193,6 +1193,10 @@ function closeModal(){document.getElementById('modalOverlay').classList.remove('
 async function saveMember(existing){
 const name=document.getElementById('memName').value.trim();if(!name){showToast('Name is required','error');return}
 if(existing){const typed=await customPrompt(`To confirm edit, type "${existing.name}"`,{title:'Confirm Edit',okText:'Save',placeholder:existing.name});if(!typed||typed.trim().toLowerCase()!==existing.name.toLowerCase()){showToast('Edit cancelled','warning');return}}
+const bdayVal=document.getElementById('memBday').value;
+if(bdayVal){const bdayAge=getAge(bdayVal);const bdayYear=new Date(bdayVal+'T00:00:00').getFullYear();
+if(bdayAge!==null&&bdayAge>120){showToast('Birthday year '+bdayYear+' seems incorrect (age would be '+bdayAge+')','error');return}
+if(bdayAge!==null&&bdayAge<1){if(!await customConfirm('Birthday year is '+bdayYear+'. This person would be '+bdayAge+' years old. Is this correct?',{title:'Check Birthday',okText:'Yes, correct'}))return}}
 const classCheckboxes=document.querySelectorAll('#memClassesContainer input[type=checkbox]:checked');
 const classes=Array.from(classCheckboxes).map(cb=>cb.value);
 const member={id:existing?existing.id:'m'+Date.now(),name,outreach:document.getElementById('memOutreach').value,address:document.getElementById('memAddress').value.trim(),email:document.getElementById('memEmail').value.trim(),ministry:document.getElementById('memMinistry').value,dgroupLeader:document.getElementById('memDgroupLeader').value.trim(),phone:document.getElementById('memPhone').value.trim(),birthday:document.getElementById('memBday').value,gender:document.getElementById('memGender').value,civilStatus:document.getElementById('memCivilStatus').value,hasChildren:document.getElementById('memHasChildren').value,emergencyContact:document.getElementById('memEmergencyContact').value.trim(),emergencyPhone:document.getElementById('memEmergencyPhone').value.trim(),membershipStatus:document.getElementById('memMembershipStatus').value,membershipDate:document.getElementById('memMembershipDate').value,baptismDate:document.getElementById('memBaptismDate').value,baptismPlace:document.getElementById('memBaptismPlace').value.trim(),classes:classes,status:existing?existing.status:'active',addedLocally:existing?existing.addedLocally||false:true,dateRegistered:existing?existing.dateRegistered:today()};
@@ -1243,7 +1247,8 @@ const outreachF=document.getElementById('memberOutreachFilter').value;
 if(outreachF)filtered=filtered.filter(m=>m.outreach===outreachF);
 document.getElementById('memberCount').textContent=`${filtered.length} members`;
 const list=document.getElementById('memberList');
-list.innerHTML=filtered.map(m=>`<div class="member-row" data-id="${m.id}">${createAvatar(m,'small')}<div class="info"><div class="name">${m.name}</div><div class="sub">${m.outreach||'No outreach'}${m.ministry?' / '+m.ministry:''}</div></div><span class="pill pill-${m.status.toLowerCase()}">${m.status}</span></div>`).join('');
+list.innerHTML=filtered.map(m=>{const mAge=getAge(m.birthday);const badBday=m.birthday&&(mAge!==null&&(mAge<1||mAge>120));
+return `<div class="member-row" data-id="${m.id}">${createAvatar(m,'small')}<div class="info"><div class="name">${m.name}${badBday?' <span style="color:var(--warning);font-size:11px" title="Birthday year looks wrong">&#9888;</span>':''}</div><div class="sub">${m.outreach||'No outreach'}${m.ministry?' / '+m.ministry:''}</div></div><span class="pill pill-${m.status.toLowerCase()}">${m.status}</span></div>`}).join('');
 list.querySelectorAll('.member-row').forEach(row=>row.addEventListener('click',()=>showDetail(row.dataset.id)));
 }
 
@@ -1263,7 +1268,9 @@ const d=new Date();
 const last10=[];
 for(let i=0;i<10;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);last10.push(localDateStr(sun))}
 const attendDots=last10.reverse().map(s=>allAtt.find(a=>a.memberId===member.id&&a.date===s)?'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--success);margin:0 2px"></span>':'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--card-border);margin:0 2px;border:1px solid var(--card-border)"></span>').join('');
-content.innerHTML=`<div style="text-align:center;margin-bottom:24px">${createAvatar(member,'large')}
+const detailAge=getAge(member.birthday);const detailBadBday=member.birthday&&(detailAge!==null&&(detailAge<1||detailAge>120));
+content.innerHTML=`${detailBadBday?'<div style="background:rgba(255,171,0,0.15);border:1px solid rgba(255,171,0,0.3);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--warning)"><span style="font-size:18px">&#9888;</span> Birthday year ('+new Date(member.birthday+'T00:00:00').getFullYear()+') looks incorrect. Age would be '+detailAge+'. Tap Edit to fix.</div>':''}
+<div style="text-align:center;margin-bottom:24px">${createAvatar(member,'large')}
 <h2 style="margin-top:12px">${member.name}</h2>
 <span style="display:inline-block;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;background:rgba(108,99,255,0.15);color:var(--accent);margin-top:6px">${member.outreach||'No outreach'}</span>
 </div>
