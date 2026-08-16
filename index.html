@@ -200,6 +200,7 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 #qr-reader video{width:100%!important;height:auto!important;border-radius:var(--radius)}
 #qr-reader img{display:none}
 @media(min-width:600px){.avatar-grid{grid-template-columns:repeat(5,1fr)}.content{max-width:540px;margin:0 auto}}
+@media(min-width:1024px){.content{max-width:720px}.qr-scanner{max-width:520px!important}.desktop-welcome{display:block!important;text-align:center;margin-top:24px}.desktop-welcome .welcome-line{font-size:18px;font-weight:600;color:var(--text);margin-bottom:6px}.desktop-welcome .welcome-sub{font-size:14px;color:var(--text-secondary)}}
 @media(min-width:1024px) and (orientation:landscape){.qr-overlay .result h3{font-size:76px!important}.qr-overlay .result p{font-size:40px!important}.qr-overlay .result .icon{width:180px!important;height:180px!important;margin-bottom:24px!important}.qr-overlay .result .icon svg{width:96px!important;height:96px!important}.qr-scanner{max-width:400px}}
 .sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:9998;opacity:0;pointer-events:none;transition:opacity 0.25s}
 .sheet-overlay.show{opacity:1;pointer-events:auto}
@@ -363,6 +364,10 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <button class="btn btn-outline" style="padding:6px 12px;font-size:11px;border-radius:8px;display:flex;align-items:center;gap:4px" onclick="showCameraPicker()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> <span id="camLabel">Camera</span></button>
 <button class="btn btn-outline" style="padding:6px 12px;font-size:11px;border-radius:8px;display:flex;align-items:center;gap:4px" id="zoomBtn" onclick="cycleZoom()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/></svg> <span id="zoomLabel">2x</span></button>
 </div>
+</div>
+<div class="desktop-welcome" style="display:none">
+<div class="welcome-line">Welcome! Please scan your QR code 🙏</div>
+<div class="welcome-sub" id="desktopOccasionLine"></div>
 </div>
 
 <div id="modeTap" style="display:none">
@@ -939,7 +944,8 @@ async function startQRScanner(){
 if(qrScanner)try{await qrScanner.stop()}catch(e){}
 const el=document.getElementById('qr-reader');el.innerHTML='';
 qrScanner=new Html5Qrcode('qr-reader');
-qrScanner.start(getCameraConstraint(),{fps:10,qrbox:220},onQRScan,()=>{}).then(()=>{
+const _qrbox=window.innerWidth>=1024?320:220;
+qrScanner.start(getCameraConstraint(),{fps:10,qrbox:_qrbox},onQRScan,()=>{}).then(()=>{
 if(earlyStream){earlyStream.getTracks().forEach(t=>t.stop());earlyStream=null}
 loadCameras();
 const vid=document.querySelector('#qr-reader video');
@@ -1097,6 +1103,7 @@ if(member.status==='inactive')await dbPut('members',member);
 function updateCounter(){
 const total=allMembers.length;const checked=todayAttendance.length;
 document.getElementById('counterBadge').textContent=`${checked}/${total}`;
+updateDesktopWelcome();
 }
 
 async function renderAvatarGrid(){
@@ -1962,6 +1969,10 @@ await setSetting('activeOccasion',name);
 updateOccasionBanner();
 const url=await getSetting('scriptUrl');
 if(url)try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'setOccasion',active:name})))}catch(e){}
+}
+function updateDesktopWelcome(){
+const el=document.getElementById('desktopOccasionLine');
+if(el)el.textContent=currentOccasion+(todayAttendance.length?' — '+todayAttendance.length+' checked in':'');
 }
 function updateOccasionBanner(){
 const banner=document.getElementById('occasionBanner');
