@@ -201,7 +201,7 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 #qr-reader img{display:none}
 @media(min-width:600px){.avatar-grid{grid-template-columns:repeat(5,1fr)}.content{max-width:540px;margin:0 auto}}
 .dt-toggle{display:none}
-@media(min-width:1024px){.content{max-width:900px}.mode-pills{display:none!important}#qr-reader video{transform:scaleX(-1)!important}.qr-scanner{max-width:700px!important;margin:0 auto}.desktop-welcome{display:block!important;text-align:center;margin-top:32px}.desktop-welcome .welcome-deco{width:50px;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));margin:0 auto 20px;border-radius:2px;opacity:0.4}.desktop-welcome .welcome-sub{font-size:36px;font-weight:300;color:rgba(255,255,255,0.55);letter-spacing:1.2px;animation:welcomePulse 3s ease-in-out infinite}
+@media(min-width:1024px){.content{max-width:900px}.mode-pills{display:none!important}#qr-reader video{transform:scaleX(-1)!important}.qr-scanner{max-width:860px!important;width:90vw!important;margin:0 auto}.desktop-welcome{display:block!important;text-align:center;margin-top:32px}.desktop-welcome .welcome-deco{width:50px;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));margin:0 auto 20px;border-radius:2px;opacity:0.4}.desktop-welcome .welcome-sub{font-size:36px;font-weight:300;color:rgba(255,255,255,0.55);letter-spacing:1.2px;animation:welcomePulse 3s ease-in-out infinite}
 @keyframes welcomePulse{0%,100%{opacity:0.55}50%{opacity:0.8}}#modeQR{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 180px)}#modeQR .cam-controls .btn-outline{padding:8px 16px;font-size:13px;border-radius:10px}
 .header{transition:transform 0.3s ease,margin 0.3s ease,opacity 0.3s ease}.header.dt-collapsed{transform:translateY(-100%);margin-top:-56px;opacity:0;pointer-events:none}
 .bottom-nav{transition:transform 0.3s ease,opacity 0.3s ease}.bottom-nav.dt-collapsed{transform:translateY(100%);opacity:0;pointer-events:none}
@@ -1000,7 +1000,7 @@ async function startQRScanner(){
 if(qrScanner)try{await qrScanner.stop()}catch(e){}
 const el=document.getElementById('qr-reader');el.innerHTML='';
 qrScanner=new Html5Qrcode('qr-reader');
-const _qrbox=window.innerWidth>=1024?320:220;
+const _qrbox=window.innerWidth>=1024?400:220;
 qrScanner.start(getCameraConstraint(),{fps:10,qrbox:_qrbox},onQRScan,()=>{}).then(()=>{
 if(earlyStream){earlyStream.getTracks().forEach(t=>t.stop());earlyStream=null}
 loadCameras();
