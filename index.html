@@ -200,7 +200,17 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 #qr-reader video{width:100%!important;height:auto!important;border-radius:var(--radius)}
 #qr-reader img{display:none}
 @media(min-width:600px){.avatar-grid{grid-template-columns:repeat(5,1fr)}.content{max-width:540px;margin:0 auto}}
-@media(min-width:1024px){.content{max-width:900px}.mode-pills{display:none!important}#qr-reader video{transform:scaleX(-1)!important}.qr-scanner{max-width:700px!important;margin:0 auto}.desktop-welcome{display:block!important;text-align:center;margin-top:32px}.desktop-welcome .welcome-line{font-size:28px;font-weight:700;color:var(--text);letter-spacing:0.3px}#modeQR{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 180px)}#modeQR .cam-controls .btn-outline{padding:8px 16px;font-size:13px;border-radius:10px}}
+.dt-toggle{display:none}
+@media(min-width:1024px){.content{max-width:900px}.mode-pills{display:none!important}#qr-reader video{transform:scaleX(-1)!important}.qr-scanner{max-width:700px!important;margin:0 auto}.desktop-welcome{display:block!important;text-align:center;margin-top:32px}.desktop-welcome .welcome-line{font-size:32px;font-weight:800;background:linear-gradient(135deg,#fff 20%,#48c6ef 60%,#6c63ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.5px}#modeQR{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 180px)}#modeQR .cam-controls .btn-outline{padding:8px 16px;font-size:13px;border-radius:10px}
+.header{transition:transform 0.3s ease,margin 0.3s ease,opacity 0.3s ease}.header.dt-collapsed{transform:translateY(-100%);margin-top:-56px;opacity:0;pointer-events:none}
+.bottom-nav{transition:transform 0.3s ease,opacity 0.3s ease}.bottom-nav.dt-collapsed{transform:translateY(100%);opacity:0;pointer-events:none}
+.dt-toggle{display:flex;position:fixed;z-index:101;left:50%;transform:translateX(-50%);width:36px;height:18px;align-items:center;justify-content:center;background:rgba(26,26,46,0.8);backdrop-filter:blur(12px);border:1px solid rgba(108,99,255,0.2);cursor:pointer;transition:opacity 0.2s}
+.dt-toggle:hover{opacity:1;border-color:rgba(108,99,255,0.5)}
+.dt-toggle-top{top:0;border-radius:0 0 10px 10px;opacity:0.4}.dt-toggle-top.showing{opacity:0.7}
+.dt-toggle-bot{bottom:0;border-radius:10px 10px 0 0;opacity:0.4}.dt-toggle-bot.showing{opacity:0.7}
+.dt-toggle svg{width:14px;height:14px;stroke:var(--accent);stroke-width:2;fill:none;transition:transform 0.3s}
+.dt-toggle.showing svg{transform:rotate(180deg)}
+}
 @media(min-width:1024px) and (orientation:landscape){.qr-overlay .result h3{font-size:76px!important}.qr-overlay .result p{font-size:40px!important}.qr-overlay .result .icon{width:180px!important;height:180px!important;margin-bottom:24px!important}.qr-overlay .result .icon svg{width:96px!important;height:96px!important}.qr-scanner{max-width:400px}}
 .sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:9998;opacity:0;pointer-events:none;transition:opacity 0.25s}
 .sheet-overlay.show{opacity:1;pointer-events:auto}
@@ -333,6 +343,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <div class="counter-badge" id="counterBadge">0/0</div>
 </div>
 </div>
+<button class="dt-toggle dt-toggle-top" id="dtToggleTop" onclick="toggleDesktopHeader()" title="Toggle header"><svg viewBox="0 0 24 24"><polyline points="6 15 12 9 18 15"/></svg></button>
 
 <div class="install-banner" id="installBanner">
 <span>Install App for offline use</span>
@@ -559,6 +570,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
 </button>
 
+<button class="dt-toggle dt-toggle-bot" id="dtToggleBot" onclick="toggleDesktopNav()" title="Toggle navigation"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
 <nav class="bottom-nav">
 <button class="nav-item active" data-tab="tabCheckin">
 <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
@@ -1866,8 +1878,30 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 });
 
 // === APP VERSION & CHANGELOG ===
-const APP_VERSION='1.4.1';
+const APP_VERSION='1.5.0';
 const CHANGELOG=[
+{version:'1.5.0',date:'August 17, 2026',changes:[
+{type:'New',text:'Camera picker: select from all available cameras (phone, laptop, USB)'},
+{type:'New',text:'Laptop scanning mode: bigger camera, centered layout, welcome text'},
+{type:'New',text:'Collapsible header and bottom nav on laptop for full-screen scanning'},
+{type:'New',text:'Camera mirroring on laptop view for phone back-cam setup'},
+{type:'New',text:'Birthday validation: warns if birth year looks wrong (e.g. 2026)'},
+{type:'New',text:'Bad birthday warning badges on member list and detail panel'},
+{type:'New',text:'Outreach filter on Quick Tap tab'},
+{type:'New',text:'Ministry and outreach filters on Search tab'},
+{type:'New',text:'Member delete now syncs to server (no more ghost re-adds)'},
+{type:'Improve',text:'Youth age group extended to 21 and below'},
+{type:'Improve',text:'Auto-sync interval 30s (was 10s) to reduce server load'},
+{type:'Improve',text:'Auto-sync preserves in-flight check-ins (no more lost scans)'},
+{type:'Improve',text:'Service worker: split core/CDN caching to prevent install failures'},
+{type:'Fix',text:'Date calculations now use local time (was UTC, caused wrong-day attendance before 8AM)'},
+{type:'Fix',text:'Fixed double-push bug when saving new members'},
+{type:'Fix',text:'Fixed orphaned records when server returns different member ID'},
+{type:'Fix',text:'Fixed report new member count (was double-counting)'},
+{type:'Fix',text:'Fixed age display for members without birthday (shows Unknown)'},
+{type:'Fix',text:'Fixed inactive member detection for new churches with few Sundays'},
+{type:'Fix',text:'Fixed pending sync replay (continues on error instead of stopping)'},
+]},
 {version:'1.4.1',date:'August 1, 2026',changes:[
 {type:'New',text:'Admin: Today\'s Check-Ins section with search and remove'},
 {type:'New',text:'Swipe left/right to switch between QR, Quick Tap, and Search'},
@@ -1970,6 +2004,20 @@ const url=await getSetting('scriptUrl');
 if(url)try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'setOccasion',active:name})))}catch(e){}
 }
 function updateDesktopWelcome(){}
+function toggleDesktopHeader(){
+const h=document.querySelector('.header');const b=document.getElementById('dtToggleTop');
+h.classList.toggle('dt-collapsed');b.classList.toggle('showing');
+localStorage.setItem('jilgm_dtHeader',h.classList.contains('dt-collapsed')?'1':'0');
+}
+function toggleDesktopNav(){
+const n=document.querySelector('.bottom-nav');const b=document.getElementById('dtToggleBot');
+n.classList.toggle('dt-collapsed');b.classList.toggle('showing');
+localStorage.setItem('jilgm_dtNav',n.classList.contains('dt-collapsed')?'1':'0');
+}
+if(window.innerWidth>=1024){
+if(localStorage.getItem('jilgm_dtHeader')==='1'){document.querySelector('.header').classList.add('dt-collapsed');document.getElementById('dtToggleTop').classList.add('showing')}
+if(localStorage.getItem('jilgm_dtNav')==='1'){document.querySelector('.bottom-nav').classList.add('dt-collapsed');document.getElementById('dtToggleBot').classList.add('showing')}
+}
 function updateOccasionBanner(){
 const banner=document.getElementById('occasionBanner');
 const label=document.getElementById('occasionLabel');
