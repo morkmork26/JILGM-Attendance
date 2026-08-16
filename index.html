@@ -201,8 +201,8 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 #qr-reader img{display:none}
 @media(min-width:600px){.avatar-grid{grid-template-columns:repeat(5,1fr)}.content{max-width:540px;margin:0 auto}}
 .dt-toggle{display:none}
-@media(min-width:1024px){.content{max-width:900px}.mode-pills{display:none!important}#qr-reader video{transform:scaleX(-1)!important}.qr-scanner{max-width:700px!important;margin:0 auto}.desktop-welcome{display:block!important;text-align:center;margin-top:32px}.desktop-welcome .welcome-title{font-size:42px;font-weight:800;color:#fff;margin-bottom:8px;text-shadow:0 0 40px rgba(72,198,239,0.3),0 0 80px rgba(108,99,255,0.15)}.desktop-welcome .welcome-sub{font-size:20px;font-weight:400;color:rgba(255,255,255,0.5);letter-spacing:0.3px;animation:welcomePulse 3s ease-in-out infinite}
-@keyframes welcomePulse{0%,100%{opacity:0.5}50%{opacity:0.75}}#modeQR{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 180px)}#modeQR .cam-controls .btn-outline{padding:8px 16px;font-size:13px;border-radius:10px}
+@media(min-width:1024px){.content{max-width:900px}.mode-pills{display:none!important}#qr-reader video{transform:scaleX(-1)!important}.qr-scanner{max-width:700px!important;margin:0 auto}.desktop-welcome{display:block!important;text-align:center;margin-top:32px}.desktop-welcome .welcome-deco{width:50px;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));margin:0 auto 20px;border-radius:2px;opacity:0.4}.desktop-welcome .welcome-sub{font-size:26px;font-weight:300;color:rgba(255,255,255,0.55);letter-spacing:1px;animation:welcomePulse 3s ease-in-out infinite}
+@keyframes welcomePulse{0%,100%{opacity:0.55}50%{opacity:0.8}}#modeQR{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 180px)}#modeQR .cam-controls .btn-outline{padding:8px 16px;font-size:13px;border-radius:10px}
 .header{transition:transform 0.3s ease,margin 0.3s ease,opacity 0.3s ease}.header.dt-collapsed{transform:translateY(-100%);margin-top:-56px;opacity:0;pointer-events:none}
 .bottom-nav{transition:transform 0.3s ease,opacity 0.3s ease}.bottom-nav.dt-collapsed{transform:translateY(100%);opacity:0;pointer-events:none}
 .dt-toggle{display:flex;position:fixed;z-index:101;left:50%;transform:translateX(-50%);width:36px;height:18px;align-items:center;justify-content:center;background:rgba(26,26,46,0.8);backdrop-filter:blur(12px);border:1px solid rgba(108,99,255,0.2);cursor:pointer;transition:opacity 0.2s}
@@ -377,7 +377,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <button class="btn btn-outline" style="padding:6px 12px;font-size:11px;border-radius:8px;display:flex;align-items:center;gap:4px" id="zoomBtn" onclick="cycleZoom()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/></svg> <span id="zoomLabel">2x</span></button>
 </div>
 <div class="desktop-welcome" style="display:none">
-<div class="welcome-title">Welcome! 🙏</div><div class="welcome-sub">Please scan your QR code</div>
+<div class="welcome-deco"></div><div class="welcome-sub">Please scan your QR code</div>
 </div>
 </div>
 
@@ -939,15 +939,28 @@ showToast('Camera disconnected, switching...','warning');startQR();
 loadCameras();
 });
 }
+let _camHealthRetry=0;
 function checkCameraHealth(){
 const vid=document.querySelector('#qr-reader video');
 if(!vid||!vid.srcObject)return;
 const track=vid.srcObject.getVideoTracks()[0];
 if(!track)return;
-if(track.readyState==='ended'||track.muted){
+if(track.readyState==='ended'||track.muted){handleBadCamera();return}
+try{
+const c=document.createElement('canvas');c.width=16;c.height=16;
+const ctx=c.getContext('2d');ctx.drawImage(vid,0,0,16,16);
+const px=ctx.getImageData(0,0,16,16).data;
+let bright=0;for(let i=0;i<px.length;i+=4)bright+=px[i]+px[i+1]+px[i+2];
+if(bright<200){
+if(_camHealthRetry<1){_camHealthRetry++;setTimeout(checkCameraHealth,2000);return}
+handleBadCamera();
+}else{_camHealthRetry=0}
+}catch(e){}
+}
+function handleBadCamera(){
+_camHealthRetry=0;
 if(selectedCameraId){selectedCameraId='';localStorage.removeItem('jilgm_cameraId');
 showToast('Camera not responding, switching...','warning');startQR()}
-}
 }
 function showCameraPicker(){
 if(allCameras.length===0){showToast('No cameras found','warning');return}
