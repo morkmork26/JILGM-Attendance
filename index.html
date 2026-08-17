@@ -207,7 +207,7 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 #qr-reader img{display:none}
 @media(min-width:600px){.avatar-grid{grid-template-columns:repeat(5,1fr)}.content{max-width:540px;margin:0 auto}}
 .dt-toggle{display:none}
-@media(min-width:1024px){.content{max-width:900px}.mode-pills{display:none!important}#qr-reader video{transform:scaleX(-1)!important}.qr-scanner{max-width:800px!important;width:80vw!important;margin:0 auto}.scan-prompt{display:flex!important;flex-direction:column;align-items:center;margin-top:20px}.scan-prompt .scan-badge{padding:18px 40px;border-radius:18px}.scan-prompt .scan-badge svg{width:32px;height:32px}.scan-prompt .scan-badge span{font-size:32px}.scan-prompt .scan-sub{font-size:18px;margin-top:12px}
+@media(min-width:1024px){.content{max-width:900px}.mode-pills{display:none!important}#qr-reader video{transform:scaleX(-1)!important}.qr-scanner{max-width:800px!important;width:80vw!important;margin:0 auto}.qr-scanner .scan-region{display:block!important}.qr-scanner .corner-bl,.qr-scanner .corner-br{display:block!important}.scan-prompt{display:flex!important;flex-direction:column;align-items:center;margin-top:20px}.scan-prompt .scan-badge{padding:18px 40px;border-radius:18px}.scan-prompt .scan-badge svg{width:32px;height:32px}.scan-prompt .scan-badge span{font-size:32px}.scan-prompt .scan-sub{font-size:18px;margin-top:12px}
 #modeQR{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 180px)}#modeQR .cam-controls .btn-outline{padding:5px 10px;font-size:11px;border-radius:8px}
 .header{transition:transform 0.3s ease,margin 0.3s ease,opacity 0.3s ease}.header.dt-collapsed{transform:translateY(-100%);margin-top:-56px;opacity:0;pointer-events:none}
 .bottom-nav{transition:transform 0.3s ease,opacity 0.3s ease}.bottom-nav.dt-collapsed{transform:translateY(100%);opacity:0;pointer-events:none}
@@ -218,7 +218,7 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 .dt-toggle svg{width:14px;height:14px;stroke:var(--accent);stroke-width:2;fill:none;transition:transform 0.3s}
 .dt-toggle.showing svg{transform:rotate(180deg)}
 }
-@media(min-width:1024px) and (orientation:landscape){.qr-overlay .result h3{font-size:76px!important}.qr-overlay .result p{font-size:40px!important}.qr-overlay .result .icon{width:180px!important;height:180px!important;margin-bottom:24px!important}.qr-overlay .result .icon svg{width:96px!important;height:96px!important}.qr-scanner{max-width:400px}}
+@media(min-width:1024px) and (orientation:landscape){.qr-overlay .result h3{font-size:76px!important}.qr-overlay .result p{font-size:40px!important}.qr-overlay .result .icon{width:180px!important;height:180px!important;margin-bottom:24px!important}.qr-overlay .result .icon svg{width:96px!important;height:96px!important}}
 .sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:9998;opacity:0;pointer-events:none;transition:opacity 0.25s}
 .sheet-overlay.show{opacity:1;pointer-events:auto}
 .sheet{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:var(--card);border-radius:20px 20px 0 0;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);max-height:70vh;display:flex;flex-direction:column}
