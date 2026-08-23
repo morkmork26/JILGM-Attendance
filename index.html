@@ -1653,6 +1653,8 @@ const val=document.getElementById('childrenInput').value;
 if(!val||val<0){showToast('Enter a valid number','error');return}
 await setSetting('children_'+today(),val);
 document.getElementById('statChildren').textContent=val;
+const url=await getSetting('scriptUrl');
+if(url)fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'saveSetting',key:'children_'+today(),value:val}))).catch(()=>{});
 showToast('Children count saved');
 });
 
@@ -1994,11 +1996,13 @@ ${outreachHTML}
 overlay.classList.add('show');
 setTimeout(()=>{
 document.getElementById('closeModal').addEventListener('click',closeModal);
-document.getElementById('rptChildren').addEventListener('input',(e)=>{
+document.getElementById('rptChildren').addEventListener('input',async(e)=>{
 const c=parseInt(e.target.value)||0;
-setSetting('children_'+todayStr,c.toString());
+await setSetting('children_'+todayStr,c.toString());
 document.getElementById('statChildren').textContent=c||'-';
 document.getElementById('childrenInput').value=c;
+const syncUrl=await getSetting('scriptUrl');
+if(syncUrl)fetch(syncUrl+'?data='+encodeURIComponent(JSON.stringify({action:'saveSetting',key:'children_'+todayStr,value:c.toString()}))).catch(()=>{});
 });
 document.getElementById('sendReportBtn').addEventListener('click',async()=>{
 const url=await getSetting('scriptUrl');
