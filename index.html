@@ -1500,14 +1500,28 @@ if(!await customConfirm(`Remove "${name}" ministry?`,{title:'Remove Ministry',ok
 const list=await getMinistries();
 await saveMinistries(list.filter(m=>m!==name));renderMinistryTags();
 }
+function getDismissedUnclassified(){try{return JSON.parse(localStorage.getItem('jilgm_dismissed_unclassified')||'[]')}catch(e){return[]}}
+function dismissUnclassified(id){const list=getDismissedUnclassified();if(!list.includes(id)){list.push(id);localStorage.setItem('jilgm_dismissed_unclassified',JSON.stringify(list))}renderUnclassified()}
+
 function renderUnclassified(){
 const section=document.getElementById('adminUnclassified');
 if(!section)return;
 section.style.display='block';
 const list=document.getElementById('unclassifiedList');
-const unclassifiedMembers=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&getAgeGroup(m)==='Unknown');
-if(!unclassifiedMembers.length){list.innerHTML='<p style="font-size:13px;color:var(--success);text-align:center;padding:12px">All members are classified!</p>';return}
-list.innerHTML='<p style="font-size:11px;color:var(--warning);padding:4px 0;margin-bottom:8px">'+unclassifiedMembers.length+' members missing/invalid birthday</p>'+unclassifiedMembers.map(m=>`<div class="member-row" data-id="${m.id}" style="margin-bottom:6px">${createAvatar(m,'small')}<div class="info"><div class="name">${m.name}</div><div class="sub">${m.ministry||'No ministry'} | Birthday: ${m.birthday||'missing'}</div></div></div>`).join('');
+const dismissed=getDismissedUnclassified();
+const noBirthday=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&getAgeGroup(m)==='Unknown'&&!dismissed.includes(m.id));
+const noEmail=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&!m.email&&!dismissed.includes(m.id));
+if(!noBirthday.length&&!noEmail.length){list.innerHTML='<p style="font-size:13px;color:var(--success);text-align:center;padding:12px">All members are complete!</p>';return}
+let html='';
+if(noBirthday.length){
+html+='<p style="font-size:11px;color:var(--warning);padding:4px 0;margin-bottom:8px;margin-top:8px"><strong>Missing/Invalid Birthday</strong> ('+noBirthday.length+')</p>';
+html+=noBirthday.map(m=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div class="member-row" data-id="${m.id}" style="flex:1;margin:0">${createAvatar(m,'small')}<div class="info"><div class="name">${m.name}</div><div class="sub">${m.ministry||'No ministry'} | Birthday: ${m.birthday||'missing'}</div></div></div><button onclick="event.stopPropagation();dismissUnclassified('${m.id}')" style="background:none;border:none;padding:6px;cursor:pointer;color:var(--text-secondary);font-size:18px" title="Dismiss">&#10005;</button></div>`).join('');
+}
+if(noEmail.length){
+html+='<p style="font-size:11px;color:var(--warning);padding:4px 0;margin-bottom:8px;margin-top:12px"><strong>Missing Email</strong> ('+noEmail.length+')</p>';
+html+=noEmail.map(m=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div class="member-row" data-id="${m.id}" style="flex:1;margin:0">${createAvatar(m,'small')}<div class="info"><div class="name">${m.name}</div><div class="sub">${m.ministry||'No ministry'} | Email: missing</div></div></div><button onclick="event.stopPropagation();dismissUnclassified('${m.id}')" style="background:none;border:none;padding:6px;cursor:pointer;color:var(--text-secondary);font-size:18px" title="Dismiss">&#10005;</button></div>`).join('');
+}
+list.innerHTML=html;
 list.querySelectorAll('.member-row').forEach(row=>row.addEventListener('click',()=>showDetail(row.dataset.id)));
 }
 
