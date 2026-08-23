@@ -496,7 +496,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <div style="display:none">
 <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:8px">
 <div class="input-group"><input type="email" id="reportEmail" placeholder=" "><label>Report Email</label></div>
-<div class="input-group"><input type="text" id="defaultOutreach" placeholder=" " value="Sto. Tomas"><label>Default Outreach Location</label></div>
+<div class="input-group"><input type="text" id="defaultOutreach" placeholder=" " value=""><label>Default Outreach Location</label></div>
 </div>
 </div>
 </div>
@@ -1622,7 +1622,7 @@ catch(e){status.textContent='Failed: '+e.message;status.style.color='var(--error
 });
 
 document.getElementById('reportEmail').addEventListener('change',async(e)=>{const val=e.target.value.trim();await setSetting('reportEmail',val);const url=await getSetting('scriptUrl');if(url)fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'saveSetting',key:'reportEmail',value:val}))).catch(()=>{})});
-document.getElementById('defaultOutreach').addEventListener('change',async(e)=>{await setSetting('defaultOutreach',e.target.value.trim())});
+document.getElementById('defaultOutreach').addEventListener('change',async(e)=>{const val=e.target.value.trim();await setSetting('defaultOutreach',val);const url=await getSetting('scriptUrl');if(url)fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'saveSetting',key:'defaultOutreach',value:val}))).catch(()=>{})});
 
 document.getElementById('syncNowBtn').addEventListener('click',async()=>{
 const dot=document.getElementById('syncDot');dot.classList.add('syncing');
@@ -1996,7 +1996,7 @@ if(!isFirstAttend){const g=getAgeGroup(m);if(g!=='Unknown'&&counts[g]!==undefine
 });
 const childrenVal=await getSetting('children_'+todayStr);
 const newCount=stoTomasMembers.filter(m=>m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1).length;
-const outreach=(await getSetting('defaultOutreach'))||'Sto. Tomas';
+const outreach=(await getSetting('defaultOutreach'))||'';
 const adultTotal=counts.Youth+counts.YPro+counts.Mothers+counts.Fathers;
 const childNum=parseInt(childrenVal)||0;
 const outreachTotal=Object.values(outreachGroups).reduce((a,b)=>a+b,0);
