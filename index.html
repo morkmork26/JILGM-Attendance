@@ -1491,9 +1491,9 @@ const hasRecent=allAtt.find(a=>a.memberId===m.id&&a.date>=cutoff);
 return !hasRecent;
 }
 let consecutive=0;
-for(let i=0;i<3;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);const ds=localDateStr(sun);
+for(let i=0;i<4;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);const ds=localDateStr(sun);
 if(!allAtt.find(a=>a.memberId===m.id&&a.date===ds))consecutive++;else break}
-return consecutive>=3;
+return consecutive>=4;
 });
 const followUp=document.getElementById('followUpList');
 if(allAtt.length===0){followUp.innerHTML='<div class="empty-state"><p>Not enough data yet</p></div>'}
