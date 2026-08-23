@@ -623,6 +623,19 @@ document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT'&&e.tar
 document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
 document.addEventListener('gesturestart',e=>e.preventDefault());
 document.addEventListener('gesturechange',e=>e.preventDefault());
+
+const navStack=[];
+function navPush(state){navStack.push(state);history.pushState({nav:state},'')}
+function navPop(){navStack.pop()}
+window.addEventListener('popstate',()=>{
+const state=navStack.pop();
+if(state==='detail'){document.getElementById('detailPanel').classList.remove('open')}
+else if(state==='modal'){closeModal()}
+else if(state==='qrOverlay'){document.getElementById('qrOverlay').classList.remove('show')}
+else{history.pushState(null,'');return}
+});
+history.replaceState(null,'');
+
 const DB_NAME='jilgm_attendance';const DB_VERSION=1;let db;
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 function localDateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
@@ -1289,7 +1302,7 @@ content.innerHTML=`<div class="modal-header"><h3>${data?'Edit Member':'Add Membe
 
 <button class="btn btn-primary" style="width:100%;margin-top:8px" id="saveMember">Save</button>`;
 }
-overlay.classList.add('show');
+overlay.classList.add('show');navPush('modal');
 setTimeout(()=>{
 document.getElementById('closeModal').addEventListener('click',closeModal);
 
@@ -1304,7 +1317,7 @@ document.getElementById('saveMember').addEventListener('click',()=>saveMember(da
 },50);
 }
 
-function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show');if(navStack[navStack.length-1]==='modal'){navPop();history.back()}}
 
 
 
@@ -1402,11 +1415,11 @@ content.innerHTML=`${detailBadBday?'<div style="background:rgba(255,171,0,0.15);
 <div class="card" style="text-align:center"><div id="memberQRCode" style="margin-top:8px;background:#fff;padding:12px;border-radius:8px;display:inline-block"></div></div>
 </div>
 <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap"><button class="btn btn-primary" style="flex:1" id="editMemberBtn">Edit</button><button class="btn btn-outline" style="flex:1" id="showQRBtn">Show QR</button><button class="btn btn-outline" style="flex:1" id="resendQRBtn">Resend QR</button><button class="btn btn-danger" style="flex:1" id="deleteMemberBtn">Delete</button></div>`;
-panel.classList.add('open');
+panel.classList.add('open');navPush('detail');
 setTimeout(()=>{
 if(typeof QRCode!=='undefined')new QRCode(document.getElementById('memberQRCode'),{text:member.id,width:120,height:120});
 document.getElementById('editMemberBtn').addEventListener('click',()=>{panel.classList.remove('open');showModal('member',member)});
-document.getElementById('showQRBtn').addEventListener('click',()=>{const overlay=document.getElementById('qrOverlay');overlay.innerHTML='<div class="result" style="background:var(--card);padding:32px;border-radius:16px;text-align:center"><h3 style="margin-bottom:16px">'+member.name+'</h3><div id="qrPopupDisplay"></div><button class="btn btn-outline" style="margin-top:16px" onclick="document.getElementById(\'qrOverlay\').classList.remove(\'show\')">Close</button></div>';overlay.classList.add('show');setTimeout(()=>{new QRCode(document.getElementById('qrPopupDisplay'),{text:member.id,width:200,height:200,colorDark:'#ffffff',colorLight:'#1a1a2e'})},50)});
+document.getElementById('showQRBtn').addEventListener('click',()=>{const overlay=document.getElementById('qrOverlay');overlay.innerHTML='<div class="result" style="background:var(--card);padding:32px;border-radius:16px;text-align:center"><h3 style="margin-bottom:16px">'+member.name+'</h3><div id="qrPopupDisplay"></div><button class="btn btn-outline" style="margin-top:16px" onclick="document.getElementById(\'qrOverlay\').classList.remove(\'show\');if(navStack[navStack.length-1]===\'qrOverlay\'){navPop();history.back()}">Close</button></div>';overlay.classList.add('show');navPush('qrOverlay');setTimeout(()=>{new QRCode(document.getElementById('qrPopupDisplay'),{text:member.id,width:200,height:200,colorDark:'#ffffff',colorLight:'#1a1a2e'})},50)});
 document.getElementById('resendQRBtn').addEventListener('click',async()=>{const url=await getSetting('scriptUrl');if(!url){showToast('No sync URL configured','warning');return}try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'resendQR',memberId:member.id,memberName:member.name,phone:member.phone})));showToast('QR resent to '+member.name)}catch(e){showToast('Failed to resend QR','error')}});
 document.getElementById('deleteMemberBtn').addEventListener('click',()=>{
 const overlay=document.getElementById('modalOverlay');const content=document.getElementById('modalContent');
@@ -1415,7 +1428,7 @@ content.innerHTML=`<div class="modal-header"><h3>Delete Member</h3><button class
 <div class="input-group"><input type="text" id="deleteConfirmInput" placeholder=" " autocomplete="off"><label>${member.name}</label></div>
 <p style="font-size:12px;color:var(--error);margin:8px 0">This action cannot be undone.</p>
 <button class="btn btn-danger" style="width:100%;margin-top:8px;opacity:0.5;pointer-events:none" id="confirmDeleteBtn">Delete Member</button>`;
-overlay.classList.add('show');
+overlay.classList.add('show');navPush('modal');
 setTimeout(()=>{
 document.getElementById('closeModal').addEventListener('click',closeModal);
 const input=document.getElementById('deleteConfirmInput');
@@ -1435,7 +1448,7 @@ closeModal();panel.classList.remove('open');renderMemberList();updateCounter();s
 });
 },100);
 }
-document.getElementById('detailBack').addEventListener('click',()=>document.getElementById('detailPanel').classList.remove('open'));
+document.getElementById('detailBack').addEventListener('click',()=>{document.getElementById('detailPanel').classList.remove('open');if(navStack[navStack.length-1]==='detail'){navPop();history.back()}});
 
 async function renderReports(){
 await fetchAttendanceHistory();
@@ -2000,7 +2013,7 @@ ${outreachHTML}
 </div>
 <div class="input-group" style="margin-top:8px"><input type="email" id="rptEmail" placeholder=" " value="${email||''}"><label>Send to Email</label></div>
 <button class="btn btn-primary" style="width:100%;margin-top:6px;padding:12px;font-size:13px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px" id="sendReportBtn">Send Now</button>`;
-overlay.classList.add('show');
+overlay.classList.add('show');navPush('modal');
 setTimeout(()=>{
 document.getElementById('closeModal').addEventListener('click',closeModal);
 document.getElementById('rptChildren').addEventListener('input',async(e)=>{
