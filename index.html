@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#0f0e17">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -620,6 +620,9 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT'&&e.target.tagName!=='TEXTAREA')e.preventDefault()});
+document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
+document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('gesturechange',e=>e.preventDefault());
 const DB_NAME='jilgm_attendance';const DB_VERSION=1;let db;
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 function localDateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
@@ -1505,8 +1508,7 @@ function dismissUnclassified(id){const list=getDismissedUnclassified();if(!list.
 
 function renderUnclassified(){
 const section=document.getElementById('adminUnclassified');
-if(!section)return;
-section.style.display='block';
+if(!section||section.style.display==='none')return;
 const list=document.getElementById('unclassifiedList');
 const dismissed=getDismissedUnclassified();
 const noBirthday=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&getAgeGroup(m)==='Unknown'&&!dismissed.includes(m.id));
@@ -1801,6 +1803,7 @@ const access=typeof accessData==='object'?accessData.status:accessData;
 if(typeof accessData==='object'&&accessData.role==='admin'){
 await setSetting('isAdmin','true');
 document.getElementById('adminSection').style.display='block';
+document.getElementById('adminUnclassified').style.display='block';
 document.getElementById('adminSection2').style.display='block';
 loadPendingDevices();
 }
@@ -1959,6 +1962,7 @@ const outreachTotal=Object.values(outreachGroups).reduce((a,b)=>a+b,0);
 const unclassified=stoTomasMembers.filter(m=>{const isFirst=m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1;if(isFirst)return false;const g=getAgeGroup(m);return g==='Unknown'||counts[g]===undefined}).length;
 const grandTotal=adultTotal+childNum+outreachTotal+newCount+unclassified;
 const outreachHTML=Object.entries(outreachGroups).map(([name,count])=>`<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--accent2)">${name} Outreach</div><div style="font-size:16px;font-weight:700">${count}</div></div>`).join('');
+const email=await getSetting('reportEmail')||'';
 const overlay=document.getElementById('modalOverlay');const content=document.getElementById('modalContent');
 content.innerHTML=`<div class="modal-header"><h3>Send Report</h3><button class="modal-close" id="closeModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
 <div style="margin-bottom:12px"><label style="font-size:12px;color:var(--text-secondary)">Date</label><div style="font-size:16px;font-weight:600">${formatDate(todayStr)}</div></div>
