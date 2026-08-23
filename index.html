@@ -126,8 +126,9 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 .stat-card{background:rgba(26,26,46,0.4);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(108,99,255,0.12);border-radius:var(--radius);padding:12px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
 .stat-card .value{font-size:22px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .stat-card .label{font-size:11px;color:var(--text-secondary);margin-top:4px}
-.chart{margin-bottom:24px}
-.chart-title{font-size:14px;font-weight:600;margin-bottom:12px}
+.chart{margin-bottom:24px;background:rgba(26,26,46,0.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(108,99,255,0.08);border-radius:var(--radius);padding:16px}
+.chart-title{font-size:14px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.chart-title::before{content:'';width:3px;height:16px;border-radius:2px;background:linear-gradient(180deg,var(--accent),var(--accent2))}
 .chart-bars{display:flex;align-items:flex-end;gap:8px;height:300px;padding:0 4px}
 .chart-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
 .chart-bar .bar{width:100%;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,var(--accent),var(--accent2));transition:height 1s cubic-bezier(0.4,0,0.2,1);min-height:2px}
@@ -204,7 +205,8 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 .install-banner.show{display:flex}
 .skeleton{background:linear-gradient(90deg,var(--card) 25%,rgba(255,255,255,0.05) 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
 @keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
-.follow-up-card{background:var(--card);border:1px solid rgba(255,171,0,0.2);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.follow-up-card{background:rgba(255,171,0,0.05);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,171,0,0.15);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:transform 0.2s}
+.follow-up-card:active{transform:scale(0.98)}
 .follow-up-card .info .name{font-weight:600;font-size:14px}
 .follow-up-card .info .sub{font-size:12px;color:var(--warning)}
 #qr-reader{width:100%;overflow:hidden}
@@ -457,7 +459,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <input type="number" id="childrenInput" placeholder="0" min="0" style="width:70px;padding:8px 12px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;font-size:16px;text-align:center">
 <button class="btn btn-outline" style="padding:6px 14px;font-size:12px" id="saveChildrenBtn">Save</button>
 </div>
-<div style="margin-bottom:24px">
+<div class="chart">
 <div class="chart-title">Ministry Breakdown</div>
 <div id="ministryBreakdown"></div>
 </div>
@@ -465,7 +467,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <div class="chart-title">Weekly Attendance</div>
 <div class="chart-bars" id="chartBars"></div>
 </div>
-<div>
+<div class="chart" style="border-color:rgba(255,171,0,0.12)">
 <div class="chart-title" style="color:var(--warning)">Needs Follow-Up</div>
 <div id="followUpList"></div>
 </div>
