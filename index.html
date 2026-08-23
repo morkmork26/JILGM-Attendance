@@ -1961,7 +1961,7 @@ splashProgress(60);
 startQR();
 allMembers=await dbGet('members');await loadTodayAttendance();
 splashProgress(75);
-await checkInactiveMembers();
+checkInactiveMembers();
 allMembers=await dbGet('members');
 splashProgress(85);
 const ministries=await getMinistries();populateMinistryDropdowns(ministries);
