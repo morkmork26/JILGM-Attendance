@@ -1148,6 +1148,7 @@ return result;
 }
 
 async function checkInactiveMembers(){
+await fetchAttendanceHistory();
 const allAtt=await dbGet('attendance');
 const uniqueDates=new Set(allAtt.map(a=>a.date));
 if(uniqueDates.size<4)return;
@@ -1157,12 +1158,18 @@ for(let i=0;i<8;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()==
 const firstSundays=getFirstSundays(8);
 const sixMonthsAgo=new Date(d);sixMonthsAgo.setMonth(sixMonthsAgo.getMonth()-6);
 for(const member of allMembers){
-if((member.status||'').toLowerCase()==='inactive')continue;
 const memberAtt=allAtt.filter(a=>a.memberId===member.id);
-if(memberAtt.length===0)continue;
-if(member.outreach==='Naujan'||member.outreach==='Socorro'){
+if(member.outreach==='Naujan'||member.outreach==='Socorro')continue;
+if((member.status||'').toLowerCase()==='inactive'){
+if(member.outreach==='Tanauan'){
+if(memberAtt.filter(a=>firstSundays.includes(a.date)).length>0){member.status='Active';await dbPut('members',member)}
+}else{
+if(memberAtt.filter(a=>sundays.includes(a.date)).length>0){member.status='Active';await dbPut('members',member)}
+}
 continue;
-}else if(member.outreach==='Tanauan'){
+}
+if(memberAtt.length===0)continue;
+if(member.outreach==='Tanauan'){
 const attended=memberAtt.filter(a=>firstSundays.includes(a.date));
 if(attended.length===0)member.status='inactive';
 }else{
