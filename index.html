@@ -429,7 +429,8 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 </div>
 
 <div class="tab-content" id="tabMembers">
-<div class="input-group" style="margin-bottom:12px">
+<div style="position:sticky;top:0;z-index:10;background:var(--bg);padding-bottom:8px">
+<div class="input-group" style="margin-bottom:8px">
 <input type="text" id="memberSearch" placeholder=" " autocomplete="off">
 <label>Search members...</label>
 </div>
@@ -439,10 +440,13 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <div class="toggle-pill" data-filter="active">Active</div>
 <div class="toggle-pill" data-filter="inactive">Inactive</div>
 </div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
 <select id="memberMinistryFilter"><option value="">All Ministries</option></select>
 <select id="memberOutreachFilter"><option value="">All Outreaches</option><option>Sto. Tomas</option><option>Tanauan</option><option>Naujan</option><option>Socorro</option></select>
 </div>
+</div>
 <div class="filter-count" id="memberCount">0 members</div>
+</div>
 <div class="member-list" id="memberList"></div>
 </div>
 
