@@ -1511,7 +1511,7 @@ const section=document.getElementById('adminUnclassified');
 if(!section||section.style.display==='none')return;
 const list=document.getElementById('unclassifiedList');
 const dismissed=getDismissedUnclassified();
-const noBirthday=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&getAgeGroup(m)==='Unknown'&&!dismissed.includes(m.id));
+const noBirthday=allMembers.filter(m=>{if(!(m.status==='active'||m.status==='Active')||dismissed.includes(m.id))return false;if(getAgeGroup(m)==='Unknown')return true;const age=getAge(m.birthday);return age!==null&&(age<1||age>120)});
 const noEmail=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&!m.email&&!dismissed.includes(m.id));
 if(!noBirthday.length&&!noEmail.length){list.innerHTML='<p style="font-size:13px;color:var(--success);text-align:center;padding:12px">All members are complete!</p>';return}
 let html='';
