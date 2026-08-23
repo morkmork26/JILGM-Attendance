@@ -891,27 +891,9 @@ resolve({type:'first',count:1});
 
 let currentTab='tabCheckin';let currentMode='qr';let qrScanner=null;let allMembers=[];let todayAttendance=[];
 
-function switchTab(tabId,direction){
-const tabs=['tabCheckin','tabMembers','tabReports','tabSettings'];
-const oldIdx=tabs.indexOf(currentTab);
-const newIdx=tabs.indexOf(tabId);
-const dir=direction||(newIdx>oldIdx?'left':'right');
-const outgoing=document.getElementById(currentTab);
-const incoming=document.getElementById(tabId);
-document.querySelectorAll('.tab-content').forEach(t=>{if(t!==outgoing&&t!==incoming)t.classList.remove('active')});
-incoming.style.transition='none';
-incoming.style.transform=dir==='left'?'translateX(100%)':'translateX(-100%)';
-incoming.style.opacity='0';
-incoming.classList.add('active');
-requestAnimationFrame(()=>{
-outgoing.style.transition='transform 0.25s ease,opacity 0.25s ease';
-outgoing.style.transform=dir==='left'?'translateX(-30%)':'translateX(30%)';
-outgoing.style.opacity='0';
-incoming.style.transition='transform 0.25s ease,opacity 0.25s ease';
-incoming.style.transform='translateX(0)';
-incoming.style.opacity='1';
-setTimeout(()=>{outgoing.classList.remove('active');outgoing.style.transform='';outgoing.style.opacity='';outgoing.style.transition='';incoming.style.transition='';incoming.style.transform=''},260);
-});
+function switchTab(tabId){
+document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+document.getElementById(tabId).classList.add('active');
 document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
 document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
 currentTab=tabId;
@@ -943,24 +925,103 @@ document.querySelectorAll('.mode-pill').forEach(p=>p.addEventListener('click',()
 (function(){
 const modes=['qr','tap','search'];
 const tabs=['tabCheckin','tabMembers','tabReports','tabSettings'];
-function addSwipe(el,onLeft,onRight){
-let startX=0,startY=0;
-el.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;startY=e.touches[0].clientY},{passive:true});
-el.addEventListener('touchend',e=>{
-const dx=e.changedTouches[0].clientX-startX;
-const dy=e.changedTouches[0].clientY-startY;
-if(Math.abs(dx)<60||Math.abs(dy)>Math.abs(dx))return;
-if(dx<0&&onLeft)onLeft();
-else if(dx>0&&onRight)onRight();
-},{passive:true});
+const content=document.querySelector('.content');
+let startX=0,startY=0,dragging=false,locked=false,peekEl=null;
+
+function getNext(dir){
+const tIdx=tabs.indexOf(currentTab);
+if(currentTab==='tabCheckin'){
+const mIdx=modes.indexOf(currentMode);
+if(dir==='left'&&mIdx<modes.length-1)return{type:'mode',target:modes[mIdx+1]};
+if(dir==='left'&&mIdx===modes.length-1&&tIdx<tabs.length-1)return{type:'tab',target:tabs[tIdx+1]};
+if(dir==='right'&&mIdx>0)return{type:'mode',target:modes[mIdx-1]};
+}else{
+if(dir==='left'&&tIdx<tabs.length-1)return{type:'tab',target:tabs[tIdx+1]};
+if(dir==='right'&&tIdx>0)return{type:'tab',target:tabs[tIdx-1]};
 }
-addSwipe(document.getElementById('tabCheckin'),
-()=>{const idx=modes.indexOf(currentMode);if(idx<modes.length-1)switchMode(modes[idx+1]);else switchTab('tabMembers')},
-()=>{const idx=modes.indexOf(currentMode);if(idx>0)switchMode(modes[idx-1])}
-);
-addSwipe(document.getElementById('tabMembers'),()=>switchTab('tabReports'),()=>switchTab('tabCheckin'));
-addSwipe(document.getElementById('tabReports'),()=>switchTab('tabSettings'),()=>switchTab('tabMembers'));
-addSwipe(document.getElementById('tabSettings'),null,()=>switchTab('tabReports'));
+return null;
+}
+
+content.addEventListener('touchstart',e=>{
+startX=e.touches[0].clientX;startY=e.touches[0].clientY;dragging=false;locked=false;
+},{passive:true});
+
+content.addEventListener('touchmove',e=>{
+if(locked)return;
+const dx=e.touches[0].clientX-startX;
+const dy=e.touches[0].clientY-startY;
+if(!dragging){
+if(Math.abs(dy)>Math.abs(dx)){locked=true;return}
+if(Math.abs(dx)>15){dragging=true}
+else return;
+}
+e.preventDefault();
+const dir=dx<0?'left':'right';
+const next=getNext(dir);
+const activeEl=document.getElementById(currentTab);
+activeEl.style.transition='none';
+activeEl.style.transform=`translateX(${dx}px)`;
+activeEl.style.opacity=Math.max(0.4,1-Math.abs(dx)/content.offsetWidth);
+if(next&&next.type==='tab'){
+if(!peekEl||peekEl.id!==next.target){
+if(peekEl){peekEl.classList.remove('active');peekEl.style.transform='';peekEl.style.opacity=''}
+peekEl=document.getElementById(next.target);
+peekEl.classList.add('active');
+}
+peekEl.style.transition='none';
+const offset=dir==='left'?content.offsetWidth+dx:-content.offsetWidth+dx;
+peekEl.style.transform=`translateX(${offset}px)`;
+peekEl.style.opacity=Math.min(1,Math.abs(dx)/content.offsetWidth);
+}
+},{passive:false});
+
+content.addEventListener('touchend',e=>{
+if(!dragging){if(peekEl){peekEl.classList.remove('active');peekEl.style.transform='';peekEl.style.opacity='';peekEl=null}return}
+const dx=e.changedTouches[0].clientX-startX;
+const threshold=content.offsetWidth*0.25;
+const dir=dx<0?'left':'right';
+const next=getNext(dir);
+const activeEl=document.getElementById(currentTab);
+
+if(Math.abs(dx)>threshold&&next){
+activeEl.style.transition='transform 0.2s ease,opacity 0.2s ease';
+activeEl.style.transform=`translateX(${dx<0?'-100%':'100%'})`;
+activeEl.style.opacity='0';
+if(peekEl){
+peekEl.style.transition='transform 0.2s ease,opacity 0.2s ease';
+peekEl.style.transform='translateX(0)';
+peekEl.style.opacity='1';
+}
+setTimeout(()=>{
+activeEl.classList.remove('active');activeEl.style.transform='';activeEl.style.opacity='';activeEl.style.transition='';
+if(peekEl){peekEl.style.transition='';peekEl.style.transform='';peekEl=null}
+if(next.type==='mode'){switchMode(next.target)}
+else{
+document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+document.querySelector(`[data-tab="${next.target}"]`).classList.add('active');
+currentTab=next.target;
+const fab=document.getElementById('fab');fab.style.display=currentTab==='tabMembers'?'flex':'none';
+if(currentTab==='tabCheckin'&&currentMode==='tap')renderAvatarGrid();
+if(currentTab==='tabMembers')renderMemberList();
+if(currentTab==='tabReports')renderReports();
+if(currentTab==='tabSettings'){loadSettings();renderAdminCheckins();renderUnclassified()}
+if(currentTab!=='tabCheckin'){if(qrScanner){try{qrScanner.stop()}catch(e){}}if(earlyStream){earlyStream.getTracks().forEach(t=>t.stop());earlyStream=null}}
+if(currentTab==='tabCheckin'&&currentMode==='qr')setTimeout(()=>startQR(),100);
+}
+},210);
+}else{
+activeEl.style.transition='transform 0.2s ease,opacity 0.2s ease';
+activeEl.style.transform='translateX(0)';activeEl.style.opacity='1';
+if(peekEl){
+peekEl.style.transition='transform 0.2s ease,opacity 0.2s ease';
+peekEl.style.transform=`translateX(${dir==='left'?'100%':'-100%'})`;
+peekEl.style.opacity='0';
+setTimeout(()=>{peekEl.classList.remove('active');peekEl.style.transform='';peekEl.style.opacity='';peekEl.style.transition='';peekEl=null},210);
+}
+setTimeout(()=>{activeEl.style.transition='';activeEl.style.transform=''},210);
+}
+dragging=false;
+},{passive:true});
 })();
 
 let cameraFacing='environment';
@@ -1975,32 +2036,7 @@ if(json3.data.list){await setSetting('occasions',JSON.stringify(json3.data.list)
 }
 setInterval(autoSync,30000);
 
-// Pull-to-refresh
-(function(){
-const content=document.querySelector('.content');
-let startY=0,pulling=false,indicator=null;
-content.addEventListener('touchstart',e=>{if(content.scrollTop===0){startY=e.touches[0].clientY;pulling=true}},{passive:true});
-content.addEventListener('touchmove',e=>{
-if(!pulling)return;
-const dy=e.touches[0].clientY-startY;
-if(dy>0&&dy<120&&content.scrollTop===0){
-if(!indicator){indicator=document.createElement('div');indicator.style.cssText='text-align:center;padding:12px;font-size:12px;color:var(--accent);transition:opacity 0.2s';indicator.textContent='Pull to refresh...';content.prepend(indicator)}
-indicator.style.opacity=Math.min(dy/80,1);
-if(dy>80)indicator.textContent='Release to refresh';
-}
-},{passive:true});
-content.addEventListener('touchend',async e=>{
-if(!pulling)return;
-const dy=e.changedTouches[0].clientY-startY;
-pulling=false;
-if(dy>80&&content.scrollTop===0){
-if(indicator)indicator.textContent='Syncing...';
-await autoSync();
-showToast('Synced!','success');
-}
-if(indicator){indicator.remove();indicator=null}
-},{passive:true});
-})();
+
 
 // Auto-send report at 5PM on Sundays
 (function(){
