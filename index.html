@@ -1539,9 +1539,20 @@ const activeMembers=allMembers.filter(m=>m.status==='active'||m.status==='Active
 const todayIds=new Set(todayAttendance.map(a=>a.memberId));
 const ministryMap={};
 activeMembers.forEach(m=>{const key=m.ministry||'(unassigned)';if(!ministryMap[key])ministryMap[key]={total:0,present:0};ministryMap[key].total++;if(todayIds.has(m.id))ministryMap[key].present++});
+const ministryMembers={};
+activeMembers.forEach(m=>{const key=m.ministry||'(unassigned)';if(!ministryMembers[key])ministryMembers[key]=[];ministryMembers[key].push(m)});
 ministrySection.innerHTML=Object.entries(ministryMap).sort((a,b)=>b[1].total-a[1].total).map(([name,data])=>{
 const pct=data.total?Math.round((data.present/data.total)*100):0;
-return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${name}</span><span style="color:var(--text-secondary)">${data.present}/${data.total}</span></div><div style="height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width 0.6s"></div></div></div>`;
+const members=ministryMembers[name]||[];
+const present=members.filter(m=>todayIds.has(m.id));
+const absent=members.filter(m=>!todayIds.has(m.id));
+const memberHtml=`<div class="ministry-members" style="display:none;padding:8px 0 4px">`
++`<div style="font-size:11px;color:var(--success);margin-bottom:4px;font-weight:600">Checked In (${present.length})</div>`
++present.map(m=>`<div style="font-size:12px;padding:3px 8px;color:var(--text)">&#10003; ${m.name}</div>`).join('')
++(absent.length?`<div style="font-size:11px;color:var(--error);margin-top:6px;margin-bottom:4px;font-weight:600">Not Yet (${absent.length})</div>`
++absent.map(m=>`<div style="font-size:12px;padding:3px 8px;color:var(--text-secondary)">&bull; ${m.name}</div>`).join(''):'')
++`</div>`;
+return `<div style="margin-bottom:10px;cursor:pointer" onclick="const el=this.querySelector('.ministry-members');el.style.display=el.style.display==='none'?'block':'none'"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${name} <span style="font-size:10px;color:var(--text-secondary)">&#9660;</span></span><span style="color:var(--text-secondary)">${data.present}/${data.total}</span></div><div style="height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width 0.6s"></div></div>${memberHtml}</div>`;
 }).join('');
 }
 const absentMembers=allMembers.filter(m=>{
