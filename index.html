@@ -1364,6 +1364,7 @@ document.getElementById('memberOutreachFilter').addEventListener('change',render
 
 async function showDetail(id){
 const member=allMembers.find(m=>m.id===id);if(!member)return;
+await fetchAttendanceHistory();
 const panel=document.getElementById('detailPanel');const content=document.getElementById('detailContent');
 const allAtt=await dbGet('attendance');const memberAtt=allAtt.filter(a=>a.memberId===id);
 const age=getAge(member.birthday);
@@ -1423,6 +1424,7 @@ closeModal();panel.classList.remove('open');renderMemberList();updateCounter();s
 document.getElementById('detailBack').addEventListener('click',()=>document.getElementById('detailPanel').classList.remove('open'));
 
 async function renderReports(){
+await fetchAttendanceHistory();
 const allAtt=await dbGet('attendance');const todayCount=allAtt.filter(a=>a.date===today()).length;
 document.getElementById('statToday').textContent=todayCount;
 document.getElementById('statMembers').textContent=allMembers.filter(m=>m.status==='active'||m.status==='Active').length;
@@ -1802,6 +1804,7 @@ renderAvatarGrid();
 splashProgress(95);
 checkBirthdaysToday();
 await initExtras();
+fetchAttendanceHistory();
 splashProgress(100);
 hideSplash();
 }catch(e){hideSplash();document.body.innerHTML='<div style="padding:40px;text-align:center;color:#ff5252"><h3>App Error</h3><p style="margin-top:12px;color:#8b8b9e;font-size:14px">'+e.message+'</p><button onclick="location.reload()" style="margin-top:20px;padding:12px 24px;background:#6c63ff;color:#fff;border:none;border-radius:12px;font-size:14px">Retry</button></div>'}
@@ -1867,6 +1870,27 @@ if(json3.data.list){await setSetting('occasions',JSON.stringify(json3.data.list)
 }}catch(e){}
 }
 setInterval(autoSync,30000);
+
+let historyFetched=false;
+async function fetchAttendanceHistory(){
+if(historyFetched)return;
+const url=await getSetting('scriptUrl');if(!url)return;
+try{
+const r=await fetch(url+'?action=getAttendanceHistory&weeks=10');
+const json=await r.json();
+if(json.success&&json.data){
+const allLocal=await dbGet('attendance');
+const localDates=new Set(allLocal.map(a=>a.memberId+'_'+a.date));
+for(const rec of json.data){
+const key=rec.memberId+'_'+rec.date;
+if(rec.date===today())continue;
+if(localDates.has(key))continue;
+await dbPut('attendance',{memberId:rec.memberId,memberName:rec.memberName,date:rec.date,timestamp:rec.timestamp||Date.now(),checkedInBy:rec.checkedInBy||'sync',occasion:rec.occasion||''});
+}
+historyFetched=true;
+}
+}catch(e){console.log('History fetch failed',e)}
+}
 
 document.getElementById('generateReportBtn').addEventListener('click',async()=>{
 const todayStr=today();

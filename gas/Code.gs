@@ -118,6 +118,11 @@ function doGet(e) {
         return respond(getSummary(month));
       }
 
+      case "getAttendanceHistory": {
+        const weeks = parseInt(e.parameter.weeks || "10", 10);
+        return respond(getAttendanceHistory(weeks));
+      }
+
       case "getMemberQR": {
         const memberId = e.parameter.memberId || "";
         if (!memberId) return respondError("memberId is required");
@@ -283,6 +288,29 @@ function getAttendance(date) {
   const sheet    = getSheet(SHEET_ATTENDANCE);
   const rows     = getDataRows(sheet);
   const filtered = rows.filter(row => normDate(row[COL_ATT.DATE]) === date);
+
+  const records = filtered.map(row => rowToAttendance(row));
+  return { success: true, data: records };
+}
+
+
+/**
+ * Returns attendance records for the last N weeks (Sundays).
+ * @param {number} weeks - Number of weeks to look back
+ * @returns {Object} { success: true, data: [ attendanceObject, ... ] }
+ */
+function getAttendanceHistory(weeks) {
+  const sheet = getSheet(SHEET_ATTENDANCE);
+  const rows = getDataRows(sheet);
+  const now = new Date();
+  const cutoff = new Date(now);
+  cutoff.setDate(now.getDate() - (weeks * 7));
+  const cutoffStr = Utilities.formatDate(cutoff, Session.getScriptTimeZone(), "yyyy-MM-dd");
+
+  const filtered = rows.filter(row => {
+    const d = normDate(row[COL_ATT.DATE]);
+    return d >= cutoffStr;
+  });
 
   const records = filtered.map(row => rowToAttendance(row));
   return { success: true, data: records };
