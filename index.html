@@ -1591,7 +1591,7 @@ else throw new Error('success=false')}
 catch(e){status.textContent='Failed: '+e.message;status.style.color='var(--error)'}
 });
 
-document.getElementById('reportEmail').addEventListener('change',async(e)=>{await setSetting('reportEmail',e.target.value.trim())});
+document.getElementById('reportEmail').addEventListener('change',async(e)=>{const val=e.target.value.trim();await setSetting('reportEmail',val);const url=await getSetting('scriptUrl');if(url)fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'saveSetting',key:'reportEmail',value:val}))).catch(()=>{})});
 document.getElementById('defaultOutreach').addEventListener('change',async(e)=>{await setSetting('defaultOutreach',e.target.value.trim())});
 
 document.getElementById('syncNowBtn').addEventListener('click',async()=>{
