@@ -1,4 +1,4 @@
-const CACHE='jilgm-v55';
+const CACHE='jilgm-v56';
 const CORE_ASSETS=['./','/index.html','./logo.jpg','./icon-192.png','./icon-512.png'];
 const CDN_ASSETS=['https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js','https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js'];
 self.addEventListener('install',e=>{
