@@ -659,7 +659,7 @@ showToast('🎂 '+msg,'success',6000);
 }
 function getAgeGroup(member){
 const age=getAge(member.birthday);
-if(age===null)return 'Unknown';
+if(age===null||age<1||age>120)return 'Unknown';
 if(age<=12)return 'Children';
 if(age<=21)return 'Youth';
 const isParent=member.hasChildren==='Yes';
