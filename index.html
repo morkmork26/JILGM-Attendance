@@ -1341,7 +1341,7 @@ document.getElementById('searchInput').dispatchEvent(new Event('input'));
 function showModal(type,data=null){
 const overlay=document.getElementById('modalOverlay');const content=document.getElementById('modalContent');
 if(type==='member'){
-const classes=['Class 101','Class 102','Class 201','Class 301','Class 401','SOP 1','SOP 2','SOW','PCS'];
+const classes=['Class 101','Class 201','Class 301','Class 401','SOP 1','SOP 2','SOW','PCS'];
 const memberClasses=data&&data.classes?data.classes:[];
 content.innerHTML=`<div class="modal-header"><h3>${data?'Edit Member':'Add Member'}</h3><button class="modal-close" id="closeModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
 <div class="input-group"><input type="text" id="memName" placeholder=" " value="${data?data.name:''}"><label>Full Name</label></div>
