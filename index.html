@@ -1257,7 +1257,7 @@ if(member.status==='inactive')await dbPut('members',member);
 }
 
 function updateCounter(){
-const total=allMembers.length;const checked=todayAttendance.length;
+const total=allMembers.length;const checked=new Set(todayAttendance.map(a=>a.memberId)).size;
 document.getElementById('counterBadge').textContent=`${checked}/${total}`;
 updateDesktopWelcome();
 }
@@ -2024,7 +2024,7 @@ const email=await getSetting('reportEmail');
 if(!url||!email)return;
 const allAtt=await dbGet('attendance');
 const todayStr=today();
-const checkedIn=todayAttendance.map(a=>allMembers.find(m=>m.id===a.memberId)).filter(Boolean);
+const seen=new Set();const checkedIn=todayAttendance.map(a=>allMembers.find(m=>m.id===a.memberId)).filter(m=>{if(!m||seen.has(m.id))return false;seen.add(m.id);return true});
 const stoTomasMembers=checkedIn.filter(m=>!m.outreach||m.outreach==='Sto. Tomas');
 const outreachGroups={};
 checkedIn.filter(m=>m.outreach&&m.outreach!=='Sto. Tomas').forEach(m=>{if(!outreachGroups[m.outreach])outreachGroups[m.outreach]=0;outreachGroups[m.outreach]++});
@@ -2080,7 +2080,7 @@ historyFetched=true;
 document.getElementById('generateReportBtn').addEventListener('click',async()=>{
 const todayStr=today();
 const allAtt=await dbGet('attendance');
-const checkedIn=todayAttendance.map(a=>allMembers.find(m=>m.id===a.memberId)).filter(Boolean);
+const seen2=new Set();const checkedIn=todayAttendance.map(a=>allMembers.find(m=>m.id===a.memberId)).filter(m=>{if(!m||seen2.has(m.id))return false;seen2.add(m.id);return true});
 const stoTomasMembers=checkedIn.filter(m=>!m.outreach||m.outreach==='Sto. Tomas');
 const outreachGroups={};
 checkedIn.filter(m=>m.outreach&&m.outreach!=='Sto. Tomas').forEach(m=>{
