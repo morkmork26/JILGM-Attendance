@@ -1483,6 +1483,13 @@ return `<div style="margin-bottom:10px"><div style="display:flex;justify-content
 }
 const absentMembers=allMembers.filter(m=>{
 if(m.status!=='active'&&m.status!=='Active')return false;
+if(m.outreach==='Naujan'||m.outreach==='Socorro')return false;
+if(m.outreach==='Tanauan'){
+const twoMonthsAgo=new Date(d);twoMonthsAgo.setMonth(d.getMonth()-2);
+const cutoff=localDateStr(twoMonthsAgo);
+const hasRecent=allAtt.find(a=>a.memberId===m.id&&a.date>=cutoff);
+return !hasRecent;
+}
 let consecutive=0;
 for(let i=0;i<3;i++){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);const ds=localDateStr(sun);
 if(!allAtt.find(a=>a.memberId===m.id&&a.date===ds))consecutive++;else break}
