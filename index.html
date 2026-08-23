@@ -1602,9 +1602,15 @@ if(!section||section.style.display==='none')return;
 const list=document.getElementById('unclassifiedList');
 const dismissed=getDismissedUnclassified();
 const noBirthday=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&getAgeGroup(m)==='Unknown'&&!dismissed.includes(m.id));
-const todayMD=today().slice(5);
-const newPlaceholders=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&m.birthday&&m.birthday.slice(5)===todayMD).map(m=>m.id);
-if(newPlaceholders.length>8){const stored=JSON.parse(localStorage.getItem('jilgm_needs_bday_fix')||'[]');const merged=[...new Set([...stored,...newPlaceholders])];localStorage.setItem('jilgm_needs_bday_fix',JSON.stringify(merged))}
+const fourHoursAgo=Date.now()-(4*60*60*1000);
+const newPlaceholders=allMembers.filter(m=>{
+if(!(m.status==='active'||m.status==='Active'))return false;
+if(!m.birthday||m.birthday.slice(5)!=='08-23')return false;
+if(!m.dateRegistered)return false;
+const regTime=new Date(m.dateRegistered+'T00:00:00').getTime();
+return regTime>=fourHoursAgo-(24*60*60*1000);
+}).map(m=>m.id);
+if(newPlaceholders.length>0){const stored=JSON.parse(localStorage.getItem('jilgm_needs_bday_fix')||'[]');const merged=[...new Set([...stored,...newPlaceholders])];localStorage.setItem('jilgm_needs_bday_fix',JSON.stringify(merged))}
 const needsFixIds=JSON.parse(localStorage.getItem('jilgm_needs_bday_fix')||'[]');
 const placeholderBday=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&needsFixIds.includes(m.id)&&!dismissed.includes(m.id));
 const noEmail=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&!m.email&&!dismissed.includes(m.id));
