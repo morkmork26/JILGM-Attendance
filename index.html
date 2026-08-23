@@ -1429,7 +1429,7 @@ document.getElementById('detailBack').addEventListener('click',()=>document.getE
 
 async function renderReports(){
 await fetchAttendanceHistory();
-const allAtt=await dbGet('attendance');const todayCount=allAtt.filter(a=>a.date===today()).length;
+const allAtt=await dbGet('attendance');const todayCount=new Set(allAtt.filter(a=>a.date===today()).map(a=>a.memberId)).size;
 document.getElementById('statToday').textContent=todayCount;
 document.getElementById('statMembers').textContent=allMembers.filter(m=>m.status==='active'||m.status==='Active').length;
 const childrenCount=await getSetting('children_'+today());
@@ -1439,7 +1439,7 @@ const thisMonth=today().slice(0,7);const visitors=allMembers.filter(m=>m.dateReg
 document.getElementById('statVisitors').textContent=visitors.length;
 const sundays=[];const d=new Date();
 for(let i=7;i>=0;i--){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);sundays.push(localDateStr(sun))}
-const weeklyCounts=sundays.map(s=>allAtt.filter(a=>a.date===s).length);
+const weeklyCounts=sundays.map(s=>new Set(allAtt.filter(a=>a.date===s).map(a=>a.memberId)).size);
 const max=Math.max(...weeklyCounts,1);
 const avg=weeklyCounts.length?Math.round(weeklyCounts.reduce((a,b)=>a+b,0)/weeklyCounts.length):0;
 document.getElementById('statAvg').textContent=avg;
