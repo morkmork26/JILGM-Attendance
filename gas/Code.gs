@@ -97,6 +97,7 @@ function doGet(e) {
         case "registerDevice": return respond(registerDevice(body));
         case "removeCheckIn": return respond(removeCheckIn(body));
         case "deleteMember": return respond(deleteMember(body));
+        case "saveSetting": return respond(saveSharedSetting(body));
         default: return respondError("Unknown data action: " + dataAction, 400);
       }
     }
@@ -122,6 +123,9 @@ function doGet(e) {
         const weeks = parseInt(e.parameter.weeks || "10", 10);
         return respond(getAttendanceHistory(weeks));
       }
+
+      case "getSharedSettings":
+        return respond(getSharedSettings());
 
       case "getMemberQR": {
         const memberId = e.parameter.memberId || "";
@@ -314,6 +318,39 @@ function getAttendanceHistory(weeks) {
 
   const records = filtered.map(row => rowToAttendance(row));
   return { success: true, data: records };
+}
+
+
+/**
+ * Saves a shared setting to a Settings sheet (key-value store).
+ */
+function saveSharedSetting(body) {
+  const key = body.key;
+  const value = body.value;
+  if (!key) return { success: false, error: "key is required" };
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName("Settings");
+  if (!sheet) { sheet = ss.insertSheet("Settings"); sheet.appendRow(["key", "value"]); }
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === key) { sheet.getRange(i + 1, 2).setValue(value); return { success: true }; }
+  }
+  sheet.appendRow([key, value]);
+  return { success: true };
+}
+
+
+/**
+ * Returns all shared settings as key-value pairs.
+ */
+function getSharedSettings() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Settings");
+  if (!sheet) return { success: true, data: {} };
+  const data = sheet.getDataRange().getValues();
+  const settings = {};
+  for (let i = 1; i < data.length; i++) { if (data[i][0]) settings[data[i][0]] = data[i][1]; }
+  return { success: true, data: settings };
 }
 
 

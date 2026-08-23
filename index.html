@@ -1805,6 +1805,7 @@ splashProgress(95);
 checkBirthdaysToday();
 await initExtras();
 fetchAttendanceHistory();
+fetchSharedSettings();
 splashProgress(100);
 hideSplash();
 }catch(e){hideSplash();document.body.innerHTML='<div style="padding:40px;text-align:center;color:#ff5252"><h3>App Error</h3><p style="margin-top:12px;color:#8b8b9e;font-size:14px">'+e.message+'</p><button onclick="location.reload()" style="margin-top:20px;padding:12px 24px;background:#6c63ff;color:#fff;border:none;border-radius:12px;font-size:14px">Retry</button></div>'}
@@ -1871,6 +1872,19 @@ if(json3.data.list){await setSetting('occasions',JSON.stringify(json3.data.list)
 }
 setInterval(autoSync,30000);
 
+async function fetchSharedSettings(){
+const url=await getSetting('scriptUrl');if(!url)return;
+try{
+const r=await fetch(url+'?action=getSharedSettings');
+const json=await r.json();
+if(json.success&&json.data){
+for(const[k,v]of Object.entries(json.data)){await setSetting(k,v)}
+const emailEl=document.getElementById('reportEmail');
+if(json.data.reportEmail&&emailEl)emailEl.value=json.data.reportEmail;
+}
+}catch(e){}
+}
+
 let historyFetched=false;
 async function fetchAttendanceHistory(){
 if(historyFetched)return;
@@ -1933,7 +1947,7 @@ ${outreachHTML}
 <div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px;text-align:center"><div style="font-size:9px;color:var(--success)">New (First Time)</div><div style="font-size:16px;font-weight:700;color:var(--success)">${newCount}</div></div>
 <div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px;text-align:center"><div style="font-size:9px;color:var(--text-secondary)">Others</div><input type="text" id="rptOthers" placeholder="Notes..." style="width:100%;text-align:center;font-size:12px;margin-top:2px;padding:3px;background:transparent;border-bottom:1px solid var(--card-border)"></div>
 </div>
-<p style="font-size:10px;color:var(--text-secondary);margin:4px 0;text-align:center">Report will be emailed to configured Report Email.</p>
+<div class="input-group" style="margin-top:8px"><input type="email" id="rptEmail" placeholder=" " value="${email||''}"><label>Send to Email</label></div>
 <button class="btn btn-primary" style="width:100%;margin-top:6px;padding:12px;font-size:13px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px" id="sendReportBtn">Send Now</button>`;
 overlay.classList.add('show');
 setTimeout(()=>{
@@ -1945,8 +1959,11 @@ document.getElementById('statChildren').textContent=c||'-';
 document.getElementById('childrenInput').value=c;
 });
 document.getElementById('sendReportBtn').addEventListener('click',async()=>{
-const url=await getSetting('scriptUrl');const email=await getSetting('reportEmail');
-if(!url||!email){showToast('Configure Script URL and Report Email in Settings first','error');return}
+const url=await getSetting('scriptUrl');
+const email=(document.getElementById('rptEmail').value||'').trim();
+if(!url||!email){showToast('Enter a valid email and configure Script URL','error');return}
+await setSetting('reportEmail',email);
+fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'saveSetting',key:'reportEmail',value:email}))).catch(()=>{});
 const updatedChildren=parseInt(document.getElementById('rptChildren').value)||0;
 const updatedTotal=adultTotal+updatedChildren+outreachTotal+newCount+unclassified;
 const report={action:'sendReport',date:todayStr,occasion:currentOccasion,outreach:document.getElementById('rptOutreach').value,youth:counts.Youth,ypro:counts.YPro,mothers:counts.Mothers,fathers:counts.Fathers,children:updatedChildren,newCount:newCount,outreachGroups:outreachGroups,others:document.getElementById('rptOthers').value,email:email,grandTotal:updatedTotal};
