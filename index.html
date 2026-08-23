@@ -62,7 +62,8 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 16px;position:relative;transition:all 0.2s}
 .nav-item svg{width:22px;height:22px;stroke:var(--text-secondary);fill:none;stroke-width:1.8;transition:all 0.2s}
 .nav-item span{font-size:10px;color:var(--text-secondary);font-weight:500;transition:color 0.2s}
-.nav-item.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:32px;height:3px;border-radius:0 0 3px 3px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.nav-item.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:32px;height:3px;border-radius:0 0 3px 3px;background:linear-gradient(90deg,var(--accent),var(--accent2));animation:navSlideIn 0.25s ease}
+@keyframes navSlideIn{from{opacity:0;width:0}to{opacity:1;width:32px}}
 .nav-item.active svg{stroke:var(--accent);filter:drop-shadow(0 0 6px rgba(108,99,255,0.4))}
 .nav-item.active span{color:var(--text)}
 .mode-pills{display:flex;background:var(--card);border-radius:12px;padding:4px;margin-bottom:16px;position:sticky;top:0;z-index:10;border:1px solid var(--card-border);flex-shrink:0;transition:transform 0.3s ease,opacity 0.3s ease}
@@ -891,9 +892,27 @@ resolve({type:'first',count:1});
 
 let currentTab='tabCheckin';let currentMode='qr';let qrScanner=null;let allMembers=[];let todayAttendance=[];
 
-function switchTab(tabId){
-document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-document.getElementById(tabId).classList.add('active');
+function switchTab(tabId,direction){
+const tabs=['tabCheckin','tabMembers','tabReports','tabSettings'];
+const oldIdx=tabs.indexOf(currentTab);
+const newIdx=tabs.indexOf(tabId);
+const dir=direction||(newIdx>oldIdx?'left':'right');
+const outgoing=document.getElementById(currentTab);
+const incoming=document.getElementById(tabId);
+document.querySelectorAll('.tab-content').forEach(t=>{if(t!==outgoing&&t!==incoming)t.classList.remove('active')});
+incoming.style.transition='none';
+incoming.style.transform=dir==='left'?'translateX(100%)':'translateX(-100%)';
+incoming.style.opacity='0';
+incoming.classList.add('active');
+requestAnimationFrame(()=>{
+outgoing.style.transition='transform 0.25s ease,opacity 0.25s ease';
+outgoing.style.transform=dir==='left'?'translateX(-30%)':'translateX(30%)';
+outgoing.style.opacity='0';
+incoming.style.transition='transform 0.25s ease,opacity 0.25s ease';
+incoming.style.transform='translateX(0)';
+incoming.style.opacity='1';
+setTimeout(()=>{outgoing.classList.remove('active');outgoing.style.transform='';outgoing.style.opacity='';outgoing.style.transition='';incoming.style.transition='';incoming.style.transform=''},260);
+});
 document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
 document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
 currentTab=tabId;
@@ -1956,6 +1975,65 @@ if(json3.data.list){await setSetting('occasions',JSON.stringify(json3.data.list)
 }}catch(e){}
 }
 setInterval(autoSync,30000);
+
+// Pull-to-refresh
+(function(){
+const content=document.querySelector('.content');
+let startY=0,pulling=false,indicator=null;
+content.addEventListener('touchstart',e=>{if(content.scrollTop===0){startY=e.touches[0].clientY;pulling=true}},{passive:true});
+content.addEventListener('touchmove',e=>{
+if(!pulling)return;
+const dy=e.touches[0].clientY-startY;
+if(dy>0&&dy<120&&content.scrollTop===0){
+if(!indicator){indicator=document.createElement('div');indicator.style.cssText='text-align:center;padding:12px;font-size:12px;color:var(--accent);transition:opacity 0.2s';indicator.textContent='Pull to refresh...';content.prepend(indicator)}
+indicator.style.opacity=Math.min(dy/80,1);
+if(dy>80)indicator.textContent='Release to refresh';
+}
+},{passive:true});
+content.addEventListener('touchend',async e=>{
+if(!pulling)return;
+const dy=e.changedTouches[0].clientY-startY;
+pulling=false;
+if(dy>80&&content.scrollTop===0){
+if(indicator)indicator.textContent='Syncing...';
+await autoSync();
+showToast('Synced!','success');
+}
+if(indicator){indicator.remove();indicator=null}
+},{passive:true});
+})();
+
+// Auto-send report at 5PM on Sundays
+(function(){
+let reportSentToday=false;
+setInterval(async()=>{
+if(reportSentToday)return;
+const now=new Date();
+if(now.getDay()!==0)return;
+if(now.getHours()!==17||now.getMinutes()>1)return;
+const url=await getSetting('scriptUrl');
+const email=await getSetting('reportEmail');
+if(!url||!email)return;
+const allAtt=await dbGet('attendance');
+const todayStr=today();
+const checkedIn=todayAttendance.map(a=>allMembers.find(m=>m.id===a.memberId)).filter(Boolean);
+const stoTomasMembers=checkedIn.filter(m=>!m.outreach||m.outreach==='Sto. Tomas');
+const outreachGroups={};
+checkedIn.filter(m=>m.outreach&&m.outreach!=='Sto. Tomas').forEach(m=>{if(!outreachGroups[m.outreach])outreachGroups[m.outreach]=0;outreachGroups[m.outreach]++});
+const counts={Youth:0,YPro:0,Mothers:0,Fathers:0};
+stoTomasMembers.forEach(m=>{const isFirst=m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1;if(!isFirst){const g=getAgeGroup(m);if(g!=='Unknown'&&counts[g]!==undefined)counts[g]++}});
+const childrenVal=await getSetting('children_'+todayStr);
+const newCount=stoTomasMembers.filter(m=>m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1).length;
+const outreach=(await getSetting('defaultOutreach'))||'';
+const adultTotal=counts.Youth+counts.YPro+counts.Mothers+counts.Fathers;
+const childNum=parseInt(childrenVal)||0;
+const outreachTotal=Object.values(outreachGroups).reduce((a,b)=>a+b,0);
+const unclassified=stoTomasMembers.filter(m=>{const isFirst=m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1;if(isFirst)return false;const g=getAgeGroup(m);return g==='Unknown'||counts[g]===undefined}).length;
+const grandTotal=adultTotal+childNum+outreachTotal+newCount+unclassified;
+const report={action:'sendReport',date:todayStr,occasion:currentOccasion,outreach,youth:counts.Youth,ypro:counts.YPro,mothers:counts.Mothers,fathers:counts.Fathers,children:childNum,newCount,outreachGroups,others:'(auto-sent at 5PM)',email,grandTotal};
+try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify(report)));reportSentToday=true;showToast('Report auto-sent!','success')}catch(e){}
+},30000);
+})();
 
 async function fetchSharedSettings(){
 const url=await getSetting('scriptUrl');if(!url)return;
