@@ -2028,7 +2028,7 @@ const outreach=(await getSetting('defaultOutreach'))||'';
 const adultTotal=counts.Youth+counts.YPro+counts.Mothers+counts.Fathers;
 const childNum=parseInt(childrenVal)||0;
 const outreachTotal=Object.values(outreachGroups).reduce((a,b)=>a+b,0);
-const unclassified=stoTomasMembers.filter(m=>{const isFirst=m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1;if(isFirst)return false;const g=getAgeGroup(m);return g==='Unknown'||counts[g]===undefined}).length;
+const unclassified=stoTomasMembers.filter(m=>{const isFirst=m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1;if(isFirst)return false;const g=getAgeGroup(m);return g==='Unknown'||(g!=='Children'&&counts[g]===undefined)}).length;
 const grandTotal=adultTotal+childNum+outreachTotal+newCount+unclassified;
 const report={action:'sendReport',date:todayStr,occasion:currentOccasion,outreach,youth:counts.Youth,ypro:counts.YPro,mothers:counts.Mothers,fathers:counts.Fathers,children:childNum,newCount,outreachGroups,others:'(auto-sent at 5PM)',email,grandTotal};
 try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify(report)));reportSentToday=true;showToast('Report auto-sent!','success')}catch(e){}
@@ -2090,7 +2090,7 @@ const outreach=(await getSetting('defaultOutreach'))||'';
 const adultTotal=counts.Youth+counts.YPro+counts.Mothers+counts.Fathers;
 const childNum=parseInt(childrenVal)||0;
 const outreachTotal=Object.values(outreachGroups).reduce((a,b)=>a+b,0);
-const unclassified=stoTomasMembers.filter(m=>{const isFirst=m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1;if(isFirst)return false;const g=getAgeGroup(m);return g==='Unknown'||counts[g]===undefined}).length;
+const unclassified=stoTomasMembers.filter(m=>{const isFirst=m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1;if(isFirst)return false;const g=getAgeGroup(m);return g==='Unknown'||(g!=='Children'&&counts[g]===undefined)}).length;
 const grandTotal=adultTotal+childNum+outreachTotal+newCount+unclassified;
 const outreachHTML=Object.entries(outreachGroups).map(([name,count])=>`<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--accent2)">${name} Outreach</div><div style="font-size:16px;font-weight:700">${count}</div></div>`).join('');
 const email=await getSetting('reportEmail')||'';
