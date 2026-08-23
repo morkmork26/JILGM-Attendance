@@ -1513,7 +1513,10 @@ const list=document.getElementById('unclassifiedList');
 const dismissed=getDismissedUnclassified();
 const noBirthday=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&getAgeGroup(m)==='Unknown'&&!dismissed.includes(m.id));
 const todayMD=today().slice(5);
-const placeholderBday=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&m.birthday&&m.birthday.slice(5)===todayMD&&!dismissed.includes(m.id));
+const newPlaceholders=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&m.birthday&&m.birthday.slice(5)===todayMD).map(m=>m.id);
+if(newPlaceholders.length>1){const stored=JSON.parse(localStorage.getItem('jilgm_needs_bday_fix')||'[]');const merged=[...new Set([...stored,...newPlaceholders])];localStorage.setItem('jilgm_needs_bday_fix',JSON.stringify(merged))}
+const needsFixIds=JSON.parse(localStorage.getItem('jilgm_needs_bday_fix')||'[]');
+const placeholderBday=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&needsFixIds.includes(m.id)&&!dismissed.includes(m.id));
 const noEmail=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&!m.email&&!dismissed.includes(m.id));
 if(!noBirthday.length&&!noEmail.length&&!placeholderBday.length){list.innerHTML='<p style="font-size:13px;color:var(--success);text-align:center;padding:12px">All members are complete!</p>';return}
 let html='';
