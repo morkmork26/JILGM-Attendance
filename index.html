@@ -575,7 +575,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 </div>
 <div class="settings-section">
 <h4>About</h4>
-<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.2.0</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
+<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.6.0</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
 
 </div>
 </div>
@@ -2053,8 +2053,23 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 });
 
 // === APP VERSION & CHANGELOG ===
-const APP_VERSION='1.5.0';
+const APP_VERSION='1.6.0';
 const CHANGELOG=[
+{version:'1.6.0',date:'August 23, 2026',changes:[
+{type:'New',text:'Weekly attendance chart now shows historical data'},
+{type:'New',text:'Per-member attendance dots (last 10 Sundays)'},
+{type:'New',text:'Shared settings across devices (report email, children count)'},
+{type:'New',text:'Unclassified members admin view (missing birthday, email, placeholders)'},
+{type:'New',text:'Back gesture navigation (Android swipe-back closes panels)'},
+{type:'New',text:'Glassmorphism UI refresh'},
+{type:'Fix',text:'Report total now matches checked-in count'},
+{type:'Fix',text:'Weekly chart no longer counts duplicates per member'},
+{type:'Fix',text:'Follow-up list status check (Active vs active)'},
+{type:'Fix',text:'False inactive member flagging due to missing history'},
+{type:'Improve',text:'Pinch-to-zoom disabled on mobile'},
+{type:'Improve',text:'Follow-up criteria: 4 Sundays (Sto. Tomas), 2 months (Tanauan)'},
+{type:'Improve',text:'Chart height increased for better visual differentiation'},
+]},
 {version:'1.5.0',date:'August 17, 2026',changes:[
 {type:'New',text:'Camera picker: select from all available cameras (phone, laptop, USB)'},
 {type:'New',text:'Laptop scanning mode: bigger camera, centered layout, welcome text'},
