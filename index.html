@@ -584,7 +584,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 </div>
 <div class="settings-section">
 <h4>About</h4>
-<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.6.0</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
+<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.7.0</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
 
 </div>
 </div>
@@ -2162,8 +2162,17 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 });
 
 // === APP VERSION & CHANGELOG ===
-const APP_VERSION='1.6.0';
+const APP_VERSION='1.7.0';
 const CHANGELOG=[
+{version:'1.7.0',date:'August 23, 2026',changes:[
+{type:'New',text:'Ministry breakdown is now collapsible (tap to see checked-in and absent members)'},
+{type:'Improve',text:'Swipe navigation simplified (current tab follows finger, no preview)'},
+{type:'Improve',text:'Ministry and outreach filters side by side in Members tab'},
+{type:'Improve',text:'Search and filter bar sticks to top when scrolling members'},
+{type:'Fix',text:'Last member no longer hidden behind bottom nav bar'},
+{type:'Fix',text:'Counter badge and report counts now deduplicated'},
+{type:'Fix',text:'Removed Class 102 from classes options'},
+]},
 {version:'1.6.0',date:'August 23, 2026',changes:[
 {type:'New',text:'Weekly attendance chart now shows historical data'},
 {type:'New',text:'Per-member attendance dots (last 10 Sundays)'},
