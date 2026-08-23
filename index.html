@@ -1515,7 +1515,7 @@ document.getElementById('detailBack').addEventListener('click',()=>{document.get
 
 async function renderReports(){
 await fetchAttendanceHistory();
-const allAtt=await dbGet('attendance');const todayCount=new Set(allAtt.filter(a=>a.date===today()).map(a=>a.memberId)).size;
+const allAtt=await dbGet('attendance');const memberIds=new Set(allMembers.map(m=>m.id));const todayCount=new Set(allAtt.filter(a=>a.date===today()&&memberIds.has(a.memberId)).map(a=>a.memberId)).size;
 document.getElementById('statToday').textContent=todayCount;
 document.getElementById('statMembers').textContent=allMembers.filter(m=>m.status==='active'||m.status==='Active').length;
 const childrenCount=await getSetting('children_'+today());
