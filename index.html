@@ -387,7 +387,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 </div>
 <div class="cam-controls" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px">
 <button class="btn btn-outline" style="padding:6px 12px;font-size:11px;border-radius:8px;display:flex;align-items:center;gap:4px" onclick="showCameraPicker()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> <span id="camLabel">Camera</span></button>
-<button class="btn btn-outline" style="padding:6px 12px;font-size:11px;border-radius:8px;display:flex;align-items:center;gap:4px" id="zoomBtn" onclick="cycleZoom()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/></svg> <span id="zoomLabel">2x</span></button>
+<button class="btn btn-outline" style="padding:6px 12px;font-size:11px;border-radius:8px;display:flex;align-items:center;gap:4px" id="zoomBtn" onclick="cycleZoom()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/></svg> <span id="zoomLabel">1x</span></button>
 </div>
 <div class="scan-prompt" style="display:none">
 <div class="scan-badge"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><path d="M17 17h4v4"/></svg><span>Please Scan Here</span></div>
@@ -1053,7 +1053,7 @@ const vid=document.querySelector('#qr-reader video');
 if(vid){
 vid.style.transform=(!selectedCameraId&&cameraFacing==='user')?'scaleX(-1)':'none';
 const track=vid.srcObject&&vid.srcObject.getVideoTracks()[0];
-if(track){const caps=track.getCapabilities&&track.getCapabilities();if(caps&&caps.zoom){const maxZoom=Math.min(2,caps.zoom.max);track.applyConstraints({advanced:[{zoom:maxZoom}]}).catch(()=>{})}}
+if(track){const caps=track.getCapabilities&&track.getCapabilities();if(caps&&caps.zoom){const z=Math.min(currentZoom,caps.zoom.max);track.applyConstraints({advanced:[{zoom:z}]}).catch(()=>{})}}
 }
 }).catch(()=>{
 if(selectedCameraId){selectedCameraId='';localStorage.removeItem('jilgm_cameraId');startQRScanner();return}
@@ -1064,7 +1064,7 @@ function startQR(){
 if(typeof Html5Qrcode==='undefined'){startEarlyCamera();return}
 startQRScanner();
 }
-let currentZoom=2;
+let currentZoom=1;
 const zoomLevels=[1,2,3,4];
 function cycleZoom(){
 const idx=(zoomLevels.indexOf(currentZoom)+1)%zoomLevels.length;
