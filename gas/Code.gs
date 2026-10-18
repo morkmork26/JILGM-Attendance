@@ -332,10 +332,11 @@ function saveSharedSetting(body) {
   let sheet = ss.getSheetByName("Settings");
   if (!sheet) { sheet = ss.insertSheet("Settings"); sheet.appendRow(["key", "value"]); }
   const data = sheet.getDataRange().getValues();
+  let found = false;
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0] === key) { sheet.getRange(i + 1, 2).setValue(value); return { success: true }; }
+    if (data[i][0] === key) { sheet.getRange(i + 1, 2).setValue(value); found = true; }
   }
-  sheet.appendRow([key, value]);
+  if (!found) sheet.appendRow([key, value]);
   return { success: true };
 }
 
