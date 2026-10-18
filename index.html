@@ -489,9 +489,9 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <div class="chart-title">Weekly Attendance</div>
 <div class="chart-bars" id="chartBars"></div>
 </div>
-<div class="chart" style="border-color:rgba(255,171,0,0.12)">
-<div class="chart-title" style="color:var(--warning)">Needs Follow-Up</div>
-<div id="followUpList"></div>
+<div class="chart mb-collapsed" id="followUpCard" style="border-color:rgba(255,171,0,0.12)">
+<div class="chart-title mb-head" id="followUpToggle" style="color:var(--warning)" role="button" tabindex="0" aria-expanded="false" aria-controls="followUpBody">Needs Follow-Up<span class="mb-sum" id="followUpSummary"></span><span class="mb-chev" aria-hidden="true">&#9660;</span></div>
+<div class="mb-body" id="followUpBody"><div><div id="followUpList"></div></div></div>
 </div>
 </div>
 
@@ -575,8 +575,8 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 </div>
 </div>
 <div class="settings-section" id="adminSection" style="display:none">
-<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=document.getElementById('adminCheckinSection');c.style.display=c.style.display==='none'?'block':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Today's Check-Ins <span style="font-size:14px;color:var(--text-secondary)">-</span></h4>
-<div id="adminCheckinSection">
+<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=document.getElementById('adminCheckinSection');c.style.display=c.style.display==='none'?'block':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Today's Check-Ins <span style="font-size:14px;color:var(--text-secondary)">+</span></h4>
+<div id="adminCheckinSection" style="display:none">
 <div class="input-group" style="margin-bottom:12px"><input type="text" id="adminCheckinSearch" placeholder=" " autocomplete="off" oninput="renderAdminCheckins()"><label>Search checked-in members...</label></div>
 <div id="adminCheckinList" style="max-height:300px;overflow-y:auto"></div>
 </div>
@@ -586,8 +586,8 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <div id="unclassifiedList" style="display:none;max-height:300px;overflow-y:auto"></div>
 </div>
 <div class="settings-section" id="adminSection2" style="display:none">
-<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'block':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Device Management <span style="font-size:14px;color:var(--text-secondary)">-</span></h4>
-<div>
+<h4 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'block':'none';this.querySelector('span').textContent=c.style.display==='none'?'+':'-'">Device Management <span style="font-size:14px;color:var(--text-secondary)">+</span></h4>
+<div style="display:none">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
 <div style="display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span style="font-size:13px;font-weight:600;color:var(--warning)" id="pendingDeviceCount">0 pending</span></div>
 <button class="btn btn-outline" style="padding:7px 14px;font-size:11px;border-radius:8px;display:flex;align-items:center;gap:6px" id="refreshPendingBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>Refresh</button>
@@ -601,7 +601,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 </div>
 <div class="settings-section">
 <h4>About</h4>
-<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.8.2</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
+<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.8.3</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
 
 </div>
 </div>
@@ -1578,7 +1578,7 @@ const memberHtml=`<div class="ministry-members" style="display:none;padding:8px 
 return `<div style="margin-bottom:10px;cursor:pointer" onclick="const el=this.querySelector('.ministry-members');el.style.display=el.style.display==='none'?'block':'none'"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${name} <span style="font-size:10px;color:var(--text-secondary)">&#9660;</span></span><span style="color:var(--text-secondary)">${data.present}/${data.total}</span></div><div style="height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width 0.6s"></div></div>${memberHtml}</div>`;
 }).join('');
 const mbCount=Object.keys(ministryMap).length;const mbSum=document.getElementById('ministrySummary');if(mbSum)mbSum.textContent=mbCount+(mbCount===1?' ministry':' ministries');
-initMinistryToggle();
+initCollapse('ministryCard','ministryToggle','jilgm_ministry_collapsed');
 }
 const absentMembers=allMembers.filter(m=>{
 if(m.status!=='active'&&m.status!=='Active')return false;
@@ -1600,6 +1600,8 @@ else{followUp.innerHTML=absentMembers.length?absentMembers.map(m=>{
 const lastAtt=allAtt.filter(a=>a.memberId===m.id).sort((a,b)=>b.timestamp-a.timestamp)[0];
 return `<div class="follow-up-card">${createAvatar(m,'small')}<div class="info"><div class="name">${m.name}</div><div class="sub">${m.ministry||'No ministry'} | Last seen: ${lastAtt?formatDate(lastAtt.date):'Never'}</div></div></div>`;
 }).join(''):'<div class="empty-state"><p>Everyone is attending regularly!</p></div>';}
+const fuCount=allAtt.length?absentMembers.length:0;const fuSum=document.getElementById('followUpSummary');if(fuSum)fuSum.textContent=fuCount+(fuCount===1?' member':' members');
+initCollapse('followUpCard','followUpToggle','jilgm_followup_collapsed');
 }
 
 async function getSetting(key){const all=await dbGet('settings');const s=all.find(x=>x.key===key);return s?s.value:null}
@@ -2210,9 +2212,10 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 });
 
 // === APP VERSION & CHANGELOG ===
-function initMinistryToggle(){const card=document.getElementById('ministryCard'),head=document.getElementById('ministryToggle');if(!card||!head||head.dataset.bound)return;head.dataset.bound='1';const apply=c=>{card.classList.toggle('mb-collapsed',c);head.setAttribute('aria-expanded',String(!c))};let saved=null;try{saved=localStorage.getItem('jilgm_ministry_collapsed')}catch(err){}apply(saved!=='0');const toggle=()=>{const c=!card.classList.contains('mb-collapsed');apply(c);try{localStorage.setItem('jilgm_ministry_collapsed',c?'1':'0')}catch(err){}};head.addEventListener('click',toggle);head.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ev.preventDefault();toggle()}})}
-const APP_VERSION='1.8.2';
+function initCollapse(cardId,headId,key){const card=document.getElementById(cardId),head=document.getElementById(headId);if(!card||!head||head.dataset.bound)return;head.dataset.bound='1';const apply=c=>{card.classList.toggle('mb-collapsed',c);head.setAttribute('aria-expanded',String(!c))};let saved=null;try{saved=localStorage.getItem(key)}catch(err){}apply(saved!=='0');const toggle=()=>{const c=!card.classList.contains('mb-collapsed');apply(c);try{localStorage.setItem(key,c?'1':'0')}catch(err){}};head.addEventListener('click',toggle);head.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ev.preventDefault();toggle()}})}
+const APP_VERSION='1.8.3';
 const CHANGELOG=[
+{version:'1.8.3',date:'October 18, 2026',changes:[{type:'Improve',text:'Needs Follow-Up section is now collapsible'},{type:'Improve',text:'All collapsible sections start collapsed'}]},
 {version:'1.8.2',date:'October 18, 2026',changes:[{type:'Improve',text:'Weekly attendance chart and average now match the report total (manual Tanauan and children included)'},{type:'Improve',text:'Report auto-send moved to 10 PM daily (sent by the server, no phone needed)'}]},
 {version:'1.8.1',date:'October 18, 2026',changes:[{type:'Improve',text:'Ministry breakdown section can be collapsed (remembers your choice)'}]},
 {version:'1.8.0',date:'October 18, 2026',changes:[
