@@ -1623,6 +1623,232 @@ function appendReportRow(values) {
 
 
 // =============================================================================
+//  NIGHTLY REPORT
+//  Run installNightlyReportTrigger() once from the editor to schedule 10:00 PM
+// =============================================================================
+
+var NIGHTLY_REPORT_HANDLER = 'nightlyReport';
+var NIGHTLY_REPORT_PROP    = 'lastNightlyReportDate';
+var NIGHTLY_MANUAL_OUTREACHES = ['Tanauan'];
+
+/**
+ * Reads one value from the shared Settings sheet (key | value).
+ * Uses openById so it works from time-driven triggers.
+ *
+ * @param {string} key
+ * @returns {*} The stored value, or null if the key or sheet is missing
+ */
+function getSharedSettingValue(key) {
+  var ss    = SpreadsheetApp.openById(SHEET_ID);
+  var sheet = ss.getSheetByName('Settings');
+  if (!sheet) return null;
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === key) return data[i][1];
+  }
+  return null;
+}
+
+/**
+ * Server port of the client getAge(): whole years between a YYYY-MM-DD birthday
+ * and today in the script timezone. Returns null when no birthday, NaN when the
+ * birthday cannot be parsed (same as the client's Invalid Date path).
+ *
+ * @param {string} birthday - YYYY-MM-DD
+ * @returns {number|null}
+ */
+function getAgeServer(birthday) {
+  if (!birthday) return null;
+  var m = String(birthday).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return NaN;
+  var parts = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd').split('-');
+  var nowY = Number(parts[0]), nowM = Number(parts[1]), nowD = Number(parts[2]);
+  var bY = Number(m[1]), bM = Number(m[2]), bD = Number(m[3]);
+  var age = nowY - bY;
+  var dm  = nowM - bM;
+  if (dm < 0 || (dm === 0 && nowD < bD)) age--;
+  return age;
+}
+
+/**
+ * Server port of the client getAgeGroup(member).
+ *
+ * @param {Object} member - Object from rowToMember()
+ * @returns {string} Unknown | Children | Youth | Mothers | Fathers | YPro
+ */
+function getAgeGroupServer(member) {
+  var age = getAgeServer(member.birthday);
+  if (age === null) return 'Unknown';
+  if (age <= 12) return 'Children';
+  if (age <= 21) return 'Youth';
+  var isParent = member.hasChildren === 'Yes';
+  var isMarriedOrSep = member.civilStatus === 'Married' || member.civilStatus === 'Widow' || member.civilStatus === 'Separated';
+  if (isParent || isMarriedOrSep) return member.gender === 'Female' ? 'Mothers' : 'Fathers';
+  return 'YPro';
+}
+
+/**
+ * Parses a manual outreach count the same way as the client parseManual().
+ *
+ * @param {*} v
+ * @returns {number|null} null when blank, non-numeric or negative
+ */
+function parseManualCount(v) {
+  if (v === null || v === undefined || String(v).trim() === '') return null;
+  var n = parseInt(v, 10);
+  return (isNaN(n) || n < 0) ? null : n;
+}
+
+/**
+ * Builds a sendReport() body for a date from the Members, Attendance and
+ * Settings sheets, mirroring the client Generate Report logic.
+ *
+ * @param {string} dateStr - YYYY-MM-DD
+ * @returns {Object} Report body for sendReport(), plus checkInCount
+ */
+function buildReportForDate(dateStr) {
+  var members = getDataRows(getSheet(SHEET_MEMBERS)).map(function (row) { return rowToMember(row); });
+  var memberById = {};
+  members.forEach(function (m) { if (m.id && !memberById[m.id]) memberById[m.id] = m; });
+  var attRows = getDataRows(getSheet(SHEET_ATTENDANCE));
+  var attCountById = {};
+  var todayIds = [];
+  attRows.forEach(function (row) {
+    var id = String(row[COL_ATT.MEMBER_ID] || '').trim();
+    if (!id) return;
+    attCountById[id] = (attCountById[id] || 0) + 1;
+    if (normDate(row[COL_ATT.DATE]) === dateStr) todayIds.push(id);
+  });
+  var seen = {};
+  var checkedIn = [];
+  todayIds.forEach(function (id) {
+    var m = memberById[id];
+    if (!m || seen[m.id]) return;
+    seen[m.id] = true;
+    checkedIn.push(m);
+  });
+  var isFirstAttend = function (m) {
+    return m.membershipStatus === 'First Time Guest' && (attCountById[m.id] || 0) <= 1;
+  };
+  var stoTomas = checkedIn.filter(function (m) { return !m.outreach || m.outreach === 'Sto. Tomas'; });
+  var scannedGroups = {};
+  checkedIn.forEach(function (m) {
+    if (m.outreach && m.outreach !== 'Sto. Tomas') scannedGroups[m.outreach] = (scannedGroups[m.outreach] || 0) + 1;
+  });
+  var counts = { Youth: 0, YPro: 0, Mothers: 0, Fathers: 0 };
+  var newCount = 0;
+  var unclassified = 0;
+  stoTomas.forEach(function (m) {
+    if (isFirstAttend(m)) { newCount++; return; }
+    var g = getAgeGroupServer(m);
+    if (g !== 'Unknown' && counts[g] !== undefined) counts[g]++;
+    else if (g === 'Unknown' || g !== 'Children') unclassified++;
+  });
+  var finalGroups = {};
+  Object.keys(scannedGroups).forEach(function (k) { finalGroups[k] = scannedGroups[k]; });
+  var manualGroups = {};
+  NIGHTLY_MANUAL_OUTREACHES.forEach(function (o) {
+    var s = scannedGroups[o] || 0;
+    var man = parseManualCount(getSharedSettingValue('outreach_' + o + '_' + dateStr));
+    manualGroups[o] = man;
+    finalGroups[o] = (man !== null && man > s) ? man : s;
+  });
+  var occasion = 'Sunday Service';
+  try {
+    var occ = getOccasionConfig();
+    if (occ && occ.data && occ.data.active) occasion = occ.data.active;
+  } catch (err) {
+    Logger.log('buildReportForDate: occasion lookup failed: ' + err.message);
+  }
+  var emailVal = getSharedSettingValue('reportEmail');
+  return {
+    email:           emailVal ? String(emailVal).trim() : '',
+    date:            dateStr,
+    occasion:        occasion,
+    outreach:        'STBC',
+    youth:           counts.Youth,
+    ypro:            counts.YPro,
+    mothers:         counts.Mothers,
+    fathers:         counts.Fathers,
+    children:        parseInt(getSharedSettingValue('children_' + dateStr), 10) || 0,
+    newCount:        newCount,
+    unclassified:    unclassified,
+    outreachGroups:  finalGroups,
+    outreachScanned: scannedGroups,
+    outreachManual:  manualGroups,
+    others:          '(auto-sent at 10PM)',
+    checkInCount:    checkedIn.length
+  };
+}
+
+/**
+ * Time-driven handler: sends today's attendance report once per day.
+ * Skips when no report email is set, when there are no check-ins, or when
+ * the report for today was already sent by this trigger.
+ */
+function nightlyReport() {
+  try {
+    var date  = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    var props = PropertiesService.getScriptProperties();
+    if (props.getProperty(NIGHTLY_REPORT_PROP) === date) {
+      Logger.log('nightlyReport: already sent for ' + date + '. Skipping.');
+      return;
+    }
+    var report = buildReportForDate(date);
+    if (!report.email) {
+      Logger.log('nightlyReport: no reportEmail in Settings. Skipping ' + date + '.');
+      return;
+    }
+    if (!report.checkInCount) {
+      Logger.log('nightlyReport: no check-ins for ' + date + '. Skipping.');
+      return;
+    }
+    var result = sendReport(report);
+    if (!result || !result.success) {
+      Logger.log('nightlyReport: sendReport failed for ' + date + ': ' + (result && result.error));
+      return;
+    }
+    props.setProperty(NIGHTLY_REPORT_PROP, date);
+    Logger.log('nightlyReport: sent ' + date + ' report to ' + report.email + ' (total ' + result.data.total + ').');
+  } catch (err) {
+    Logger.log('nightlyReport error: ' + (err && err.stack ? err.stack : err));
+  }
+}
+
+/**
+ * Installs the daily 10:00 PM trigger for nightlyReport(), replacing any
+ * existing one. Run once from the Apps Script editor (grants trigger scope).
+ *
+ * @returns {string} Confirmation message
+ */
+function installNightlyReportTrigger() {
+  removeNightlyReportTrigger();
+  var tz = Session.getScriptTimeZone();
+  ScriptApp.newTrigger(NIGHTLY_REPORT_HANDLER).timeBased().atHour(22).everyDays(1).inTimezone(tz).create();
+  var msg = 'nightlyReport trigger installed: daily at 22:00 (' + tz + ').';
+  Logger.log(msg);
+  return msg;
+}
+
+/**
+ * Deletes every project trigger whose handler is nightlyReport().
+ *
+ * @returns {number} Number of triggers removed
+ */
+function removeNightlyReportTrigger() {
+  var removed = 0;
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === NIGHTLY_REPORT_HANDLER) {
+      ScriptApp.deleteTrigger(t);
+      removed++;
+    }
+  });
+  Logger.log('removeNightlyReportTrigger: removed ' + removed + ' trigger(s).');
+  return removed;
+}
+
+
+// =============================================================================
 //  WEEKLY BACKUP
 //  Schedule via Triggers > weeklyBackup > Time-driven > Week timer
 // =============================================================================
