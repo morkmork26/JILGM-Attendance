@@ -1624,7 +1624,7 @@ function appendReportRow(values) {
 
 // =============================================================================
 //  NIGHTLY REPORT
-//  Run installNightlyReportTrigger() once from the editor to schedule 10:00 PM
+//  Run installNightlyReportTrigger() once from the editor to schedule Sunday 10:00 PM
 // =============================================================================
 
 var NIGHTLY_REPORT_HANDLER = 'nightlyReport';
@@ -1788,7 +1788,13 @@ function buildReportForDate(dateStr) {
  */
 function nightlyReport() {
   try {
-    var date  = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    var now   = new Date();
+    var tzone = Session.getScriptTimeZone();
+    var date  = Utilities.formatDate(now, tzone, 'yyyy-MM-dd');
+    if (Utilities.formatDate(now, tzone, 'u') !== '7') {
+      Logger.log('nightlyReport: ' + date + ' is not a Sunday. Skipping.');
+      return;
+    }
     var props = PropertiesService.getScriptProperties();
     if (props.getProperty(NIGHTLY_REPORT_PROP) === date) {
       Logger.log('nightlyReport: already sent for ' + date + '. Skipping.');
@@ -1816,7 +1822,7 @@ function nightlyReport() {
 }
 
 /**
- * Installs the daily 10:00 PM trigger for nightlyReport(), replacing any
+ * Installs the Sunday 10:00 PM trigger for nightlyReport(), replacing any
  * existing one. Run once from the Apps Script editor (grants trigger scope).
  *
  * @returns {string} Confirmation message
@@ -1824,8 +1830,8 @@ function nightlyReport() {
 function installNightlyReportTrigger() {
   removeNightlyReportTrigger();
   var tz = Session.getScriptTimeZone();
-  ScriptApp.newTrigger(NIGHTLY_REPORT_HANDLER).timeBased().atHour(22).everyDays(1).inTimezone(tz).create();
-  var msg = 'nightlyReport trigger installed: daily at 22:00 (' + tz + ').';
+  ScriptApp.newTrigger(NIGHTLY_REPORT_HANDLER).timeBased().onWeekDay(ScriptApp.WeekDay.SUNDAY).atHour(22).inTimezone(tz).create();
+  var msg = 'nightlyReport trigger installed: Sundays at 22:00 (' + tz + ').';
   Logger.log(msg);
   return msg;
 }
