@@ -456,13 +456,19 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <div class="stat-card"><div class="value" id="statToday">0</div><div class="label">Checked In Today</div></div>
 <div class="stat-card"><div class="value" id="statMembers">0</div><div class="label">Total Members</div></div>
 <div class="stat-card"><div class="value" id="statChildren">-</div><div class="label">Children Today</div></div>
+<div class="stat-card"><div class="value" id="statTanauan">-</div><div class="label">Tanauan Today</div><div id="statTanauanHint" style="font-size:9px;color:var(--text-secondary);margin-top:2px"></div></div>
 <div class="stat-card"><div class="value" id="statVisitors">0</div><div class="label">New This Month</div></div>
 <div class="stat-card"><div class="value" id="statAvg">0</div><div class="label">Weekly Average</div></div>
 </div>
-<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px">
-<label style="font-size:13px;color:var(--text-secondary);white-space:nowrap">Children count:</label>
+<div style="margin-bottom:10px;display:flex;align-items:center;gap:10px">
+<label style="font-size:13px;color:var(--text-secondary);white-space:nowrap;min-width:110px">Children count:</label>
 <input type="number" id="childrenInput" placeholder="0" min="0" style="width:70px;padding:8px 12px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;font-size:16px;text-align:center">
 <button class="btn btn-outline" style="padding:6px 14px;font-size:12px" id="saveChildrenBtn">Save</button>
+</div>
+<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px">
+<label style="font-size:13px;color:var(--text-secondary);white-space:nowrap;min-width:110px">Tanauan count:</label>
+<input type="number" id="tanauanInput" placeholder="0" min="0" style="width:70px;padding:8px 12px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;font-size:16px;text-align:center">
+<button class="btn btn-outline" style="padding:6px 14px;font-size:12px" id="saveTanauanBtn">Save</button>
 </div>
 <div class="chart">
 <div class="chart-title">Ministry Breakdown</div>
@@ -584,7 +590,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 </div>
 <div class="settings-section">
 <h4>About</h4>
-<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.7.0</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
+<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.8.0</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
 
 </div>
 </div>
@@ -1522,6 +1528,9 @@ document.getElementById('statMembers').textContent=allMembers.filter(m=>m.status
 const childrenCount=await getSetting('children_'+today());
 document.getElementById('statChildren').textContent=childrenCount||'-';
 if(childrenCount)document.getElementById('childrenInput').value=childrenCount;
+const tanRes=await resolveOutreachGroups(scannedOutreachToday(allAtt.filter(a=>memberIds.has(a.memberId)),today()),today());
+renderTanauanStat(tanRes.detail.Tanauan);
+document.getElementById('tanauanInput').value=tanRes.manual.Tanauan===null?'':tanRes.manual.Tanauan;
 const thisMonth=today().slice(0,7);const visitors=allMembers.filter(m=>m.dateRegistered&&m.dateRegistered.startsWith(thisMonth));
 document.getElementById('statVisitors').textContent=visitors.length;
 const sundays=[];const d=new Date();
@@ -1580,6 +1589,30 @@ return `<div class="follow-up-card">${createAvatar(m,'small')}<div class="info">
 
 async function getSetting(key){const all=await dbGet('settings');const s=all.find(x=>x.key===key);return s?s.value:null}
 async function setSetting(key,value){await dbPut('settings',{key,value})}
+const MANUAL_OUTREACHES=['Tanauan'];
+function outreachKey(name,date){return 'outreach_'+name+'_'+date}
+function parseManual(v){if(v===null||v===undefined||String(v).trim()==='')return null;const n=parseInt(v);return isNaN(n)||n<0?null:n}
+function pickOutreachCount(scanned,manual){return manual!==null&&manual>scanned?manual:scanned}
+async function resolveOutreachGroups(scannedGroups,date){
+const final={...scannedGroups};const manual={};const detail={};
+for(const o of MANUAL_OUTREACHES){const s=scannedGroups[o]||0;const m=parseManual(await getSetting(outreachKey(o,date)));manual[o]=m;final[o]=pickOutreachCount(s,m);detail[o]={scanned:s,manual:m,used:final[o]}}
+return{final,manual,detail};
+}
+function scannedOutreachToday(attRows,date){
+const groups={};const seen=new Set();
+attRows.filter(a=>a.date===date).forEach(a=>{if(seen.has(a.memberId))return;const m=allMembers.find(x=>x.id===a.memberId);if(!m||!m.outreach||m.outreach==='Sto. Tomas')return;seen.add(a.memberId);groups[m.outreach]=(groups[m.outreach]||0)+1});
+return groups;
+}
+async function saveManualOutreach(name,date,val){
+await setSetting(outreachKey(name,date),val);
+const url=await getSetting('scriptUrl');
+if(url)fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'saveSetting',key:outreachKey(name,date),value:val}))).catch(()=>{});
+}
+function renderTanauanStat(d){
+const el=document.getElementById('statTanauan');const hint=document.getElementById('statTanauanHint');if(!el)return;
+el.textContent=d.used||(d.manual===null?'-':d.used);
+hint.textContent=!d.used&&d.manual===null?'':d.manual!==null&&d.manual>d.scanned?'manual (scanned '+d.scanned+')':'scanned'+(d.manual!==null?' (manual '+d.manual+')':'');
+}
 
 async function getMinistries(){
 const val=await getSetting('ministries');
@@ -1762,6 +1795,16 @@ document.getElementById('statChildren').textContent=val;
 const url=await getSetting('scriptUrl');
 if(url)fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'saveSetting',key:'children_'+today(),value:val}))).catch(()=>{});
 showToast('Children count saved');
+});
+document.getElementById('saveTanauanBtn').addEventListener('click',async()=>{
+const raw=document.getElementById('tanauanInput').value;
+const val=parseManual(raw);
+if(raw!==''&&val===null){showToast('Enter a valid number','error');return}
+await saveManualOutreach('Tanauan',today(),val===null?'':String(val));
+const allAtt=await dbGet('attendance');
+const res=await resolveOutreachGroups(scannedOutreachToday(allAtt,today()),today());
+renderTanauanStat(res.detail.Tanauan);
+showToast(val===null?'Tanauan manual count cleared':'Tanauan count saved ('+res.detail.Tanauan.used+' used in report)');
 });
 
 
@@ -2047,10 +2090,11 @@ const newCount=stoTomasMembers.filter(m=>m.membershipStatus==='First Time Guest'
 const outreach=(await getSetting('defaultOutreach'))||'';
 const adultTotal=counts.Youth+counts.YPro+counts.Mothers+counts.Fathers;
 const childNum=parseInt(childrenVal)||0;
-const outreachTotal=Object.values(outreachGroups).reduce((a,b)=>a+b,0);
+const oRes=await resolveOutreachGroups(outreachGroups,todayStr);
+const outreachTotal=Object.values(oRes.final).reduce((a,b)=>a+b,0);
 const unclassified=stoTomasMembers.filter(m=>{const isFirst=m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1;if(isFirst)return false;const g=getAgeGroup(m);return g==='Unknown'||(g!=='Children'&&counts[g]===undefined)}).length;
 const grandTotal=adultTotal+childNum+outreachTotal+newCount+unclassified;
-const report={action:'sendReport',date:todayStr,occasion:currentOccasion,outreach,youth:counts.Youth,ypro:counts.YPro,mothers:counts.Mothers,fathers:counts.Fathers,children:childNum,newCount,outreachGroups,others:'(auto-sent at 5PM)',email,grandTotal};
+const report={action:'sendReport',date:todayStr,occasion:currentOccasion,outreach,youth:counts.Youth,ypro:counts.YPro,mothers:counts.Mothers,fathers:counts.Fathers,children:childNum,newCount,unclassified,outreachGroups:oRes.final,outreachScanned:outreachGroups,outreachManual:oRes.manual,others:'(auto-sent at 5PM)',email,grandTotal};
 try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify(report)));reportSentToday=true;showToast('Report auto-sent!','success')}catch(e){}
 },30000);
 })();
@@ -2109,10 +2153,13 @@ const newCount=stoTomasMembers.filter(m=>m.membershipStatus==='First Time Guest'
 const outreach=(await getSetting('defaultOutreach'))||'';
 const adultTotal=counts.Youth+counts.YPro+counts.Mothers+counts.Fathers;
 const childNum=parseInt(childrenVal)||0;
-const outreachTotal=Object.values(outreachGroups).reduce((a,b)=>a+b,0);
+const oRes=await resolveOutreachGroups(outreachGroups,todayStr);
+const tan=oRes.detail.Tanauan;
+const otherOutreachTotal=Object.entries(oRes.final).filter(([n])=>!MANUAL_OUTREACHES.includes(n)).reduce((a,[,b])=>a+b,0);
+const outreachTotal=otherOutreachTotal+tan.used;
 const unclassified=stoTomasMembers.filter(m=>{const isFirst=m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1;if(isFirst)return false;const g=getAgeGroup(m);return g==='Unknown'||(g!=='Children'&&counts[g]===undefined)}).length;
 const grandTotal=adultTotal+childNum+outreachTotal+newCount+unclassified;
-const outreachHTML=Object.entries(outreachGroups).map(([name,count])=>`<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--accent2)">${name} Outreach</div><div style="font-size:16px;font-weight:700">${count}</div></div>`).join('');
+const outreachHTML=Object.entries(outreachGroups).filter(([n])=>!MANUAL_OUTREACHES.includes(n)).map(([name,count])=>`<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--accent2)">${name} Outreach</div><div style="font-size:16px;font-weight:700">${count}</div></div>`).join('');
 const email=await getSetting('reportEmail')||'';
 const overlay=document.getElementById('modalOverlay');const content=document.getElementById('modalContent');
 content.innerHTML=`<div class="modal-header"><h3>Send Report</h3><button class="modal-close" id="closeModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
@@ -2125,8 +2172,9 @@ content.innerHTML=`<div class="modal-header"><h3>Send Report</h3><button class="
 <div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px 4px;text-align:center"><div style="font-size:9px;color:var(--text-secondary)">Fathers</div><div style="font-size:16px;font-weight:700">${counts.Fathers}</div></div>
 ${outreachHTML}
 </div>
-<div style="display:flex;align-items:center;gap:10px;margin:8px 0"><label style="font-size:12px;color:var(--text-secondary);white-space:nowrap">Children:</label><input type="number" id="rptChildren" placeholder="0" min="0" value="${childNum||''}" style="width:60px;padding:6px 8px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;font-size:14px;text-align:center"></div>
-<div style="margin:6px 0;padding:10px;background:var(--card);border-radius:8px;text-align:center;font-weight:700;font-size:15px" id="rptTotalDisplay">Total: ${adultTotal}${unclassified?' + '+unclassified+' (unclassified)':''}${newCount?' + '+newCount+' (new)':''} + ${childNum} (children)${outreachTotal?' + '+outreachTotal+' (outreach)':''} = ${grandTotal}</div>
+<div style="display:flex;align-items:center;gap:10px;margin:8px 0"><label style="font-size:12px;color:var(--text-secondary);white-space:nowrap;min-width:64px">Children:</label><input type="number" id="rptChildren" placeholder="0" min="0" value="${childNum||''}" style="width:60px;padding:6px 8px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;font-size:14px;text-align:center"></div>
+<div style="display:flex;align-items:center;gap:10px;margin:8px 0"><label style="font-size:12px;color:var(--text-secondary);white-space:nowrap;min-width:64px">Tanauan:</label><input type="number" id="rptTanauan" placeholder="${tan.scanned}" min="0" value="${tan.manual===null?'':tan.manual}" style="width:60px;padding:6px 8px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;font-size:14px;text-align:center"><span id="rptTanauanInfo" style="font-size:11px;color:var(--text-secondary)"></span></div>
+<div style="margin:6px 0;padding:10px;background:var(--card);border-radius:8px;text-align:center;font-weight:700;font-size:15px" id="rptTotalDisplay"></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0">
 <div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px;text-align:center"><div style="font-size:9px;color:var(--success)">New (First Time)</div><div style="font-size:16px;font-weight:700;color:var(--success)">${newCount}</div></div>
 <div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:6px;text-align:center"><div style="font-size:9px;color:var(--text-secondary)">Others</div><input type="text" id="rptOthers" placeholder="Notes..." style="width:100%;text-align:center;font-size:12px;margin-top:2px;padding:3px;background:transparent;border-bottom:1px solid var(--card-border)"></div>
@@ -2136,7 +2184,17 @@ ${outreachHTML}
 overlay.classList.add('show');navPush('modal');
 setTimeout(()=>{
 document.getElementById('closeModal').addEventListener('click',closeModal);
+const calcTotals=()=>{const c=parseInt(document.getElementById('rptChildren').value)||0;const m=parseManual(document.getElementById('rptTanauan').value);const t=pickOutreachCount(tan.scanned,m);const o=otherOutreachTotal+t;const g=adultTotal+c+o+newCount+unclassified;return{c,m,t,o,g}};
+const refreshTotals=()=>{const r=calcTotals();document.getElementById('rptTanauanInfo').textContent='Scanned: '+tan.scanned+(r.m!==null?', Manual: '+r.m:'')+', Used: '+r.t+(r.m!==null&&r.m>tan.scanned?' (manual)':'');document.getElementById('rptTotalDisplay').textContent='Total: '+adultTotal+(unclassified?' + '+unclassified+' (unclassified)':'')+(newCount?' + '+newCount+' (new)':'')+' + '+r.c+' (children)'+(r.t?' + '+r.t+' (Tanauan)':'')+(otherOutreachTotal?' + '+otherOutreachTotal+' (other outreach)':'')+' = '+r.g;return r};
+refreshTotals();
+document.getElementById('rptTanauan').addEventListener('input',async(e)=>{
+const r=refreshTotals();
+await saveManualOutreach('Tanauan',todayStr,r.m===null?'':String(r.m));
+renderTanauanStat({scanned:tan.scanned,manual:r.m,used:r.t});
+const ti=document.getElementById('tanauanInput');if(ti)ti.value=r.m===null?'':r.m;
+});
 document.getElementById('rptChildren').addEventListener('input',async(e)=>{
+refreshTotals();
 const c=parseInt(e.target.value)||0;
 await setSetting('children_'+todayStr,c.toString());
 document.getElementById('statChildren').textContent=c||'-';
@@ -2150,9 +2208,9 @@ const email=(document.getElementById('rptEmail').value||'').trim();
 if(!url||!email){showToast('Enter a valid email and configure Script URL','error');return}
 await setSetting('reportEmail',email);
 fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'saveSetting',key:'reportEmail',value:email}))).catch(()=>{});
-const updatedChildren=parseInt(document.getElementById('rptChildren').value)||0;
-const updatedTotal=adultTotal+updatedChildren+outreachTotal+newCount+unclassified;
-const report={action:'sendReport',date:todayStr,occasion:currentOccasion,outreach:document.getElementById('rptOutreach').value,youth:counts.Youth,ypro:counts.YPro,mothers:counts.Mothers,fathers:counts.Fathers,children:updatedChildren,newCount:newCount,outreachGroups:outreachGroups,others:document.getElementById('rptOthers').value,email:email,grandTotal:updatedTotal};
+const fin=calcTotals();
+const finalGroups={...oRes.final,Tanauan:fin.t};
+const report={action:'sendReport',date:todayStr,occasion:currentOccasion,outreach:document.getElementById('rptOutreach').value,youth:counts.Youth,ypro:counts.YPro,mothers:counts.Mothers,fathers:counts.Fathers,children:fin.c,newCount:newCount,unclassified:unclassified,outreachGroups:finalGroups,outreachScanned:outreachGroups,outreachManual:{Tanauan:fin.m},others:document.getElementById('rptOthers').value,email:email,grandTotal:fin.g};
 try{
 const r=await fetch(url+'?data='+encodeURIComponent(JSON.stringify(report)));
 const json=await r.json();
@@ -2163,8 +2221,14 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 });
 
 // === APP VERSION & CHANGELOG ===
-const APP_VERSION='1.7.0';
+const APP_VERSION='1.8.0';
 const CHANGELOG=[
+{version:'1.8.0',date:'October 18, 2026',changes:[
+{type:'New',text:'Tanauan count input on dashboard and Send Report (like Children)'},
+{type:'New',text:'Tanauan in report uses manual count when higher than scanned check-ins'},
+{type:'New',text:'Tanauan Today stat card shows scanned vs manual'},
+{type:'Improve',text:'Report email and Reports sheet now include Tanauan, New and Unclassified in Total'}
+]},
 {version:'1.7.0',date:'August 23, 2026',changes:[
 {type:'New',text:'Ministry breakdown is now collapsible (tap to see checked-in and absent members)'},
 {type:'Improve',text:'Swipe navigation simplified (current tab follows finger, no preview)'},

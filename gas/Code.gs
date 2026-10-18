@@ -1508,7 +1508,7 @@ function resendQR(body) {
 /**
  * Sends a formatted attendance report email and logs it to the Reports sheet.
  *
- * @param {Object} body - { email, date, outreach, youth, ypro, mothers, fathers, children, newCount, others }
+ * @param {Object} body - { email, date, outreach, youth, ypro, mothers, fathers, children, newCount, unclassified, outreachGroups, outreachScanned, outreachManual, others }
  * @returns {Object} { success: true, data: { total } }
  */
 function sendReport(body) {
@@ -1523,9 +1523,21 @@ function sendReport(body) {
   var mothers  = body.mothers  || 0;
   var fathers  = body.fathers  || 0;
   var children = body.children || 0;
-  var total    = youth + ypro + mothers + fathers + children;
   var newCount = body.newCount || 0;
+  var unclassified = Number(body.unclassified) || 0;
   var others   = body.others   || '-';
+
+  var finalGroups   = body.outreachGroups  || {};
+  var scannedGroups = body.outreachScanned || finalGroups;
+  var manualGroups  = body.outreachManual  || {};
+  var tanScanned = Number(scannedGroups.Tanauan) || 0;
+  var tanManualRaw = manualGroups.Tanauan;
+  var tanManual = (tanManualRaw === null || tanManualRaw === undefined || tanManualRaw === '') ? '' : (Number(tanManualRaw) || 0);
+  var tanauan = (tanManual !== '' && tanManual > tanScanned) ? tanManual : tanScanned;
+  var otherOutreach = 0;
+  Object.keys(finalGroups).forEach(function (k) { if (k !== 'Tanauan') otherOutreach += Number(finalGroups[k]) || 0; });
+  var total = youth + ypro + mothers + fathers + children + newCount + unclassified + tanauan + otherOutreach;
+  var tanLabel = tanauan + ((tanManual !== '' && tanManual > tanScanned) ? ' (manual, scanned ' + tanScanned + ')' : '');
 
   var subject  = 'JILGM Report - ' + occasion + ' - ' + date;
   var htmlBody =
@@ -1541,10 +1553,13 @@ function sendReport(body) {
     + '<tr><td style="padding:6px 0">Mothers</td><td style="text-align:right;font-weight:bold">' + mothers + '</td></tr>'
     + '<tr><td style="padding:6px 0">Fathers</td><td style="text-align:right;font-weight:bold">' + fathers + '</td></tr>'
     + '<tr><td style="padding:6px 0">Children</td><td style="text-align:right;font-weight:bold">' + children + '</td></tr>'
+    + '<tr><td style="padding:6px 0">New (First Time)</td><td style="text-align:right;font-weight:bold">' + newCount + '</td></tr>'
+    + (unclassified ? '<tr><td style="padding:6px 0">Unclassified</td><td style="text-align:right;font-weight:bold">' + unclassified + '</td></tr>' : '')
+    + '<tr><td style="padding:6px 0">Tanauan Outreach</td><td style="text-align:right;font-weight:bold">' + tanLabel + '</td></tr>'
+    + (otherOutreach ? '<tr><td style="padding:6px 0">Other Outreach</td><td style="text-align:right;font-weight:bold">' + otherOutreach + '</td></tr>' : '')
     + '<tr style="border-top:2px solid #333"><td style="padding:8px 0;font-weight:bold">Total</td><td style="text-align:right;font-weight:bold;font-size:18px">' + total + '</td></tr>'
     + '</table>'
     + '<hr style="border:1px solid #eee;margin:12px 0">'
-    + '<p><strong>New:</strong> ' + newCount + '</p>'
     + '<p><strong>Others:</strong> ' + others + '</p>'
     + '<hr style="border:1px solid #eee;margin:12px 0">'
     + '<p style="color:#888;font-size:12px">Sent from JILGM Attendance Tracker</p>'
@@ -1567,17 +1582,43 @@ function sendReport(body) {
   });
 
   // Log to Reports sheet
+  appendReportRow({
+    'Date': date, 'Occasion': occasion, 'Outreach': outreach, 'Youth': youth, 'YPro': ypro,
+    'Mothers': mothers, 'Fathers': fathers, 'Children': children, 'Total': total, 'New': newCount,
+    'Others': others, 'SentTo': email, 'Timestamp': new Date(), 'Unclassified': unclassified,
+    'Tanauan': tanauan, 'Tanauan Scanned': tanScanned, 'Tanauan Manual': tanManual, 'Other Outreach': otherOutreach
+  });
+
+  checkAndRunMonthlyBackup();
+  return { success: true, data: { total: total, tanauan: tanauan } };
+}
+
+
+var REPORT_COLUMNS = ['Date', 'Occasion', 'Outreach', 'Youth', 'YPro', 'Mothers', 'Fathers', 'Children', 'Total', 'New', 'Others', 'SentTo', 'Timestamp', 'Unclassified', 'Tanauan', 'Tanauan Scanned', 'Tanauan Manual', 'Other Outreach'];
+
+/**
+ * Appends a row to the Reports sheet by header name. Missing headers are added
+ * at the end so existing columns and rows never shift.
+ */
+function appendReportRow(values) {
   var ss    = SpreadsheetApp.openById(SHEET_ID);
   var sheet = ss.getSheetByName('Reports');
   if (!sheet) {
     sheet = ss.insertSheet('Reports');
-    sheet.appendRow(['Date', 'Occasion', 'Outreach', 'Youth', 'YPro', 'Mothers', 'Fathers', 'Children', 'Total', 'New', 'Others', 'SentTo', 'Timestamp']);
-    sheet.getRange(1, 1, 1, 13).setFontWeight('bold');
+    sheet.getRange(1, 1, 1, REPORT_COLUMNS.length).setValues([REPORT_COLUMNS]).setFontWeight('bold');
+    sheet.setFrozenRows(1);
   }
-  sheet.appendRow([date, occasion, outreach, youth, ypro, mothers, fathers, children, total, newCount, others, email, new Date()]);
-
-  checkAndRunMonthlyBackup();
-  return { success: true, data: { total: total } };
+  var lastCol = Math.max(sheet.getLastColumn(), 1);
+  var header  = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(function (h) { return String(h).trim(); });
+  while (header.length && header[header.length - 1] === '') header.pop();
+  REPORT_COLUMNS.forEach(function (col) {
+    if (header.indexOf(col) === -1) {
+      header.push(col);
+      sheet.getRange(1, header.length).setValue(col).setFontWeight('bold');
+    }
+  });
+  var row = header.map(function (h) { return values.hasOwnProperty(h) ? values[h] : ''; });
+  sheet.appendRow(row);
 }
 
 
