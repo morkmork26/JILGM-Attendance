@@ -130,6 +130,17 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 .chart{margin-bottom:24px;background:rgba(26,26,46,0.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(108,99,255,0.08);border-radius:var(--radius);padding:16px}
 .chart-title{font-size:14px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .chart-title::before{content:'';width:3px;height:16px;border-radius:2px;background:linear-gradient(180deg,var(--accent),var(--accent2))}
+.mb-head{cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;border-radius:8px;transition:margin-bottom 0.3s ease,color 0.2s}
+.mb-head:hover .mb-chev,.mb-head:focus-visible .mb-chev{color:var(--accent)}
+.mb-head:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.mb-sum{margin-left:auto;font-size:11px;font-weight:500;color:var(--text-secondary);opacity:0;transition:opacity 0.3s ease}
+.mb-chev{display:inline-flex;width:22px;height:22px;align-items:center;justify-content:center;border-radius:50%;background:var(--card);border:1px solid var(--card-border);color:var(--text-secondary);font-size:10px;transition:transform 0.3s ease,color 0.2s;transform:rotate(180deg)}
+.mb-body{display:grid;grid-template-rows:1fr;opacity:1;transition:grid-template-rows 0.35s ease,opacity 0.3s ease}
+.mb-body>div{overflow:hidden;min-height:0}
+.mb-collapsed .mb-head{margin-bottom:0}
+.mb-collapsed .mb-sum{opacity:1}
+.mb-collapsed .mb-chev{transform:rotate(0deg)}
+.mb-collapsed .mb-body{grid-template-rows:0fr;opacity:0}
 .chart-bars{display:flex;align-items:flex-end;gap:8px;height:300px;padding:0 4px}
 .chart-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
 .chart-bar .bar{width:100%;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,var(--accent),var(--accent2));transition:height 1s cubic-bezier(0.4,0,0.2,1);min-height:2px}
@@ -470,9 +481,9 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <input type="number" id="tanauanInput" placeholder="0" min="0" style="width:70px;padding:8px 12px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;font-size:16px;text-align:center">
 <button class="btn btn-outline" style="padding:6px 14px;font-size:12px" id="saveTanauanBtn">Save</button>
 </div>
-<div class="chart">
-<div class="chart-title">Ministry Breakdown</div>
-<div id="ministryBreakdown"></div>
+<div class="chart mb-collapsed" id="ministryCard">
+<div class="chart-title mb-head" id="ministryToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="ministryBody">Ministry Breakdown<span class="mb-sum" id="ministrySummary"></span><span class="mb-chev" aria-hidden="true">&#9660;</span></div>
+<div class="mb-body" id="ministryBody"><div><div id="ministryBreakdown"></div></div></div>
 </div>
 <div class="chart">
 <div class="chart-title">Weekly Attendance</div>
@@ -590,7 +601,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 </div>
 <div class="settings-section">
 <h4>About</h4>
-<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.8.0</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
+<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.8.1</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
 
 </div>
 </div>
@@ -1564,6 +1575,8 @@ const memberHtml=`<div class="ministry-members" style="display:none;padding:8px 
 +`</div>`;
 return `<div style="margin-bottom:10px;cursor:pointer" onclick="const el=this.querySelector('.ministry-members');el.style.display=el.style.display==='none'?'block':'none'"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${name} <span style="font-size:10px;color:var(--text-secondary)">&#9660;</span></span><span style="color:var(--text-secondary)">${data.present}/${data.total}</span></div><div style="height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width 0.6s"></div></div>${memberHtml}</div>`;
 }).join('');
+const mbCount=Object.keys(ministryMap).length;const mbSum=document.getElementById('ministrySummary');if(mbSum)mbSum.textContent=mbCount+(mbCount===1?' ministry':' ministries');
+initMinistryToggle();
 }
 const absentMembers=allMembers.filter(m=>{
 if(m.status!=='active'&&m.status!=='Active')return false;
@@ -2221,8 +2234,10 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 });
 
 // === APP VERSION & CHANGELOG ===
-const APP_VERSION='1.8.0';
+function initMinistryToggle(){const card=document.getElementById('ministryCard'),head=document.getElementById('ministryToggle');if(!card||!head||head.dataset.bound)return;head.dataset.bound='1';const apply=c=>{card.classList.toggle('mb-collapsed',c);head.setAttribute('aria-expanded',String(!c))};let saved=null;try{saved=localStorage.getItem('jilgm_ministry_collapsed')}catch(err){}apply(saved!=='0');const toggle=()=>{const c=!card.classList.contains('mb-collapsed');apply(c);try{localStorage.setItem('jilgm_ministry_collapsed',c?'1':'0')}catch(err){}};head.addEventListener('click',toggle);head.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ev.preventDefault();toggle()}})}
+const APP_VERSION='1.8.1';
 const CHANGELOG=[
+{version:'1.8.1',date:'October 18, 2026',changes:[{type:'Improve',text:'Ministry breakdown section can be collapsed (remembers your choice)'}]},
 {version:'1.8.0',date:'October 18, 2026',changes:[
 {type:'New',text:'Tanauan count input on dashboard and Send Report (like Children)'},
 {type:'New',text:'Tanauan in report uses manual count when higher than scanned check-ins'},
