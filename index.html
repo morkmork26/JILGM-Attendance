@@ -601,7 +601,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 </div>
 <div class="settings-section">
 <h4>About</h4>
-<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.8.1</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
+<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.8.2</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
 
 </div>
 </div>
@@ -1546,13 +1546,15 @@ const thisMonth=today().slice(0,7);const visitors=allMembers.filter(m=>m.dateReg
 document.getElementById('statVisitors').textContent=visitors.length;
 const sundays=[];const d=new Date();
 for(let i=7;i>=0;i--){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);sundays.push(localDateStr(sun))}
-const weeklyCounts=sundays.map(s=>new Set(allAtt.filter(a=>a.date===s).map(a=>a.memberId)).size);
+const weeklyParts=[];for(const s of sundays)weeklyParts.push(await weeklyTotal(allAtt,memberIds,s));
+const weeklyCounts=weeklyParts.map(p=>p.total);
 const max=Math.max(...weeklyCounts,1);
 const avg=weeklyCounts.length?Math.round(weeklyCounts.reduce((a,b)=>a+b,0)/weeklyCounts.length):0;
 document.getElementById('statAvg').textContent=avg;
 document.getElementById('chartBars').innerHTML=sundays.map((s,i)=>{
 const pct=(weeklyCounts[i]/max)*100;
-return `<div class="chart-bar"><div class="bar-value">${weeklyCounts[i]}</div><div class="bar" style="height:${pct}%"></div><div class="bar-label">${s.slice(5)}</div></div>`;
+const p=weeklyParts[i];const tip=['Scanned '+p.scanned].concat(p.adj?['Tanauan manual adj '+p.adj]:[],p.children?['Children '+p.children]:[]).join(' + ');
+return `<div class="chart-bar" title="${tip}"><div class="bar-value">${weeklyCounts[i]}</div><div class="bar" style="height:${pct}%"></div><div class="bar-label">${s.slice(5)}</div></div>`;
 }).join('');
 const ministrySection=document.getElementById('ministryBreakdown');
 if(ministrySection){
@@ -1615,6 +1617,12 @@ function scannedOutreachToday(attRows,date){
 const groups={};const seen=new Set();
 attRows.filter(a=>a.date===date).forEach(a=>{if(seen.has(a.memberId))return;const m=allMembers.find(x=>x.id===a.memberId);if(!m||!m.outreach||m.outreach==='Sto. Tomas')return;seen.add(a.memberId);groups[m.outreach]=(groups[m.outreach]||0)+1});
 return groups;
+}
+async function weeklyTotal(allAtt,memberIds,s){
+const rows=allAtt.filter(a=>a.date===s&&memberIds.has(a.memberId));const scanned=new Set(rows.map(a=>a.memberId)).size;
+const tanScanned=scannedOutreachToday(rows,s).Tanauan||0;const tanUsed=pickOutreachCount(tanScanned,parseManual(await getSetting(outreachKey('Tanauan',s))));
+const children=parseInt(await getSetting('children_'+s))||0;const adj=tanUsed-tanScanned;
+return{scanned,adj,children,total:scanned+adj+children};
 }
 async function saveManualOutreach(name,date,val){
 await setSetting(outreachKey(name,date),val);
@@ -2079,38 +2087,6 @@ setInterval(autoSync,30000);
 
 
 
-// Auto-send report at 5PM on Sundays
-(function(){
-let reportSentToday=false;
-setInterval(async()=>{
-if(reportSentToday)return;
-const now=new Date();
-if(now.getDay()!==0)return;
-if(now.getHours()!==17||now.getMinutes()>1)return;
-const url=await getSetting('scriptUrl');
-const email=await getSetting('reportEmail');
-if(!url||!email)return;
-const allAtt=await dbGet('attendance');
-const todayStr=today();
-const seen=new Set();const checkedIn=todayAttendance.map(a=>allMembers.find(m=>m.id===a.memberId)).filter(m=>{if(!m||seen.has(m.id))return false;seen.add(m.id);return true});
-const stoTomasMembers=checkedIn.filter(m=>!m.outreach||m.outreach==='Sto. Tomas');
-const outreachGroups={};
-checkedIn.filter(m=>m.outreach&&m.outreach!=='Sto. Tomas').forEach(m=>{if(!outreachGroups[m.outreach])outreachGroups[m.outreach]=0;outreachGroups[m.outreach]++});
-const counts={Youth:0,YPro:0,Mothers:0,Fathers:0};
-stoTomasMembers.forEach(m=>{const isFirst=m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1;if(!isFirst){const g=getAgeGroup(m);if(g!=='Unknown'&&counts[g]!==undefined)counts[g]++}});
-const childrenVal=await getSetting('children_'+todayStr);
-const newCount=stoTomasMembers.filter(m=>m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1).length;
-const outreach=(await getSetting('defaultOutreach'))||'';
-const adultTotal=counts.Youth+counts.YPro+counts.Mothers+counts.Fathers;
-const childNum=parseInt(childrenVal)||0;
-const oRes=await resolveOutreachGroups(outreachGroups,todayStr);
-const outreachTotal=Object.values(oRes.final).reduce((a,b)=>a+b,0);
-const unclassified=stoTomasMembers.filter(m=>{const isFirst=m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1;if(isFirst)return false;const g=getAgeGroup(m);return g==='Unknown'||(g!=='Children'&&counts[g]===undefined)}).length;
-const grandTotal=adultTotal+childNum+outreachTotal+newCount+unclassified;
-const report={action:'sendReport',date:todayStr,occasion:currentOccasion,outreach,youth:counts.Youth,ypro:counts.YPro,mothers:counts.Mothers,fathers:counts.Fathers,children:childNum,newCount,unclassified,outreachGroups:oRes.final,outreachScanned:outreachGroups,outreachManual:oRes.manual,others:'(auto-sent at 5PM)',email,grandTotal};
-try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify(report)));reportSentToday=true;showToast('Report auto-sent!','success')}catch(e){}
-},30000);
-})();
 
 async function fetchSharedSettings(){
 const url=await getSetting('scriptUrl');if(!url)return;
@@ -2235,8 +2211,9 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 
 // === APP VERSION & CHANGELOG ===
 function initMinistryToggle(){const card=document.getElementById('ministryCard'),head=document.getElementById('ministryToggle');if(!card||!head||head.dataset.bound)return;head.dataset.bound='1';const apply=c=>{card.classList.toggle('mb-collapsed',c);head.setAttribute('aria-expanded',String(!c))};let saved=null;try{saved=localStorage.getItem('jilgm_ministry_collapsed')}catch(err){}apply(saved!=='0');const toggle=()=>{const c=!card.classList.contains('mb-collapsed');apply(c);try{localStorage.setItem('jilgm_ministry_collapsed',c?'1':'0')}catch(err){}};head.addEventListener('click',toggle);head.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ev.preventDefault();toggle()}})}
-const APP_VERSION='1.8.1';
+const APP_VERSION='1.8.2';
 const CHANGELOG=[
+{version:'1.8.2',date:'October 18, 2026',changes:[{type:'Improve',text:'Weekly attendance chart and average now match the report total (manual Tanauan and children included)'},{type:'Improve',text:'Report auto-send moved to 10 PM daily (sent by the server, no phone needed)'}]},
 {version:'1.8.1',date:'October 18, 2026',changes:[{type:'Improve',text:'Ministry breakdown section can be collapsed (remembers your choice)'}]},
 {version:'1.8.0',date:'October 18, 2026',changes:[
 {type:'New',text:'Tanauan count input on dashboard and Send Report (like Children)'},
