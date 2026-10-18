@@ -81,10 +81,17 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 .card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px;transition:transform 0.2s,box-shadow 0.2s}
 .card:active{transform:scale(0.97)}
 .avatar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:12px}
-.avatar-grid-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:12px;transition:all 0.2s;cursor:pointer}
+.avatar-grid-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:12px;transition:all 0.2s;cursor:pointer;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
 .avatar-grid-item:active{transform:scale(0.93)}
 .avatar-grid-item .name{font-size:11px;color:var(--text-secondary);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72px}
 .avatar-grid-item.checked .avatar{box-shadow:0 0 0 3px var(--success)}
+.qt-pop{position:fixed;left:0;top:0;z-index:1000;max-width:min(260px,calc(100vw - 16px));background:var(--card);color:var(--text);border:1px solid var(--card-border);border-radius:12px;padding:8px 14px;box-shadow:0 8px 24px rgba(0,0,0,0.3);text-align:center;pointer-events:none;opacity:0;transform:translateY(4px) scale(0.96);transition:opacity 0.15s ease,transform 0.15s ease}
+.qt-pop.below{transform:translateY(-4px) scale(0.96)}
+.qt-pop.show{opacity:1;transform:none}
+.qt-pop::after{content:'';position:absolute;left:var(--ax,50%);top:100%;width:10px;height:10px;background:var(--card);border-right:1px solid var(--card-border);border-bottom:1px solid var(--card-border);transform:translate(-50%,-5px) rotate(45deg)}
+.qt-pop.below::after{top:auto;bottom:100%;transform:translate(-50%,5px) rotate(225deg)}
+.qt-pop .qt-n{font-size:14px;font-weight:700;line-height:1.3;word-break:break-word}
+.qt-pop .qt-s{font-size:11px;color:var(--text-secondary);margin-top:2px}
 @keyframes checkPulse{0%{box-shadow:0 0 0 3px var(--success)}50%{box-shadow:0 0 0 8px rgba(0,230,118,0.2)}100%{box-shadow:0 0 0 3px var(--success)}}
 .filter-bar{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
 .filter-bar select{background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:8px 12px;font-size:13px;color:var(--text);appearance:none;-webkit-appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b8b9e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
@@ -601,7 +608,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 </div>
 <div class="settings-section">
 <h4>About</h4>
-<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.8.3</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
+<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.8.4</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent3);cursor:pointer" id="whatsNewBtn">What's New</span></div>
 
 </div>
 </div>
@@ -912,8 +919,32 @@ resolve({type:'first',count:1});
 }
 
 let currentTab='tabCheckin';let currentMode='qr';let qrScanner=null;let allMembers=[];let todayAttendance=[];
+var qtLP={t:null,hide:null,x:0,y:0,lp:false,shown:false,pop:null};
+function qtHidePop(){if(!qtLP)return;clearTimeout(qtLP.hide);qtLP.hide=null;if(qtLP.pop)qtLP.pop.classList.remove('show');qtLP.shown=false}
+function qtShowPop(item){const m=allMembers.find(x=>x.id===item.dataset.id);if(!m)return false;
+if(!qtLP.pop){qtLP.pop=document.createElement('div');qtLP.pop.className='qt-pop';qtLP.pop.setAttribute('role','tooltip');qtLP.pop.innerHTML='<div class="qt-n"></div><div class="qt-s"></div>';document.body.appendChild(qtLP.pop)}
+const p=qtLP.pop,sub=[m.outreach,m.ministry].filter(Boolean).join(' \u00b7 '),s=p.querySelector('.qt-s');
+p.querySelector('.qt-n').textContent=m.name;s.textContent=sub;s.style.display=sub?'':'none';p.classList.remove('show','below');p.style.left='0px';p.style.top='0px';
+const r=item.getBoundingClientRect(),pw=p.offsetWidth,ph=p.offsetHeight,vw=window.innerWidth,vh=window.innerHeight;
+let top=r.top-ph-10,below=false;if(top<8){top=r.bottom+10;below=true}top=Math.max(8,Math.min(top,vh-ph-8));
+const cx=r.left+r.width/2,left=Math.max(8,Math.min(cx-pw/2,vw-pw-8));
+p.style.left=left+'px';p.style.top=top+'px';p.style.setProperty('--ax',Math.max(14,Math.min(cx-left,pw-14))+'px');p.classList.toggle('below',below);
+void p.offsetWidth;p.classList.add('show');qtLP.shown=true;navigator.vibrate&&navigator.vibrate(15);return true}
+(function(){const g=document.getElementById('avatarGrid');if(!g)return;
+const cancel=()=>{clearTimeout(qtLP.t);qtLP.t=null};
+const release=()=>{cancel();if(qtLP.lp){clearTimeout(qtLP.hide);qtLP.hide=setTimeout(qtHidePop,1500);setTimeout(()=>{qtLP.lp=false},350)}};
+g.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;const it=e.target.closest('.avatar-grid-item');if(!it)return;cancel();qtHidePop();qtLP.lp=false;qtLP.x=e.clientX;qtLP.y=e.clientY;qtLP.t=setTimeout(()=>{qtLP.t=null;if(qtShowPop(it))qtLP.lp=true},450)});
+g.addEventListener('pointermove',e=>{if(qtLP.t&&Math.hypot(e.clientX-qtLP.x,e.clientY-qtLP.y)>10)cancel()});
+g.addEventListener('pointerup',release);g.addEventListener('pointercancel',release);
+g.addEventListener('click',e=>{if(qtLP.lp&&e.target.closest('.avatar-grid-item')){e.preventDefault();e.stopPropagation()}},true);
+g.addEventListener('contextmenu',e=>{if(e.target.closest('.avatar-grid-item'))e.preventDefault()});
+document.addEventListener('pointerdown',e=>{if(qtLP.shown&&!e.target.closest('#avatarGrid'))qtHidePop()},true);
+document.addEventListener('scroll',()=>{cancel();if(qtLP.shown)qtHidePop()},{capture:true,passive:true});
+window.addEventListener('resize',()=>{if(qtLP.shown)qtHidePop()});
+})();
 
 function switchTab(tabId){
+qtHidePop();
 document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
 document.getElementById(tabId).classList.add('active');
 document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -932,7 +963,7 @@ if(tabId==='tabCheckin'&&currentMode==='qr'){setTimeout(()=>startQR(),100)}
 document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>switchTab(n.dataset.tab)));
 
 function switchMode(mode){
-currentMode=mode;
+qtHidePop();currentMode=mode;
 document.querySelectorAll('.mode-pill').forEach((p,i)=>{p.classList.toggle('active',p.dataset.mode===mode)});
 const idx=['qr','tap','search'].indexOf(mode);
 document.getElementById('pillSlider').style.transform=`translateX(${idx*100}%)`;
@@ -969,7 +1000,7 @@ startX=e.touches[0].clientX;startY=e.touches[0].clientY;dragging=false;locked=fa
 },{passive:true});
 
 content.addEventListener('touchmove',e=>{
-if(locked)return;
+if(locked)return;if(qtLP&&qtLP.lp){locked=true;return}
 const dx=e.touches[0].clientX-startX;
 const dy=e.touches[0].clientY-startY;
 if(!dragging){
@@ -1292,7 +1323,8 @@ const grid=document.getElementById('avatarGrid');
 grid.innerHTML=filtered.map(m=>{
 const checked=todayAttendance.find(a=>a.memberId===m.id);
 const isNew=isNewOrReturning(m);
-return `<div class="avatar-grid-item${checked?' checked':''}" data-id="${m.id}">
+const fn=String(m.name||'').replace(/[&"<>]/g,c=>({'&':'&amp;','"':'&quot;','<':'&lt;','>':'&gt;'})[c]);
+return `<div class="avatar-grid-item${checked?' checked':''}" data-id="${m.id}" title="${fn}" aria-label="${fn}" role="button">
 <div class="avatar" style="background:${getAvatarColor(m.name)}">${getInitials(m.name)}${checked?'<div class="check-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="3"/></svg></div>':''}${isNew?'<div class="check-badge" style="background:var(--warning);left:-2px;right:auto"><span style="font-size:7px;font-weight:700;color:#000">N</span></div>':''}</div>
 <div class="name">${m.name.split(' ')[0]}</div></div>`;
 }).join('');
@@ -2213,8 +2245,9 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 
 // === APP VERSION & CHANGELOG ===
 function initCollapse(cardId,headId,key){const card=document.getElementById(cardId),head=document.getElementById(headId);if(!card||!head||head.dataset.bound)return;head.dataset.bound='1';const apply=c=>{card.classList.toggle('mb-collapsed',c);head.setAttribute('aria-expanded',String(!c))};let saved=null;try{saved=localStorage.getItem(key)}catch(err){}apply(saved!=='0');const toggle=()=>{const c=!card.classList.contains('mb-collapsed');apply(c);try{localStorage.setItem(key,c?'1':'0')}catch(err){}};head.addEventListener('click',toggle);head.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ev.preventDefault();toggle()}})}
-const APP_VERSION='1.8.3';
+const APP_VERSION='1.8.4';
 const CHANGELOG=[
+{version:'1.8.4',date:'October 18, 2026',changes:[{type:'New',text:'Long-press a member in Quick Tap to see their full name'}]},
 {version:'1.8.3',date:'October 18, 2026',changes:[{type:'Improve',text:'Needs Follow-Up section is now collapsible'},{type:'Improve',text:'All collapsible sections start collapsed'}]},
 {version:'1.8.2',date:'October 18, 2026',changes:[{type:'Improve',text:'Weekly attendance chart and average now match the report total (manual Tanauan and children included)'},{type:'Improve',text:'Report auto-send moved to 10 PM daily (sent by the server, no phone needed)'}]},
 {version:'1.8.1',date:'October 18, 2026',changes:[{type:'Improve',text:'Ministry breakdown section can be collapsed (remembers your choice)'}]},
