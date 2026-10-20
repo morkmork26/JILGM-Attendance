@@ -18,7 +18,8 @@ const SHEET_CONFIG     = "Config";
 const SHEET_DEVICES    = "Devices";
 
 // Column indices (0-based) for Members sheet
-// ID | Name | Outreach | DGroup | DGroupLeader | Ministry | Phone | Address | Birthday | Gender | CivilStatus | HasChildren | EmergencyContact | EmergencyPhone | Email | MembershipStatus | MembershipDate | BaptismDate | BaptismPlace | Classes | QRCodeURL | Status | DateRegistered
+// ID | Name | Outreach | DGroup | DGroupLeader | Ministry | Phone | Address | Birthday | Gender | CivilStatus | HasChildren | EmergencyContact | EmergencyPhone | Email | MembershipStatus | MembershipDate | BaptismDate | BaptismPlace | Classes | QRCodeURL | Status | DateRegistered | ManualGroup
+// ManualGroup is located by header name (appended at the end on first use), so older sheets without it keep working.
 const COL_MEM = {
   ID:               0,
   NAME:             1,
@@ -45,6 +46,36 @@ const COL_MEM = {
   DATE_REGISTERED:  22
 };
 
+// Optional Members column for a hand-picked group when no birthday is on file.
+const MANUAL_GROUP_HEADER = "ManualGroup";
+const VALID_MANUAL_GROUPS = ['Children', 'Youth', 'YPro', 'Mothers', 'Fathers'];
+let manualGroupColCache = null;
+/**
+ * Returns v when it is a valid manual group, otherwise "".
+ */
+function normManualGroup(v) {
+  const s = String(v === null || v === undefined ? "" : v).trim();
+  return VALID_MANUAL_GROUPS.indexOf(s) >= 0 ? s : "";
+}
+/**
+ * 0-based index of the ManualGroup column in the Members sheet, or -1 when absent.
+ * With create=true a missing header is appended after the last used column.
+ */
+function getManualGroupCol(sheet, create) {
+  if (manualGroupColCache !== null && (manualGroupColCache >= 0 || !create)) return manualGroupColCache;
+  const lastCol = Math.max(sheet.getLastColumn(), 1);
+  const header  = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  let idx = -1;
+  for (let i = 0; i < header.length; i++) {
+    if (String(header[i]).trim().toLowerCase() === MANUAL_GROUP_HEADER.toLowerCase()) { idx = i; break; }
+  }
+  if (idx < 0 && create) {
+    idx = Math.max(lastCol, COL_MEM.DATE_REGISTERED + 1);
+    sheet.getRange(1, idx + 1).setValue(MANUAL_GROUP_HEADER).setFontWeight("bold");
+  }
+  manualGroupColCache = idx;
+  return idx;
+}
 // Column indices (0-based) for Attendance sheet
 const COL_ATT = {
   MEMBER_ID:      0,
@@ -278,7 +309,8 @@ function getMembers() {
   const sheet = getSheet(SHEET_MEMBERS);
   const rows  = getDataRows(sheet);
 
-  const members = rows.map(row => rowToMember(row));
+  const mgCol = getManualGroupCol(sheet, false);
+  const members = rows.map(row => rowToMember(row, mgCol));
   return { success: true, data: members };
 }
 
@@ -484,6 +516,7 @@ function deleteMember(body) {
  */
 function addMember(body) {
   const { name, outreach, dgroup, dgroupLeader, ministry, phone, address, birthday, gender, civilStatus, hasChildren, emergencyContact, emergencyPhone, email, membershipStatus, membershipDate, baptismDate, baptismPlace, classes } = body;
+  const manualGroup = birthday ? "" : normManualGroup(body.manualGroup);
 
   if (!name) throw new Error("name is required");
 
@@ -526,6 +559,10 @@ function addMember(body) {
     "Active",
     today
   ]);
+  if (manualGroup) {
+    const mgCol = getManualGroupCol(sheet, true);
+    sheet.getRange(sheet.getLastRow(), mgCol + 1).setValue(manualGroup);
+  }
 
   const member = {
     id: newId, name, outreach: outreach||"", dgroup: dgroup||"", dgroupLeader: dgroupLeader||"",
@@ -534,7 +571,7 @@ function addMember(body) {
     emergencyContact: emergencyContact||"", emergencyPhone: emergencyPhone||"",
     email: email||"", membershipStatus: membershipStatus||"", membershipDate: membershipDate||"",
     baptismDate: baptismDate||"", baptismPlace: baptismPlace||"", classes: classes||"",
-    qrCode, status: "Active", dateRegistered: today
+    qrCode, status: "Active", dateRegistered: today, manualGroup
   };
 
   return { success: true, data: member };
@@ -601,7 +638,18 @@ function updateMember(body) {
   });
   sheet.getRange(rowIndex + 1, 1, 1, 23).setValues([currentRow]);
 
-  return { success: true, data: rowToMember(currentRow) };
+  // ManualGroup lives outside the fixed 23 columns; a birthday always clears it.
+  let mgCol = getManualGroupCol(sheet, false);
+  let manualGroup = mgCol >= 0 ? normManualGroup(data[rowIndex][mgCol]) : "";
+  if (body.manualGroup !== undefined || currentRow[COL_MEM.BIRTHDAY]) {
+    const next = currentRow[COL_MEM.BIRTHDAY] ? "" : normManualGroup(body.manualGroup);
+    if (next && mgCol < 0) mgCol = getManualGroupCol(sheet, true);
+    if (mgCol >= 0 && next !== manualGroup) sheet.getRange(rowIndex + 1, mgCol + 1).setValue(next);
+    manualGroup = next;
+  }
+  const updated = rowToMember(currentRow);
+  updated.manualGroup = manualGroup;
+  return { success: true, data: updated };
 }
 
 
@@ -946,7 +994,7 @@ function setup() {
     "Phone", "Address", "Birthday", "Gender", "CivilStatus", "HasChildren",
     "EmergencyContact", "EmergencyPhone", "Email", "MembershipStatus",
     "MembershipDate", "BaptismDate", "BaptismPlace", "Classes",
-    "QRCodeURL", "Status", "DateRegistered"
+    "QRCodeURL", "Status", "DateRegistered", "ManualGroup"
   ]);
 
   // --- Attendance ---
@@ -1045,7 +1093,7 @@ function normDate(val) {
 /**
  * Converts a raw Members row array to a plain object.
  */
-function rowToMember(row) {
+function rowToMember(row, mgCol) {
   return {
     id:               String(row[COL_MEM.ID]               || "").trim(),
     name:             String(row[COL_MEM.NAME]             || "").trim(),
@@ -1069,7 +1117,8 @@ function rowToMember(row) {
     classes:          String(row[COL_MEM.CLASSES]          || "").trim(),
     qrCode:           String(row[COL_MEM.QR_CODE]          || "").trim(),
     status:           String(row[COL_MEM.STATUS]           || "").trim(),
-    dateRegistered:   String(row[COL_MEM.DATE_REGISTERED]  || "").trim()
+    dateRegistered:   String(row[COL_MEM.DATE_REGISTERED]  || "").trim(),
+    manualGroup:      (mgCol !== undefined && mgCol >= 0) ? normManualGroup(row[mgCol]) : ""
   };
 }
 
@@ -1679,7 +1728,7 @@ function getAgeServer(birthday) {
  */
 function getAgeGroupServer(member) {
   var age = getAgeServer(member.birthday);
-  if (age === null) return 'Unknown';
+  if (age === null) return normManualGroup(member.manualGroup) || 'Unknown';
   if (age <= 12) return 'Children';
   if (age <= 21) return 'Youth';
   var isParent = member.hasChildren === 'Yes';
@@ -1708,7 +1757,9 @@ function parseManualCount(v) {
  * @returns {Object} Report body for sendReport(), plus checkInCount
  */
 function buildReportForDate(dateStr) {
-  var members = getDataRows(getSheet(SHEET_MEMBERS)).map(function (row) { return rowToMember(row); });
+  var memSheet = getSheet(SHEET_MEMBERS);
+  var mgCol = getManualGroupCol(memSheet, false);
+  var members = getDataRows(memSheet).map(function (row) { return rowToMember(row, mgCol); });
   var memberById = {};
   members.forEach(function (m) { if (m.id && !memberById[m.id]) memberById[m.id] = m; });
   var attRows = getDataRows(getSheet(SHEET_ATTENDANCE));

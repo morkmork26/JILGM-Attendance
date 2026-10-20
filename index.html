@@ -171,6 +171,16 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 .mg-wrap::before{left:0;background:linear-gradient(90deg,var(--bg),transparent)}
 .mg-wrap::after{right:0;background:linear-gradient(270deg,var(--bg),transparent)}
 .mg-wrap.fade-l::before,.mg-wrap.fade-r::after{opacity:1}
+.mg-manual{margin:-6px 0 20px;padding:12px 14px 14px;border:1px solid var(--ring);border-radius:14px;background:var(--sb-tint);box-shadow:var(--sh-1);animation:mgIn 0.22s ease-out}
+.mg-manual[hidden]{display:none}
+.mg-manual .input-group{margin-bottom:0}
+.mg-manual-head{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text)}
+.mg-manual-head svg{width:16px;height:16px;color:var(--accent);flex-shrink:0}
+.mg-manual-hint{font-size:12px;color:var(--text-secondary);margin:4px 0 10px}
+.mg-tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;background:var(--accent-t);border:1px solid var(--ring);color:var(--accent);font-size:10px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;line-height:1.4}
+.mg-detail{display:flex;align-items:center;gap:8px}
+@keyframes mgIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.mg-manual{animation:none}}
 .mg-chips{margin-bottom:4px;scroll-snap-type:x proximity;scroll-padding:0 24px}
 .mg-chips .sb-chip{min-height:36px;padding:6px 10px 6px 14px;font-family:inherit;scroll-snap-align:start;-webkit-appearance:none;appearance:none}
 .mg-chips .sb-chip:active{transform:scale(0.97)}
@@ -682,7 +692,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 </div>
 <div class="settings-section">
 <h4>About</h4>
-<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.8.4</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent);cursor:pointer" id="whatsNewBtn">What's New</span></div>
+<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.8.9</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent);cursor:pointer" id="whatsNewBtn">What's New</span></div>
 
 </div>
 </div>
@@ -766,9 +776,13 @@ const m=now.getMonth()-b.getMonth();
 if(m<0||(m===0&&now.getDate()<b.getDate()))age--;
 return age;
 }
+// Groups an admin can assign by hand when a member has no birthday. A birthday always wins.
+const MANUAL_GROUPS=['Children','Youth','YPro','Mothers','Fathers'];
+function validManualGroup(v){return MANUAL_GROUPS.includes(v)?v:''}
+function isManualGroup(member){return getAge(member.birthday)===null&&!!validManualGroup(member.manualGroup)}
 function getAgeGroup(member){
 const age=getAge(member.birthday);
-if(age===null)return 'Unknown';
+if(age===null)return validManualGroup(member.manualGroup)||'Unknown';
 if(age<=12)return 'Children';
 if(age<=21)return 'Youth';
 const isParent=member.hasChildren==='Yes';
@@ -1470,6 +1484,7 @@ content.innerHTML=`<div class="modal-header"><h3>${data?'Edit Member':'Add Membe
 <div class="input-group"><input type="tel" id="memPhone" placeholder=" " value="${data?data.phone||'':''}"><label>Phone</label></div>
 <div class="input-group"><input type="text" id="memAddress" placeholder=" " value="${data?data.address||'':''}"><label>Address</label></div>
 <div class="input-group"><input type="date" id="memBday" value="${data?data.birthday||'':''}"><label style="top:-8px;font-size:11px;color:var(--accent)">Birthday</label></div>
+<div class="mg-manual" id="memManualGroupWrap"${data&&data.birthday?' hidden':''}><div class="mg-manual-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1.5"/></svg><span>Group</span><span class="mg-tag">Manual</span></div><div class="mg-manual-hint">No birthday, choose group manually</div><div class="input-group"><select id="memManualGroup"${data&&data.birthday?' disabled':''}><option value="">Not set</option>${MANUAL_GROUPS.map(g=>`<option${data&&!data.birthday&&data.manualGroup===g?' selected':''}>${g}</option>`).join('')}</select><label hidden>Group</label></div></div>
 <div class="input-group"><select id="memGender"><option value="">Select Gender</option><option${data&&data.gender==='Male'?' selected':''}>Male</option><option${data&&data.gender==='Female'?' selected':''}>Female</option></select></div>
 <div class="input-group"><select id="memCivilStatus"><option value="">Civil Status</option><option${data&&data.civilStatus==='Single'?' selected':''}>Single</option><option${data&&data.civilStatus==='Married'?' selected':''}>Married</option><option${data&&data.civilStatus==='Widow'?' selected':''}>Widow</option><option${data&&data.civilStatus==='Separated'?' selected':''}>Separated</option></select></div>
 <div class="input-group"><select id="memHasChildren"><option value="">Do you have children?</option><option${data&&data.hasChildren==='Yes'?' selected':''}>Yes</option><option${data&&data.hasChildren==='No'?' selected':''}>No</option></select></div>
@@ -1495,6 +1510,9 @@ const el=document.getElementById('memMinistry');
 el.innerHTML=`<option value="">Select Ministry</option>`+['None',...list].map(m=>`<option${data&&data.ministry===m?' selected':''}>${m}</option>`).join('');
 initCustomSelects(document.getElementById('modalContent'));
 });
+const bdayEl=document.getElementById('memBday'),mgWrap=document.getElementById('memManualGroupWrap'),mgSel=document.getElementById('memManualGroup');
+const syncManualGroup=()=>{const off=!!bdayEl.value;mgWrap.hidden=off;mgSel.disabled=off};
+bdayEl.addEventListener('input',syncManualGroup);bdayEl.addEventListener('change',syncManualGroup);syncManualGroup();
 document.getElementById('saveMember').addEventListener('click',()=>saveMember(data));
 }
 },50);
@@ -1513,7 +1531,7 @@ if(bdayAge!==null&&bdayAge>120){showToast('Birthday year '+bdayYear+' seems inco
 if(bdayAge!==null&&bdayAge<1){if(!await customConfirm('Birthday year is '+bdayYear+'. This person would be '+bdayAge+' years old. Is this correct?',{title:'Check Birthday',okText:'Yes, correct'}))return}}
 const classCheckboxes=document.querySelectorAll('#memClassesContainer input[type=checkbox]:checked');
 const classes=Array.from(classCheckboxes).map(cb=>cb.value);
-const member={id:existing?existing.id:'m'+Date.now(),name,outreach:document.getElementById('memOutreach').value,address:document.getElementById('memAddress').value.trim(),email:document.getElementById('memEmail').value.trim(),ministry:document.getElementById('memMinistry').value,dgroupLeader:document.getElementById('memDgroupLeader').value.trim(),phone:document.getElementById('memPhone').value.trim(),birthday:document.getElementById('memBday').value,gender:document.getElementById('memGender').value,civilStatus:document.getElementById('memCivilStatus').value,hasChildren:document.getElementById('memHasChildren').value,emergencyContact:document.getElementById('memEmergencyContact').value.trim(),emergencyPhone:document.getElementById('memEmergencyPhone').value.trim(),membershipStatus:document.getElementById('memMembershipStatus').value,membershipDate:document.getElementById('memMembershipDate').value,baptismDate:document.getElementById('memBaptismDate').value,baptismPlace:document.getElementById('memBaptismPlace').value.trim(),classes:classes,status:existing?existing.status:'active',addedLocally:existing?existing.addedLocally||false:true,dateRegistered:existing?existing.dateRegistered:today()};
+const member={id:existing?existing.id:'m'+Date.now(),name,outreach:document.getElementById('memOutreach').value,address:document.getElementById('memAddress').value.trim(),email:document.getElementById('memEmail').value.trim(),ministry:document.getElementById('memMinistry').value,dgroupLeader:document.getElementById('memDgroupLeader').value.trim(),phone:document.getElementById('memPhone').value.trim(),birthday:bdayVal,manualGroup:bdayVal?'':validManualGroup(document.getElementById('memManualGroup').value),gender:document.getElementById('memGender').value,civilStatus:document.getElementById('memCivilStatus').value,hasChildren:document.getElementById('memHasChildren').value,emergencyContact:document.getElementById('memEmergencyContact').value.trim(),emergencyPhone:document.getElementById('memEmergencyPhone').value.trim(),membershipStatus:document.getElementById('memMembershipStatus').value,membershipDate:document.getElementById('memMembershipDate').value,baptismDate:document.getElementById('memBaptismDate').value,baptismPlace:document.getElementById('memBaptismPlace').value.trim(),classes:classes,status:existing?existing.status:'active',addedLocally:existing?existing.addedLocally||false:true,dateRegistered:existing?existing.dateRegistered:today()};
 
 if(member.outreach)localStorage.setItem('jilgm_default_outreach',member.outreach);
 const url=await getSetting('scriptUrl');
@@ -1621,7 +1639,7 @@ content.innerHTML=`${detailBadBday?'<div style="background:var(--warning-t);bord
 <div class="card"><span style="font-size:12px;color:var(--text-secondary)">Phone</span><div>${member.phone||'-'}</div></div>
 <div class="card"><span style="font-size:12px;color:var(--text-secondary)">Address</span><div>${member.address||'-'}</div></div>
 <div class="card"><span style="font-size:12px;color:var(--text-secondary)">Birthday</span><div>${member.birthday?formatDate(member.birthday):'-'} (Age: ${age})</div></div>
-<div class="card"><span style="font-size:12px;color:var(--text-secondary)">Age Group</span><div>${ageGroup}</div></div>
+<div class="card"><span style="font-size:12px;color:var(--text-secondary)">Age Group</span><div class="mg-detail">${ageGroup}${isManualGroup(member)?'<span class="mg-tag" title="Set manually, no birthday on file">manual</span>':''}</div></div>
 <div class="card"><span style="font-size:12px;color:var(--text-secondary)">Attendance (last 10 Sundays)</span><div style="margin-top:6px">${attendDots}</div></div>
 <div class="card" style="text-align:center"><div id="memberQRCode" style="margin-top:8px;background:#fff;padding:12px;border-radius:8px;display:inline-block"></div></div>
 </div>
@@ -1874,7 +1892,7 @@ const section=document.getElementById('adminUnclassified');
 if(!section||section.style.display==='none')return;
 const list=document.getElementById('unclassifiedList');
 const dismissed=getDismissedUnclassified();
-const noBirthday=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&getAgeGroup(m)==='Unknown'&&!dismissed.includes(m.id));
+const noBirthday=allMembers.filter(m=>(m.status==='active'||m.status==='Active')&&getAge(m.birthday)===null&&!dismissed.includes(m.id));
 const newPlaceholders=allMembers.filter(m=>{
 if(!(m.status==='active'||m.status==='Active'))return false;
 if(!m.birthday||m.birthday.slice(5)!=='08-23')return false;
@@ -1893,7 +1911,7 @@ html+=placeholderBday.map(m=>`<div style="display:flex;align-items:center;gap:8p
 }
 if(noBirthday.length){
 html+='<p style="font-size:11px;color:var(--warning);padding:4px 0;margin-bottom:8px;margin-top:8px"><strong>Missing Birthday</strong> ('+noBirthday.length+')</p>';
-html+=noBirthday.map(m=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div class="member-row" data-id="${m.id}" style="flex:1;margin:0">${createAvatar(m,'small')}<div class="info"><div class="name">${m.name}</div><div class="sub">${m.ministry||'No ministry'} | Birthday: ${m.birthday||'missing'}</div></div></div><button onclick="event.stopPropagation();dismissUnclassified('${m.id}')" style="background:none;border:none;padding:6px;cursor:pointer;color:var(--text-secondary);font-size:18px" title="Dismiss">&#10005;</button></div>`).join('');
+html+=noBirthday.map(m=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div class="member-row" data-id="${m.id}" style="flex:1;margin:0">${createAvatar(m,'small')}<div class="info"><div class="name">${m.name}</div><div class="sub">${m.ministry||'No ministry'} | Birthday: ${m.birthday||'missing'}${isManualGroup(m)?' | Group: '+m.manualGroup+' (manual)':''}</div></div></div><button onclick="event.stopPropagation();dismissUnclassified('${m.id}')" style="background:none;border:none;padding:6px;cursor:pointer;color:var(--text-secondary);font-size:18px" title="Dismiss">&#10005;</button></div>`).join('');
 }
 if(noEmail.length){
 html+='<p style="font-size:11px;color:var(--warning);padding:4px 0;margin-bottom:8px;margin-top:12px"><strong>Missing Email</strong> ('+noEmail.length+')</p>';
@@ -1997,7 +2015,7 @@ finally{dot.classList.remove('syncing')}
 
 document.getElementById('exportBtn').addEventListener('click',async()=>{
 const members=await dbGet('members');
-const csv='Name,D-Group,Ministry,Phone,Birthday,Status\n'+members.map(m=>`"${m.name}","${m.dgroup}","${m.ministry||''}","${m.phone||''}","${m.birthday||''}","${m.status}"`).join('\n');
+const csv='Name,D-Group,Ministry,Phone,Birthday,Manual Group,Status\n'+members.map(m=>`"${m.name}","${m.dgroup}","${m.ministry||''}","${m.phone||''}","${m.birthday||''}","${m.birthday?'':validManualGroup(m.manualGroup)}","${m.status}"`).join('\n');
 const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='jilgm_members.csv';a.click();
 });
 
@@ -2397,8 +2415,9 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 
 // === APP VERSION & CHANGELOG ===
 function initCollapse(cardId,headId,key){const card=document.getElementById(cardId),head=document.getElementById(headId);if(!card||!head||head.dataset.bound)return;head.dataset.bound='1';const apply=c=>{card.classList.toggle('mb-collapsed',c);head.setAttribute('aria-expanded',String(!c))};let saved=null;try{saved=localStorage.getItem(key)}catch(err){}apply(saved!=='0');const toggle=()=>{const c=!card.classList.contains('mb-collapsed');apply(c);try{localStorage.setItem(key,c?'1':'0')}catch(err){}};head.addEventListener('click',toggle);head.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ev.preventDefault();toggle()}})}
-const APP_VERSION='1.8.8';
+const APP_VERSION='1.8.9';
 const CHANGELOG=[
+{version:'1.8.9',date:'October 20, 2026',changes:[{type:'New',text:'Manual Group option on Add/Edit Member for members with no birthday (Children, Youth, YPro, Mothers, Fathers)'},{type:'Improve',text:'Manual group feeds Reports, Sunday Breakdown, Send Report and Members group chips; a birthday always takes priority'},{type:'Improve',text:'Member details show a Manual tag; Missing Birthday list and CSV export include the manual group'},{type:'Fix',text:'Settings version label now always matches the installed version'}]},
 {version:'1.8.8',date:'October 20, 2026',changes:[{type:'Improve',text:'Refreshed light theme: soft paper surfaces, crisp ink text and clearer borders'},{type:'Improve',text:'Richer dark theme with clear card depth, brighter secondary text and tuned status colors'},{type:'Improve',text:'All text and buttons meet WCAG AA contrast in both themes'},{type:'Improve',text:'Phone status bar color follows the selected theme'},{type:'Fix',text:'Scanner prompt, changelog badges and occasion chips now readable in light mode'}]},
 {version:'1.8.7',date:'October 20, 2026',changes:[{type:'Fix',text:'Swiping the Members group filter or Sunday chips no longer changes tabs'}]},
 {version:'1.8.6',date:'October 20, 2026',changes:[{type:'New',text:'Group filter chips on Members: Youth, YPro, Mothers, Fathers, Children, First-time guests, Unclassified and each outreach, with live counts'},{type:'Improve',text:'Group filter uses the same classification as the Sunday report and combines with search, status, ministry and outreach filters'},{type:'Improve',text:'Removed birthday notifications (birthdays are still used for age groups)'}]},
@@ -2537,6 +2556,7 @@ document.getElementById('whatsNewModal').style.display='flex';
 await setSetting('appVersion',APP_VERSION);
 }
 }
+{const avl=document.getElementById('appVersionLabel');if(avl)avl.textContent='v'+APP_VERSION}
 document.getElementById('whatsNewBtn').addEventListener('click',()=>{renderChangelog();document.getElementById('whatsNewModal').style.display='flex'});
 
 // === OCCASIONS ===
