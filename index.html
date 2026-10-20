@@ -150,9 +150,77 @@ body.light .logo .logo-name .track{background:linear-gradient(135deg,#0ea5e9 0%,
 .mb-collapsed .mb-body{grid-template-rows:0fr;opacity:0}
 .chart-bars{display:flex;align-items:flex-end;gap:8px;height:300px;padding:0 4px}
 .chart-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
-.chart-bar .bar{width:100%;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,var(--accent),var(--accent2));transition:height 1s cubic-bezier(0.4,0,0.2,1);min-height:2px}
-.chart-bar .bar-label{font-size:10px;color:var(--text-secondary)}
-.chart-bar .bar-value{font-size:11px;font-weight:600}
+.chart-bar .bar{width:100%;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,var(--accent),var(--accent2));transition:height 1s cubic-bezier(0.4,0,0.2,1),opacity 0.25s,box-shadow 0.25s;min-height:2px}
+.chart-bar .bar-label{font-size:10px;color:var(--text-secondary);transition:color 0.2s}
+.chart-bar .bar-value{font-size:11px;font-weight:600;transition:color 0.2s}
+:root{--sb-tint:rgba(108,99,255,0.10)}
+body.light{--sb-tint:rgba(79,70,229,0.07)}
+.chart-bar[data-date]{cursor:pointer;-webkit-tap-highlight-color:transparent;outline:none;border-radius:8px}
+.chart-bar[data-date]:hover .bar{opacity:0.85}
+.chart-bars.has-sel .chart-bar:not(.sel) .bar{opacity:0.38}
+.chart-bar.sel .bar{opacity:1;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent),0 6px 18px rgba(108,99,255,0.35)}
+.chart-bar.sel .bar-label,.chart-bar.sel .bar-value{color:var(--accent);font-weight:700}
+.chart-bar[data-date]:focus-visible .bar{outline:2px solid var(--accent2);outline-offset:3px}
+.chart-cap{font-size:11px;line-height:1.5;color:var(--text-secondary);margin-top:12px;padding-top:10px;border-top:1px solid var(--card-border)}
+#sundayCard{scroll-margin-top:calc(var(--header-h) + 12px)}
+.sb-nav{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.sb-arrow{width:36px;height:36px;flex-shrink:0;border-radius:50%;border:1px solid var(--card-border);background:var(--card);color:var(--text);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:color 0.2s,border-color 0.2s,opacity 0.2s;-webkit-tap-highlight-color:transparent}
+.sb-arrow svg{width:16px;height:16px}
+.sb-arrow:hover:not(:disabled){color:var(--accent);border-color:var(--accent)}
+.sb-arrow:disabled{opacity:0.3;cursor:default}
+.sb-label{flex:1;min-width:0;text-align:center}
+.sb-label .d{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-label .s{font-size:11px;color:var(--text-secondary);margin-top:2px}
+.sb-chips{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x proximity;padding:4px 2px 8px;margin-bottom:8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.sb-chips::-webkit-scrollbar{display:none}
+.sb-chip{flex-shrink:0;scroll-snap-align:center;display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:6px 12px;border-radius:999px;border:1px solid var(--card-border);background:var(--card);color:var(--text-secondary);font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background 0.2s,color 0.2s,box-shadow 0.2s;-webkit-tap-highlight-color:transparent}
+.sb-chip .dot{width:6px;height:6px;border-radius:50%;background:var(--text-secondary);opacity:0.3}
+.sb-chip.has .dot{background:var(--success);opacity:1}
+.sb-chip.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(108,99,255,0.3)}
+.sb-chip.on .dot{background:#fff;opacity:1}
+.sb-chip:focus-visible,.sb-arrow:focus-visible,.sb-names-h:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sb-hero{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-radius:14px;background:var(--sb-tint);border:1px solid var(--card-border);margin-bottom:12px}
+.sb-total{font-size:34px;font-weight:800;line-height:1;text-align:right;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sb-total-l{font-size:10px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-secondary);margin-top:4px;text-align:right;white-space:nowrap}
+.sb-occ{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.sb-pill{font-size:10px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--card);border:1px solid var(--card-border);color:var(--text)}
+.sb-stack{display:flex;gap:2px;height:10px;border-radius:6px;overflow:hidden;background:var(--card);margin-bottom:8px}
+.sb-stack span{display:block;height:100%;min-width:4px}
+.sb-legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:var(--text-secondary);margin-bottom:6px}
+.sb-legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}
+.sb-legend b{color:var(--text);font-weight:700;margin-left:3px}
+.sb-sec{font-size:10px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-secondary);margin:14px 0 6px}
+.sb-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.sb-grid.two{grid-template-columns:repeat(2,1fr)}
+.sb-tile{background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:8px 6px;text-align:center;min-width:0}
+.sb-tile .l{font-size:10px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-tile .v{font-size:18px;font-weight:700;margin-top:2px}
+.sb-tile .h{font-size:10px;color:var(--text-secondary);margin-top:2px;line-height:1.3}
+.sb-tile.ok .v{color:var(--success)}
+.sb-tile.out .l{color:var(--accent2)}
+.sb-tile.warn{border-color:rgba(255,171,0,0.4)}
+.sb-tile.warn .v{color:var(--warning);font-size:13px;padding:3px 0 2px}
+.sb-note{font-size:11px;color:var(--text-secondary);margin-top:10px;line-height:1.45}
+.sb-names{margin-top:14px}
+.sb-names-h{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 12px;border-radius:10px;background:var(--card);border:1px solid var(--card-border);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.sb-chev{font-size:10px;color:var(--text-secondary);transition:transform 0.3s ease}
+.sb-names.open .sb-chev{transform:rotate(180deg)}
+.sb-names-b{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows 0.35s ease,opacity 0.3s ease}
+.sb-names.open .sb-names-b{grid-template-rows:1fr;opacity:1}
+.sb-names-b>div{overflow:hidden;min-height:0}
+.sb-name{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 6px;border-bottom:1px solid var(--card-border);font-size:13px}
+.sb-name:last-child{border-bottom:none}
+.sb-name span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-tag{flex-shrink:0;font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--sb-tint);color:var(--accent);white-space:nowrap}
+.sb-tag.new{color:var(--success)}
+.sb-tag.out{color:var(--accent2)}
+.sb-tag.unk{color:var(--text-secondary)}
+.sb-empty{text-align:center;padding:24px 16px 16px}
+.sb-empty svg{width:44px;height:44px;stroke:var(--text-secondary);fill:none;stroke-width:1.5;opacity:0.5;margin-bottom:10px}
+.sb-empty .t{font-size:14px;font-weight:600}
+.sb-empty .s{font-size:12px;color:var(--text-secondary);margin:6px auto 14px;max-width:320px;line-height:1.5}
+@media(min-width:1024px){.sb-layout{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}.sb-layout .sb-sec:first-child{margin-top:4px}}
+@media(prefers-reduced-motion:reduce){.sb-names-b,.sb-chev,.sb-chip,.chart-bar .bar{transition:none}}
 .member-list{display:flex;flex-direction:column;gap:8px;padding-bottom:calc(var(--nav-h) + 20px)}
 .member-row{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(26,26,46,0.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(108,99,255,0.1);border-radius:12px;transition:all 0.2s;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
 .member-row:active{transform:scale(0.98)}
@@ -495,6 +563,15 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <div class="chart">
 <div class="chart-title">Weekly Attendance</div>
 <div class="chart-bars" id="chartBars"></div>
+<div class="chart-cap">Each bar = unique people scanned on that Sunday + Tanauan manual adjustment + children headcount. Tap a bar for the breakdown.</div>
+</div>
+<div class="chart mb-collapsed" id="sundayCard">
+<div class="chart-title mb-head" id="sundayToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="sundayBody">Sunday Breakdown<span class="mb-sum" id="sundaySummary">Pick a Sunday</span><span class="mb-chev" aria-hidden="true">&#9660;</span></div>
+<div class="mb-body" id="sundayBody"><div>
+<div class="sb-nav"><button type="button" class="sb-arrow" id="sbPrev" aria-label="Previous Sunday"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><div class="sb-label" aria-live="polite"><div class="d" id="sbDate">Loading...</div><div class="s" id="sbSub">Weekly history</div></div><button type="button" class="sb-arrow" id="sbNext" aria-label="Next Sunday"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button></div>
+<div class="sb-chips" id="sbChips" role="listbox" aria-label="Choose a Sunday"><span class="sb-chip">Loading...</span></div>
+<div id="sundayBreakdown"><p class="sb-note" style="text-align:center">Loading breakdown...</p></div>
+</div></div>
 </div>
 <div class="chart mb-collapsed" id="followUpCard" style="border-color:rgba(255,171,0,0.12)">
 <div class="chart-title mb-head" id="followUpToggle" style="color:var(--warning)" role="button" tabindex="0" aria-expanded="false" aria-controls="followUpBody">Needs Follow-Up<span class="mb-sum" id="followUpSummary"></span><span class="mb-chev" aria-hidden="true">&#9660;</span></div>
@@ -1578,16 +1655,18 @@ const thisMonth=today().slice(0,7);const visitors=allMembers.filter(m=>m.dateReg
 document.getElementById('statVisitors').textContent=visitors.length;
 const sundays=[];const d=new Date();
 for(let i=7;i>=0;i--){const sun=new Date(d);sun.setDate(d.getDate()-(d.getDay()===0?0:d.getDay())-i*7);sundays.push(localDateStr(sun))}
-const weeklyParts=[];for(const s of sundays)weeklyParts.push(await weeklyTotal(allAtt,memberIds,s));
-const weeklyCounts=weeklyParts.map(p=>p.total);
+const weeklyParts=[];for(const s of sundays)weeklyParts.push(await computeBreakdown(s,allAtt));
+const weeklyCounts=weeklyParts.map(p=>p.grand);
 const max=Math.max(...weeklyCounts,1);
 const avg=weeklyCounts.length?Math.round(weeklyCounts.reduce((a,b)=>a+b,0)/weeklyCounts.length):0;
 document.getElementById('statAvg').textContent=avg;
 document.getElementById('chartBars').innerHTML=sundays.map((s,i)=>{
 const pct=(weeklyCounts[i]/max)*100;
-const p=weeklyParts[i];const tip=['Scanned '+p.scanned].concat(p.adj?['Tanauan manual adj '+p.adj]:[],p.children?['Children '+p.children]:[]).join(' + ');
-return `<div class="chart-bar" title="${tip}"><div class="bar-value">${weeklyCounts[i]}</div><div class="bar" style="height:${pct}%"></div><div class="bar-label">${s.slice(5)}</div></div>`;
+const p=weeklyParts[i];const tip=['Scanned '+p.scannedCounted].concat(p.tanAdj?['Tanauan manual adj '+p.tanAdj]:[],p.childNum?['Children '+p.childNum]:[]).join(' + ');
+return `<div class="chart-bar" data-date="${s}" role="button" tabindex="0" aria-pressed="false" aria-label="${formatDate(s)}: ${weeklyCounts[i]} total. Show breakdown" title="${tip}"><div class="bar-value">${weeklyCounts[i]}</div><div class="bar" style="height:${pct}%"></div><div class="bar-label">${s.slice(5)}</div></div>`;
 }).join('');
+document.querySelectorAll('#chartBars .chart-bar[data-date]').forEach(el=>{const go=()=>openSundayBreakdown(el.dataset.date);el.addEventListener('click',go);el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();go()}})});
+try{await initSundayPicker(allAtt,sundays)}catch(e){console.log('Sunday breakdown failed',e)}
 const ministrySection=document.getElementById('ministryBreakdown');
 if(ministrySection){
 const activeMembers=allMembers.filter(m=>m.status==='active'||m.status==='Active');
@@ -1652,11 +1731,86 @@ const groups={};const seen=new Set();
 attRows.filter(a=>a.date===date).forEach(a=>{if(seen.has(a.memberId))return;const m=allMembers.find(x=>x.id===a.memberId);if(!m||!m.outreach||m.outreach==='Sto. Tomas')return;seen.add(a.memberId);groups[m.outreach]=(groups[m.outreach]||0)+1});
 return groups;
 }
-async function weeklyTotal(allAtt,memberIds,s){
-const rows=allAtt.filter(a=>a.date===s&&memberIds.has(a.memberId));const scanned=new Set(rows.map(a=>a.memberId)).size;
-const tanScanned=scannedOutreachToday(rows,s).Tanauan||0;const tanUsed=pickOutreachCount(tanScanned,parseManual(await getSetting(outreachKey('Tanauan',s))));
-const children=parseInt(await getSetting('children_'+s))||0;const adj=tanUsed-tanScanned;
-return{scanned,adj,children,total:scanned+adj+children};
+// Single source of truth for the report breakdown (Send Report modal, weekly chart, Sunday Breakdown)
+async function computeBreakdown(date,allAtt){
+allAtt=allAtt||await dbGet('attendance');const isToday=date===today();
+const rows=isToday?todayAttendance:allAtt.filter(a=>a.date===date);
+const seen=new Set();const checkedIn=rows.map(a=>allMembers.find(m=>m.id===a.memberId)).filter(m=>{if(!m||seen.has(m.id))return false;seen.add(m.id);return true});
+const first={};for(const a of isToday?allAtt.concat(todayAttendance):allAtt){if(!first[a.memberId]||a.date<first[a.memberId])first[a.memberId]=a.date}
+const isNew=m=>m.membershipStatus==='First Time Guest'&&first[m.id]===date;
+const sto=checkedIn.filter(m=>!m.outreach||m.outreach==='Sto. Tomas');
+const outreachGroups={};checkedIn.filter(m=>m.outreach&&m.outreach!=='Sto. Tomas').forEach(m=>{outreachGroups[m.outreach]=(outreachGroups[m.outreach]||0)+1});
+const counts={Youth:0,YPro:0,Mothers:0,Fathers:0};const groupOf={};const newMembers=[],unclassifiedMembers=[],scannedKids=[];
+sto.forEach(m=>{if(isNew(m)){newMembers.push(m);groupOf[m.id]='new';return}const g=getAgeGroup(m);if(counts[g]!==undefined){counts[g]++;groupOf[m.id]=g}else if(g==='Children'){scannedKids.push(m);groupOf[m.id]='kid'}else{unclassifiedMembers.push(m);groupOf[m.id]='unk'}});
+const childrenRaw=await getSetting('children_'+date);const childNum=parseInt(childrenRaw)||0;const childrenEntered=childrenRaw!==null&&childrenRaw!==undefined&&String(childrenRaw).trim()!=='';
+const oRes=await resolveOutreachGroups(outreachGroups,date);const tan=oRes.detail.Tanauan;
+const otherOutreachTotal=Object.entries(oRes.final).filter(([n])=>!MANUAL_OUTREACHES.includes(n)).reduce((a,[,b])=>a+b,0);const outreachTotal=otherOutreachTotal+tan.used;
+const adultTotal=counts.Youth+counts.YPro+counts.Mothers+counts.Fathers;const newCount=newMembers.length;const unclassified=unclassifiedMembers.length;
+const grand=adultTotal+childNum+outreachTotal+newCount+unclassified;
+const occasions=[...new Set(rows.filter(a=>seen.has(a.memberId)).map(a=>a.occasion||'Sunday Service'))];
+return{date,checkedIn,groupOf,counts,newCount,newMembers,unclassified,unclassifiedMembers,scannedKids,outreachGroups,oRes,tan,tanAdj:tan.used-tan.scanned,otherOutreachTotal,outreachTotal,adultTotal,childrenRaw,childNum,childrenEntered,grand,occasions,scannedCounted:checkedIn.length-scannedKids.length,isEmpty:!checkedIn.length&&!childrenEntered&&tan.manual===null};
+}
+// === SUNDAY BREAKDOWN (Reports tab drill-down) ===
+let sbSel=null,sbList=[],sbAtt=[],sbHas=new Set(),sbToken=0;
+const sbEsc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sbShort=d=>{const x=new Date(d+'T00:00:00');return x.toLocaleDateString('en-US',{month:'short',day:'numeric'})+(x.getFullYear()!==new Date().getFullYear()?" '"+String(x.getFullYear()).slice(2):'')};
+const sbLong=d=>new Date(d+'T00:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+function sbAgo(d){const w=Math.round((new Date(sbList[sbList.length-1]+'T00:00:00')-new Date(d+'T00:00:00'))/604800000);return w===0?(d===today()?'Today':'Most recent Sunday'):w===1?'Previous Sunday':w+' weeks ago'}
+async function initSundayPicker(allAtt,chartSundays){
+sbAtt=allAtt;const memberIds=new Set(allMembers.map(m=>m.id));const cur=chartSundays[chartSundays.length-1];
+const settings=await dbGet('settings');sbHas=new Set(allAtt.filter(a=>memberIds.has(a.memberId)).map(a=>a.date));
+settings.forEach(s=>{const k=String(s.key||'');const m=k.match(/^(?:children_|outreach_Tanauan_)(\d{4}-\d{2}-\d{2})$/);if(m&&s.value!==null&&String(s.value).trim()!=='')sbHas.add(m[1])});
+let earliest=chartSundays[0];sbHas.forEach(d=>{if(d<earliest&&d>='2020-01-01')earliest=d});
+sbList=[];const x=new Date(cur+'T00:00:00');while(localDateStr(x)>=earliest){sbList.unshift(localDateStr(x));x.setDate(x.getDate()-7)}
+const chips=document.getElementById('sbChips');
+chips.innerHTML=sbList.map(d=>`<button type="button" class="sb-chip${sbHas.has(d)?' has':''}" role="option" aria-selected="false" data-date="${d}"><span class="dot" aria-hidden="true"></span>${sbShort(d)}</button>`).join('');
+if(!chips.dataset.bound){chips.dataset.bound='1';chips.addEventListener('click',e=>{const c=e.target.closest('.sb-chip[data-date]');if(c)selectSunday(c.dataset.date)});
+document.getElementById('sbPrev').addEventListener('click',()=>{const i=sbList.indexOf(sbSel);if(i>0)selectSunday(sbList[i-1])});
+document.getElementById('sbNext').addEventListener('click',()=>{const i=sbList.indexOf(sbSel);if(i>=0&&i<sbList.length-1)selectSunday(sbList[i+1])})}
+initCollapse('sundayCard','sundayToggle','jilgm_sunday_collapsed');
+await selectSunday(sbList.includes(sbSel)?sbSel:cur);
+}
+function openSundayBreakdown(d){
+const card=document.getElementById('sundayCard');if(card.classList.contains('mb-collapsed'))document.getElementById('sundayToggle').click();
+selectSunday(d);
+setTimeout(()=>{const r=card.getBoundingClientRect();if(r.top>window.innerHeight*0.55||r.top<0)card.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})},80);
+}
+async function selectSunday(d){
+sbSel=d;const bars=document.getElementById('chartBars');let inChart=false;
+bars.querySelectorAll('.chart-bar[data-date]').forEach(el=>{const on=el.dataset.date===d;if(on)inChart=true;el.classList.toggle('sel',on);el.setAttribute('aria-pressed',String(on))});
+bars.classList.toggle('has-sel',inChart);
+const chips=document.getElementById('sbChips');let chip=null;
+chips.querySelectorAll('.sb-chip[data-date]').forEach(c=>{const on=c.dataset.date===d;c.classList.toggle('on',on);c.setAttribute('aria-selected',String(on));if(on)chip=c});
+if(chip)chips.scrollTo({left:chip.offsetLeft-chips.clientWidth/2+chip.offsetWidth/2,behavior:'smooth'});
+const i=sbList.indexOf(d);document.getElementById('sbPrev').disabled=i<=0;document.getElementById('sbNext').disabled=i<0||i>=sbList.length-1;
+document.getElementById('sbDate').textContent=sbLong(d);document.getElementById('sbSub').textContent=sbAgo(d);
+const t=++sbToken;const b=await computeBreakdown(d,sbAtt);if(t!==sbToken)return;
+document.getElementById('sundaySummary').textContent=sbShort(d)+' \u00b7 '+(b.isEmpty?'no data':b.grand+' total');
+const bv=bars.querySelector(`.chart-bar[data-date="${d}"] .bar-value`);if(bv&&bv.textContent!==String(b.grand))bv.textContent=b.grand;
+renderSundayBreakdown(b);
+}
+function renderSundayBreakdown(b){
+const el=document.getElementById('sundayBreakdown');const d=b.date;
+if(b.isEmpty){const isLive=d===today();const alt=[...sbList].reverse().find(x=>x!==d&&sbHas.has(x));
+el.innerHTML=`<div class="sb-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 15h6"/></svg><div class="t">${isLive?'No check-ins yet today':'No attendance recorded'}</div><div class="s">${isLive?'Counts appear here as members are scanned and the children headcount is entered.':'No check-ins, children headcount or Tanauan count were found for '+sbLong(d)+'. Only Sundays synced to this device (server history covers the last 10 weeks) can be shown.'}</div>${alt?`<button type="button" class="btn btn-outline" style="padding:8px 16px;font-size:12px" id="sbJump">Go to ${sbShort(alt)}</button>`:''}</div>`;
+const j=document.getElementById('sbJump');if(j)j.addEventListener('click',()=>selectSunday(alt));return}
+const tile=(l,v,h,cls)=>`<div class="sb-tile${cls?' '+cls:''}"><div class="l">${l}</div><div class="v">${v}</div>${h?`<div class="h">${h}</div>`:''}</div>`;
+const seg=[['Members',b.adultTotal,'var(--accent)'],['First-time',b.newCount,'var(--success)'],['Unclassified',b.unclassified,'var(--text-secondary)'],['Outreach',b.outreachTotal,'var(--accent2)'],['Children',b.childNum,'var(--warning)']].filter(s=>s[1]>0);
+const occ=b.occasions.length?b.occasions.map(o=>`<span class="sb-pill">${sbEsc(o)}</span>`).join(''):'<span class="sb-pill">No check-ins recorded</span>';
+const tan=b.tan;const tanH='Scanned '+tan.scanned+' \u00b7 '+(tan.manual===null?'no manual':'manual '+tan.manual)+(tan.manual!==null&&tan.manual>tan.scanned?' (used)':'');
+const others=Object.entries(b.outreachGroups).filter(([n])=>!MANUAL_OUTREACHES.includes(n)).sort((x,y)=>y[1]-x[1]).map(([n,c])=>tile(sbEsc(n),c,'scanned','out')).join('');
+const formula='Total: '+b.adultTotal+' (members)'+(b.unclassified?' + '+b.unclassified+' (unclassified)':'')+(b.newCount?' + '+b.newCount+' (new)':'')+' + '+b.childNum+' (children)'+(tan.used?' + '+tan.used+' (Tanauan)':'')+(b.otherOutreachTotal?' + '+b.otherOutreachTotal+' (other outreach)':'')+' = '+b.grand;
+const tagOf=m=>{if(m.outreach&&m.outreach!=='Sto. Tomas')return['out',m.outreach];const g=b.groupOf[m.id];return g==='new'?['new','First time']:g==='kid'?['unk','Child']:g==='unk'?['unk','Unclassified']:['',g]};
+const names=[...b.checkedIn].sort((x,y)=>x.name.localeCompare(y.name)).map(m=>{const[c,t]=tagOf(m);return `<div class="sb-name"><span>${sbEsc(m.name)}</span><span class="sb-tag${c?' '+c:''}">${sbEsc(t)}</span></div>`}).join('');
+el.innerHTML=`<div class="sb-hero"><div style="min-width:0"><div class="sb-sec" style="margin:0">Occasion</div><div class="sb-occ">${occ}</div></div><div><div class="sb-total">${b.grand}</div><div class="sb-total-l">Grand total</div></div></div>`
++(seg.length?`<div class="sb-stack" role="img" aria-label="${seg.map(s=>s[0]+' '+s[1]).join(', ')}">${seg.map(s=>`<span style="flex-grow:${s[1]};background:${s[2]}"></span>`).join('')}</div><div class="sb-legend">${seg.map(s=>`<span><i style="background:${s[2]}"></i>${s[0]}<b>${s[1]}</b></span>`).join('')}</div>`:'')
++`<div class="sb-layout"><div><div class="sb-sec">Sto. Tomas by age group</div><div class="sb-grid">${tile('Youth',b.counts.Youth)}${tile('YPro',b.counts.YPro)}${tile('Mothers',b.counts.Mothers)}${tile('Fathers',b.counts.Fathers)}</div>`
++`<div class="sb-sec">Guests and unclassified</div><div class="sb-grid two">${tile('First-time guests',b.newCount,'first check-in',b.newCount?'ok':'')}${tile('Unclassified',b.unclassified,'no birthday on file')}</div></div>`
++`<div><div class="sb-sec">Outreach</div><div class="sb-grid two">${tile('Tanauan',tan.used,tanH,'out')}${others}</div>`
++`<div class="sb-sec">Children</div><div class="sb-grid two">${b.childrenEntered?tile('Children headcount',b.childNum,'entered manually'):tile('Children headcount','Not entered','no headcount saved','warn')}${tile('People scanned',b.checkedIn.length,'unique check-ins')}</div></div></div>`
++`<div class="sb-note">${formula}${b.scannedKids.length?'<br>'+b.scannedKids.length+' scanned member'+(b.scannedKids.length===1?'':'s')+' aged 12 or under '+(b.scannedKids.length===1?'is':'are')+' covered by the children headcount and not added again.':''}</div>`
++(b.checkedIn.length?`<div class="sb-names" id="sbNames"><button type="button" class="sb-names-h" id="sbNamesToggle" aria-expanded="false" aria-controls="sbNamesBody"><span>Checked in (${b.checkedIn.length})</span><span class="sb-chev" aria-hidden="true">&#9660;</span></button><div class="sb-names-b" id="sbNamesBody"><div>${names}</div></div></div>`:'');
+const nt=document.getElementById('sbNamesToggle');if(nt)nt.addEventListener('click',()=>{const w=document.getElementById('sbNames');const o=!w.classList.contains('open');w.classList.toggle('open',o);nt.setAttribute('aria-expanded',String(o))});
 }
 async function saveManualOutreach(name,date,val){
 await setSetting(outreachKey(name,date),val);
@@ -2158,30 +2312,8 @@ historyFetched=true;
 
 document.getElementById('generateReportBtn').addEventListener('click',async()=>{
 const todayStr=today();
-const allAtt=await dbGet('attendance');
-const seen2=new Set();const checkedIn=todayAttendance.map(a=>allMembers.find(m=>m.id===a.memberId)).filter(m=>{if(!m||seen2.has(m.id))return false;seen2.add(m.id);return true});
-const stoTomasMembers=checkedIn.filter(m=>!m.outreach||m.outreach==='Sto. Tomas');
-const outreachGroups={};
-checkedIn.filter(m=>m.outreach&&m.outreach!=='Sto. Tomas').forEach(m=>{
-if(!outreachGroups[m.outreach])outreachGroups[m.outreach]=0;
-outreachGroups[m.outreach]++;
-});
-const counts={Youth:0,YPro:0,Mothers:0,Fathers:0};
-stoTomasMembers.forEach(m=>{
-const isFirstAttend=m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1;
-if(!isFirstAttend){const g=getAgeGroup(m);if(g!=='Unknown'&&counts[g]!==undefined)counts[g]++}
-});
-const childrenVal=await getSetting('children_'+todayStr);
-const newCount=stoTomasMembers.filter(m=>m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1).length;
+const B=await computeBreakdown(todayStr);const{counts,newCount,unclassified,outreachGroups,oRes,tan,otherOutreachTotal,adultTotal,childNum}=B;
 const outreach=(await getSetting('defaultOutreach'))||'';
-const adultTotal=counts.Youth+counts.YPro+counts.Mothers+counts.Fathers;
-const childNum=parseInt(childrenVal)||0;
-const oRes=await resolveOutreachGroups(outreachGroups,todayStr);
-const tan=oRes.detail.Tanauan;
-const otherOutreachTotal=Object.entries(oRes.final).filter(([n])=>!MANUAL_OUTREACHES.includes(n)).reduce((a,[,b])=>a+b,0);
-const outreachTotal=otherOutreachTotal+tan.used;
-const unclassified=stoTomasMembers.filter(m=>{const isFirst=m.membershipStatus==='First Time Guest'&&allAtt.filter(a=>a.memberId===m.id).length<=1;if(isFirst)return false;const g=getAgeGroup(m);return g==='Unknown'||(g!=='Children'&&counts[g]===undefined)}).length;
-const grandTotal=adultTotal+childNum+outreachTotal+newCount+unclassified;
 const outreachHTML=Object.entries(outreachGroups).filter(([n])=>!MANUAL_OUTREACHES.includes(n)).map(([name,count])=>`<div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--accent2)">${name} Outreach</div><div style="font-size:16px;font-weight:700">${count}</div></div>`).join('');
 const email=await getSetting('reportEmail')||'';
 const overlay=document.getElementById('modalOverlay');const content=document.getElementById('modalContent');
@@ -2245,8 +2377,9 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 
 // === APP VERSION & CHANGELOG ===
 function initCollapse(cardId,headId,key){const card=document.getElementById(cardId),head=document.getElementById(headId);if(!card||!head||head.dataset.bound)return;head.dataset.bound='1';const apply=c=>{card.classList.toggle('mb-collapsed',c);head.setAttribute('aria-expanded',String(!c))};let saved=null;try{saved=localStorage.getItem(key)}catch(err){}apply(saved!=='0');const toggle=()=>{const c=!card.classList.contains('mb-collapsed');apply(c);try{localStorage.setItem(key,c?'1':'0')}catch(err){}};head.addEventListener('click',toggle);head.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ev.preventDefault();toggle()}})}
-const APP_VERSION='1.8.4';
+const APP_VERSION='1.8.5';
 const CHANGELOG=[
+{version:'1.8.5',date:'October 20, 2026',changes:[{type:'New',text:'Sunday Breakdown in Reports: tap a chart bar or pick any Sunday to see its full report breakdown'},{type:'Improve',text:'Chart, Sunday Breakdown and Send Report now share one calculation, so totals always match'},{type:'Fix',text:'First-time guests on past Sundays are counted by their first check-in date'}]},
 {version:'1.8.4',date:'October 18, 2026',changes:[{type:'New',text:'Long-press a member in Quick Tap to see their full name'}]},
 {version:'1.8.3',date:'October 18, 2026',changes:[{type:'Improve',text:'Needs Follow-Up section is now collapsible'},{type:'Improve',text:'All collapsible sections start collapsed'}]},
 {version:'1.8.2',date:'October 18, 2026',changes:[{type:'Improve',text:'Weekly attendance chart and average now match the report total (manual Tanauan and children included)'},{type:'Improve',text:'Report auto-send moved to 10 PM daily (sent by the server, no phone needed)'}]},
