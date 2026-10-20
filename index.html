@@ -179,6 +179,22 @@ body.light{--sb-tint:rgba(79,70,229,0.07)}
 .sb-chip.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(108,99,255,0.3)}
 .sb-chip.on .dot{background:#fff;opacity:1}
 .sb-chip:focus-visible,.sb-arrow:focus-visible,.sb-names-h:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mg-wrap{position:relative;margin:-4px -2px 0}
+.mg-wrap::before,.mg-wrap::after{content:'';position:absolute;top:0;bottom:8px;width:22px;pointer-events:none;opacity:0;transition:opacity 0.2s;z-index:1}
+.mg-wrap::before{left:0;background:linear-gradient(90deg,var(--bg),transparent)}
+.mg-wrap::after{right:0;background:linear-gradient(270deg,var(--bg),transparent)}
+.mg-wrap.fade-l::before,.mg-wrap.fade-r::after{opacity:1}
+.mg-chips{margin-bottom:4px;scroll-snap-type:x proximity;scroll-padding:0 24px}
+.mg-chips .sb-chip{min-height:36px;padding:6px 10px 6px 14px;font-family:inherit;scroll-snap-align:start;-webkit-appearance:none;appearance:none}
+.mg-chips .sb-chip:active{transform:scale(0.97)}
+.mg-chips .sb-chip.zero:not(.on){opacity:0.55}
+.mg-n{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--sb-tint,rgba(108,99,255,0.12));color:var(--text);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.sb-chip.on .mg-n{background:rgba(255,255,255,0.25);color:#fff}
+.mg-sep{flex-shrink:0;width:1px;align-self:stretch;margin:6px 2px;background:var(--card-border)}
+body.light .mg-sep{background:rgba(0,0,0,0.12)}
+.mg-lbl{flex-shrink:0;align-self:center;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-secondary);padding:0 2px}
+@media(prefers-reduced-motion:reduce){.mg-wrap::before,.mg-wrap::after{transition:none}.mg-chips .sb-chip:active{transform:none}}
+@media(min-width:1024px){.mg-chips{flex-wrap:wrap;overflow-x:visible}.mg-wrap::before,.mg-wrap::after{display:none}}
 .sb-hero{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-radius:14px;background:var(--sb-tint);border:1px solid var(--card-border);margin-bottom:12px}
 .sb-total{font-size:34px;font-weight:800;line-height:1;text-align:right;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .sb-total-l{font-size:10px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-secondary);margin-top:4px;text-align:right;white-space:nowrap}
@@ -531,6 +547,7 @@ body.light .sheet-option:active{background:rgba(79,70,229,0.06)}
 <select id="memberOutreachFilter"><option value="">All Outreaches</option><option>Sto. Tomas</option><option>Tanauan</option><option>Naujan</option><option>Socorro</option></select>
 </div>
 </div>
+<div class="mg-wrap" id="memberGroupWrap"><div class="sb-chips mg-chips" id="memberGroupChips" role="group" aria-label="Filter members by group"></div></div>
 <div class="filter-count" id="memberCount">0 members</div>
 </div>
 <div class="member-list" id="memberList"></div>
@@ -769,20 +786,6 @@ const m=now.getMonth()-b.getMonth();
 if(m<0||(m===0&&now.getDate()<b.getDate()))age--;
 return age;
 }
-function checkBirthdaysToday(){
-const now=new Date();const todayM=now.getMonth();const todayD=now.getDate();
-const bdays=allMembers.filter(m=>{
-if(!m.birthday||(m.status||'').toLowerCase()==='inactive')return false;
-const b=new Date(m.birthday+'T00:00:00');
-return b.getMonth()===todayM&&b.getDate()===todayD;
-});
-if(bdays.length>0){
-const names=bdays.map(m=>m.name).join(', ');
-const age=bdays.length===1?getAge(bdays[0].birthday):'';
-const msg=bdays.length===1?`${names} turns ${age} today!`:`${bdays.length} birthdays today: ${names}`;
-showToast('🎂 '+msg,'success',6000);
-}
-}
 function getAgeGroup(member){
 const age=getAge(member.birthday);
 if(age===null)return 'Unknown';
@@ -792,6 +795,16 @@ const isParent=member.hasChildren==='Yes';
 const isMarriedOrSep=member.civilStatus==='Married'||member.civilStatus==='Widow'||member.civilStatus==='Separated';
 if(isParent||isMarriedOrSep){return member.gender==='Female'?'Mothers':'Fathers'}
 return 'YPro';
+}
+// Single classifier shared by computeBreakdown and the Members group filter, so they can never disagree.
+// Returns 'o:<Outreach>' | 'new' | 'Youth' | 'YPro' | 'Mothers' | 'Fathers' | 'kid' | 'unk'.
+// isNew defaults to the Members tab rule (membershipStatus); the report passes its first check-in rule.
+const MEMBER_AGE_GROUPS=['Youth','YPro','Mothers','Fathers'];
+function memberGroup(m,isNew){
+if(m.outreach&&m.outreach!=='Sto. Tomas')return 'o:'+m.outreach;
+if(isNew?isNew(m):m.membershipStatus==='First Time Guest')return 'new';
+const g=getAgeGroup(m);
+return g==='Children'?'kid':MEMBER_AGE_GROUPS.includes(g)?g:'unk';
 }
 function createAvatar(member,size=''){
 const cls='avatar'+(size?' '+size:'');
@@ -1555,19 +1568,46 @@ try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify(payload)))}catch(
 
 document.getElementById('fab').addEventListener('click',()=>showModal('member'));
 
+// === MEMBERS GROUP FILTER (chips AND search, status, ministry, outreach) ===
+const MG_KEY='jilgm_member_group';
+const MG_BASE=[['all','All'],['Youth','Youth'],['YPro','YPro'],['Mothers','Mothers'],['Fathers','Fathers'],['kid','Children'],['new','First-time guests'],['unk','Unclassified']];
+let memberGroupSel=localStorage.getItem(MG_KEY)||'all';
+const mgEsc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function mgLabel(k){const b=MG_BASE.find(x=>x[0]===k);return b?b[1]:String(k).replace(/^o:/,'')}
+function mgOutreaches(members){return [...new Set(members.map(m=>m.outreach).filter(o=>o&&o!=='Sto. Tomas'))].sort()}
+function memberBaseFilter(members,o){
+let r=[...members];const q=(o.q||'').toLowerCase().trim();
+if(q)r=r.filter(m=>m.name.toLowerCase().includes(q));
+if(o.status==='active')r=r.filter(m=>m.status==='active'||m.status==='Active');
+if(o.status==='inactive')r=r.filter(m=>m.status==='inactive'||m.status==='Inactive');
+if(o.ministry)r=r.filter(m=>m.ministry===o.ministry);
+if(o.outreach)r=r.filter(m=>m.outreach===o.outreach);
+return r;
+}
+function memberGroupCounts(members){const c={all:members.length};members.forEach(m=>{const g=memberGroup(m);c[g]=(c[g]||0)+1});return c}
+function filterByMemberGroup(members,sel){return !sel||sel==='all'?members:members.filter(m=>memberGroup(m)===sel)}
+function mgFades(){const wrap=document.getElementById('memberGroupWrap'),box=document.getElementById('memberGroupChips');if(!wrap||!box)return;wrap.classList.toggle('fade-l',box.scrollLeft>4);wrap.classList.toggle('fade-r',box.scrollLeft+box.clientWidth<box.scrollWidth-4)}
+function mgReveal(el){const box=document.getElementById('memberGroupChips');if(!box||!el||box.scrollWidth<=box.clientWidth)return;const l=el.offsetLeft-box.offsetLeft,r=l+el.offsetWidth;if(l<box.scrollLeft+24)box.scrollTo({left:Math.max(0,l-24),behavior:'smooth'});else if(r>box.scrollLeft+box.clientWidth-24)box.scrollTo({left:r-box.clientWidth+24,behavior:'smooth'})}
+function renderMemberGroupChips(base){
+const box=document.getElementById('memberGroupChips');const outs=mgOutreaches(allMembers);
+const keys=MG_BASE.map(x=>x[0]).concat(outs.map(o=>'o:'+o));const sel=keys.includes(memberGroupSel)?memberGroupSel:'all';
+const chip=(k,l)=>`<button type="button" class="sb-chip" data-group="${mgEsc(k)}" aria-pressed="false"><span>${mgEsc(l)}</span><span class="mg-n">0</span></button>`;
+const sig=keys.join('|');let rebuilt=false;
+if(box.dataset.sig!==sig){box.dataset.sig=sig;rebuilt=true;box.innerHTML=MG_BASE.map(([k,l])=>chip(k,l)).join('')+(outs.length?'<span class="mg-sep" aria-hidden="true"></span><span class="mg-lbl" aria-hidden="true">Outreach</span>'+outs.map(o=>chip('o:'+o,o)).join(''):'')}
+if(!box.dataset.bound){box.dataset.bound='1';
+box.addEventListener('click',e=>{const c=e.target.closest('.sb-chip[data-group]');if(!c)return;memberGroupSel=c.dataset.group;localStorage.setItem(MG_KEY,memberGroupSel);renderMemberList();mgReveal(c)});
+box.addEventListener('scroll',mgFades,{passive:true});window.addEventListener('resize',mgFades)}
+const c=memberGroupCounts(base);let selEl=null;
+box.querySelectorAll('.sb-chip[data-group]').forEach(el=>{const k=el.dataset.group,n=c[k]||0,on=k===sel;el.querySelector('.mg-n').textContent=n;el.classList.toggle('zero',!n);el.classList.toggle('on',on);el.setAttribute('aria-pressed',String(on));el.setAttribute('aria-label',mgLabel(k)+', '+n+(n===1?' member':' members'));if(on)selEl=el});
+requestAnimationFrame(()=>{if(rebuilt&&selEl)mgReveal(selEl);mgFades()});
+return sel;
+}
 function renderMemberList(){
-const q=document.getElementById('memberSearch').value.toLowerCase().trim();
-const filter=document.querySelector('#memberFilters .toggle-pill.active').dataset.filter;
-const ministry=document.getElementById('memberMinistryFilter').value;
-let filtered=[...allMembers];
-if(q)filtered=filtered.filter(m=>m.name.toLowerCase().includes(q));
-if(filter==='active')filtered=filtered.filter(m=>m.status==='active'||m.status==='Active');
-if(filter==='inactive')filtered=filtered.filter(m=>m.status==='inactive'||m.status==='Inactive');
-if(ministry)filtered=filtered.filter(m=>m.ministry===ministry);
-const outreachF=document.getElementById('memberOutreachFilter').value;
-if(outreachF)filtered=filtered.filter(m=>m.outreach===outreachF);
-document.getElementById('memberCount').textContent=`${filtered.length} members`;
+const base=memberBaseFilter(allMembers,{q:document.getElementById('memberSearch').value,status:document.querySelector('#memberFilters .toggle-pill.active').dataset.filter,ministry:document.getElementById('memberMinistryFilter').value,outreach:document.getElementById('memberOutreachFilter').value});
+const sel=renderMemberGroupChips(base);const filtered=filterByMemberGroup(base,sel);
+document.getElementById('memberCount').textContent=`${filtered.length} ${filtered.length===1?'member':'members'}${sel!=='all'?' in '+mgLabel(sel):''}`;
 const list=document.getElementById('memberList');
+if(!filtered.length){list.innerHTML=`<div class="empty-state"><p>No members match ${sel!=='all'?'"'+mgEsc(mgLabel(sel))+'" with ':''}the current filters</p></div>`;return}
 list.innerHTML=filtered.map(m=>{const mAge=getAge(m.birthday);const badBday=m.birthday&&(mAge!==null&&(mAge<1||mAge>120));
 return `<div class="member-row" data-id="${m.id}">${createAvatar(m,'small')}<div class="info"><div class="name">${m.name}${badBday?' <span style="color:var(--warning);font-size:11px" title="Birthday year looks wrong">&#9888;</span>':''}</div><div class="sub">${m.outreach||'No outreach'}${m.ministry?' / '+m.ministry:''}</div></div><span class="pill pill-${m.status.toLowerCase()}">${m.status}</span></div>`}).join('');
 list.querySelectorAll('.member-row').forEach(row=>row.addEventListener('click',()=>showDetail(row.dataset.id)));
@@ -1738,10 +1778,8 @@ const rows=isToday?todayAttendance:allAtt.filter(a=>a.date===date);
 const seen=new Set();const checkedIn=rows.map(a=>allMembers.find(m=>m.id===a.memberId)).filter(m=>{if(!m||seen.has(m.id))return false;seen.add(m.id);return true});
 const first={};for(const a of isToday?allAtt.concat(todayAttendance):allAtt){if(!first[a.memberId]||a.date<first[a.memberId])first[a.memberId]=a.date}
 const isNew=m=>m.membershipStatus==='First Time Guest'&&first[m.id]===date;
-const sto=checkedIn.filter(m=>!m.outreach||m.outreach==='Sto. Tomas');
-const outreachGroups={};checkedIn.filter(m=>m.outreach&&m.outreach!=='Sto. Tomas').forEach(m=>{outreachGroups[m.outreach]=(outreachGroups[m.outreach]||0)+1});
-const counts={Youth:0,YPro:0,Mothers:0,Fathers:0};const groupOf={};const newMembers=[],unclassifiedMembers=[],scannedKids=[];
-sto.forEach(m=>{if(isNew(m)){newMembers.push(m);groupOf[m.id]='new';return}const g=getAgeGroup(m);if(counts[g]!==undefined){counts[g]++;groupOf[m.id]=g}else if(g==='Children'){scannedKids.push(m);groupOf[m.id]='kid'}else{unclassifiedMembers.push(m);groupOf[m.id]='unk'}});
+const outreachGroups={};const counts={Youth:0,YPro:0,Mothers:0,Fathers:0};const groupOf={};const newMembers=[],unclassifiedMembers=[],scannedKids=[];
+checkedIn.forEach(m=>{const g=memberGroup(m,isNew);if(g.startsWith('o:')){outreachGroups[m.outreach]=(outreachGroups[m.outreach]||0)+1;return}groupOf[m.id]=g;if(g==='new')newMembers.push(m);else if(g==='kid')scannedKids.push(m);else if(g==='unk')unclassifiedMembers.push(m);else counts[g]++});
 const childrenRaw=await getSetting('children_'+date);const childNum=parseInt(childrenRaw)||0;const childrenEntered=childrenRaw!==null&&childrenRaw!==undefined&&String(childrenRaw).trim()!=='';
 const oRes=await resolveOutreachGroups(outreachGroups,date);const tan=oRes.detail.Tanauan;
 const otherOutreachTotal=Object.entries(oRes.final).filter(([n])=>!MANUAL_OUTREACHES.includes(n)).reduce((a,[,b])=>a+b,0);const outreachTotal=otherOutreachTotal+tan.used;
@@ -2203,7 +2241,6 @@ splashProgress(85);
 const ministries=await getMinistries();populateMinistryDropdowns(ministries);
 renderAvatarGrid();
 splashProgress(95);
-checkBirthdaysToday();
 await initExtras();
 fetchAttendanceHistory();
 fetchSharedSettings();
@@ -2377,8 +2414,9 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 
 // === APP VERSION & CHANGELOG ===
 function initCollapse(cardId,headId,key){const card=document.getElementById(cardId),head=document.getElementById(headId);if(!card||!head||head.dataset.bound)return;head.dataset.bound='1';const apply=c=>{card.classList.toggle('mb-collapsed',c);head.setAttribute('aria-expanded',String(!c))};let saved=null;try{saved=localStorage.getItem(key)}catch(err){}apply(saved!=='0');const toggle=()=>{const c=!card.classList.contains('mb-collapsed');apply(c);try{localStorage.setItem(key,c?'1':'0')}catch(err){}};head.addEventListener('click',toggle);head.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ev.preventDefault();toggle()}})}
-const APP_VERSION='1.8.5';
+const APP_VERSION='1.8.6';
 const CHANGELOG=[
+{version:'1.8.6',date:'October 20, 2026',changes:[{type:'New',text:'Group filter chips on Members: Youth, YPro, Mothers, Fathers, Children, First-time guests, Unclassified and each outreach, with live counts'},{type:'Improve',text:'Group filter uses the same classification as the Sunday report and combines with search, status, ministry and outreach filters'},{type:'Improve',text:'Removed birthday notifications (birthdays are still used for age groups)'}]},
 {version:'1.8.5',date:'October 20, 2026',changes:[{type:'New',text:'Sunday Breakdown in Reports: tap a chart bar or pick any Sunday to see its full report breakdown'},{type:'Improve',text:'Chart, Sunday Breakdown and Send Report now share one calculation, so totals always match'},{type:'Fix',text:'First-time guests on past Sundays are counted by their first check-in date'}]},
 {version:'1.8.4',date:'October 18, 2026',changes:[{type:'New',text:'Long-press a member in Quick Tap to see their full name'}]},
 {version:'1.8.3',date:'October 18, 2026',changes:[{type:'Improve',text:'Needs Follow-Up section is now collapsible'},{type:'Improve',text:'All collapsible sections start collapsed'}]},
