@@ -641,6 +641,7 @@ function updateMember(body) {
   // ManualGroup lives outside the fixed 23 columns; a birthday always clears it.
   let mgCol = getManualGroupCol(sheet, false);
   let manualGroup = mgCol >= 0 ? normManualGroup(data[rowIndex][mgCol]) : "";
+  const prevManualGroup = manualGroup;
   if (body.manualGroup !== undefined || currentRow[COL_MEM.BIRTHDAY]) {
     const next = currentRow[COL_MEM.BIRTHDAY] ? "" : normManualGroup(body.manualGroup);
     if (next && mgCol < 0) mgCol = getManualGroupCol(sheet, true);
@@ -649,7 +650,12 @@ function updateMember(body) {
   }
   const updated = rowToMember(currentRow);
   updated.manualGroup = manualGroup;
-  return { success: true, data: updated };
+  // A corrected birthday or manual group re-counts that member's past Reports rows.
+  let reportsUpdated = 0;
+  if (normDate(data[rowIndex][COL_MEM.BIRTHDAY]) !== updated.birthday || prevManualGroup !== manualGroup) {
+    reportsUpdated = recomputeReportsForMember(updated.id);
+  }
+  return { success: true, data: updated, reportsUpdated: reportsUpdated };
 }
 
 
@@ -1651,9 +1657,24 @@ var REPORT_COLUMNS = ['Date', 'Occasion', 'Outreach', 'Youth', 'YPro', 'Mothers'
  * at the end so existing columns and rows never shift.
  */
 function appendReportRow(values) {
+  var rs = getReportsSheetWithHeader(true);
+  var row = rs.header.map(function (h) { return values.hasOwnProperty(h) ? values[h] : ''; });
+  rs.sheet.appendRow(row);
+}
+
+/**
+ * Opens the Reports sheet and returns it with its trimmed header row. Missing
+ * REPORT_COLUMNS headers are appended at the end so existing columns never shift.
+ *
+ * @param {boolean} create - Create the sheet when it does not exist
+ * @param {boolean} [readOnly] - Never write: skip adding missing headers
+ * @returns {{sheet: Sheet, header: string[]}|null} null when absent and create is false
+ */
+function getReportsSheetWithHeader(create, readOnly) {
   var ss    = SpreadsheetApp.openById(SHEET_ID);
   var sheet = ss.getSheetByName('Reports');
   if (!sheet) {
+    if (!create) return null;
     sheet = ss.insertSheet('Reports');
     sheet.getRange(1, 1, 1, REPORT_COLUMNS.length).setValues([REPORT_COLUMNS]).setFontWeight('bold');
     sheet.setFrozenRows(1);
@@ -1661,14 +1682,14 @@ function appendReportRow(values) {
   var lastCol = Math.max(sheet.getLastColumn(), 1);
   var header  = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(function (h) { return String(h).trim(); });
   while (header.length && header[header.length - 1] === '') header.pop();
+  if (readOnly) return { sheet: sheet, header: header };
   REPORT_COLUMNS.forEach(function (col) {
     if (header.indexOf(col) === -1) {
       header.push(col);
       sheet.getRange(1, header.length).setValue(col).setFontWeight('bold');
     }
   });
-  var row = header.map(function (h) { return values.hasOwnProperty(h) ? values[h] : ''; });
-  sheet.appendRow(row);
+  return { sheet: sheet, header: header };
 }
 
 
@@ -1701,17 +1722,19 @@ function getSharedSettingValue(key) {
 
 /**
  * Server port of the client getAge(): whole years between a YYYY-MM-DD birthday
- * and today in the script timezone. Returns null when no birthday, NaN when the
- * birthday cannot be parsed (same as the client's Invalid Date path).
+ * and asOf (default today in the script timezone). Returns null when no birthday,
+ * NaN when the birthday cannot be parsed (same as the client's Invalid Date path).
  *
  * @param {string} birthday - YYYY-MM-DD
+ * @param {string} [asOf] - YYYY-MM-DD reference date (past report dates)
  * @returns {number|null}
  */
-function getAgeServer(birthday) {
+function getAgeServer(birthday, asOf) {
   if (!birthday) return null;
   var m = String(birthday).match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!m) return NaN;
-  var parts = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd').split('-');
+  var ref = (asOf && /^\d{4}-\d{2}-\d{2}$/.test(String(asOf))) ? String(asOf) : Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  var parts = ref.split('-');
   var nowY = Number(parts[0]), nowM = Number(parts[1]), nowD = Number(parts[2]);
   var bY = Number(m[1]), bM = Number(m[2]), bD = Number(m[3]);
   var age = nowY - bY;
@@ -1724,10 +1747,11 @@ function getAgeServer(birthday) {
  * Server port of the client getAgeGroup(member).
  *
  * @param {Object} member - Object from rowToMember()
+ * @param {string} [asOf] - YYYY-MM-DD; age is taken on this date (default today)
  * @returns {string} Unknown | Children | Youth | Mothers | Fathers | YPro
  */
-function getAgeGroupServer(member) {
-  var age = getAgeServer(member.birthday);
+function getAgeGroupServer(member, asOf) {
+  var age = getAgeServer(member.birthday, asOf);
   if (age === null) return normManualGroup(member.manualGroup) || 'Unknown';
   if (age <= 12) return 'Children';
   if (age <= 21) return 'Youth';
@@ -1903,6 +1927,193 @@ function removeNightlyReportTrigger() {
   });
   Logger.log('removeNightlyReportTrigger: removed ' + removed + ' trigger(s).');
   return removed;
+}
+
+
+// =============================================================================
+//  REPORT RECOMPUTE
+//  updateMember() recomputes a member's report dates when their birthday or
+//  manual group changes. Run previewRecomputeReports() to see what would change,
+//  then recomputeAllReports() once from the editor to backfill every row.
+// =============================================================================
+
+var REPORT_GROUP_COLUMNS = ['Youth', 'YPro', 'Mothers', 'Fathers', 'New', 'Unclassified'];
+
+/**
+ * Reads Members and Attendance once for a report recompute.
+ *
+ * @returns {{memberById: Object, idsByDate: Object, firstDateById: Object}}
+ */
+function loadReportRecomputeContext() {
+  var memSheet = getSheet(SHEET_MEMBERS);
+  var mgCol = getManualGroupCol(memSheet, false);
+  var memberById = {};
+  getDataRows(memSheet).forEach(function (row) {
+    var m = rowToMember(row, mgCol);
+    if (m.id && !memberById[m.id]) memberById[m.id] = m;
+  });
+  var idsByDate = {};
+  var firstDateById = {};
+  getDataRows(getSheet(SHEET_ATTENDANCE)).forEach(function (row) {
+    var id = String(row[COL_ATT.MEMBER_ID] || '').trim();
+    var d  = normDate(row[COL_ATT.DATE]);
+    if (!id || !isValidDate(d)) return;
+    if (!firstDateById[id] || d < firstDateById[id]) firstDateById[id] = d;
+    if (!idsByDate[d]) idsByDate[d] = {};
+    idsByDate[d][id] = true;
+  });
+  return { memberById: memberById, idsByDate: idsByDate, firstDateById: firstDateById };
+}
+
+/**
+ * Sto. Tomas group counts for one date with the same rules as the app's
+ * computeBreakdown(): New = First Time Guest on their first check-in date, age
+ * taken on that date, manual group when no birthday, scanned Children left to
+ * the children headcount, outreach members left to the outreach columns.
+ * Check-ins of members no longer in the Members sheet count as Unclassified so
+ * they stay in Total.
+ *
+ * @param {Object} ctx - From loadReportRecomputeContext()
+ * @param {string} dateStr - YYYY-MM-DD
+ * @returns {Object|null} Counts keyed by REPORT_GROUP_COLUMNS, null when the date has no check-ins
+ */
+function computeReportGroupsForDate(ctx, dateStr) {
+  var ids = ctx.idsByDate[dateStr];
+  if (!ids) return null;
+  var c = { Youth: 0, YPro: 0, Mothers: 0, Fathers: 0, New: 0, Unclassified: 0 };
+  Object.keys(ids).forEach(function (id) {
+    var m = ctx.memberById[id];
+    if (!m) { c.Unclassified++; return; }
+    if (m.outreach && m.outreach !== 'Sto. Tomas') return;
+    if (m.membershipStatus === 'First Time Guest' && ctx.firstDateById[id] === dateStr) { c.New++; return; }
+    var g = getAgeGroupServer(m, dateStr);
+    if (g === 'Children') return;
+    if (g === 'Youth' || g === 'YPro' || g === 'Mothers' || g === 'Fathers') c[g]++;
+    else c.Unclassified++;
+  });
+  return c;
+}
+
+/**
+ * Rewrites Youth, YPro, Mothers, Fathers, New and Unclassified on Reports rows
+ * from the Attendance sheet plus current member data, and moves Total by the
+ * same difference. Date, Occasion, Outreach, Children, Tanauan columns, Other
+ * Outreach, Others, SentTo and Timestamp are never written and no email is sent.
+ * Rows whose date has no check-ins in the Attendance sheet are left untouched.
+ *
+ * @param {Object} [opts] - { memberId: only dates this member attended, dryRun: log only }
+ * @returns {{rows: number, changed: number, skipped: number, details: string[]}}
+ */
+function recomputeReportRows(opts) {
+  opts = opts || {};
+  var dryRun = !!opts.dryRun;
+  var out = { rows: 0, changed: 0, skipped: 0, details: [] };
+  var lock = null;
+  if (!dryRun) {
+    lock = LockService.getScriptLock();
+    if (!lock.tryLock(15000)) throw new Error('Reports recompute busy, try again');
+  }
+  try {
+    var ctx = loadReportRecomputeContext();
+    var onlyDates = null;
+    if (opts.memberId) {
+      var mid = String(opts.memberId).trim();
+      onlyDates = {};
+      Object.keys(ctx.idsByDate).forEach(function (d) { if (ctx.idsByDate[d][mid]) onlyDates[d] = true; });
+      if (!Object.keys(onlyDates).length) return out;
+    }
+    var rs = getReportsSheetWithHeader(false, dryRun);
+    if (!rs) return out;
+    var col = {};
+    rs.header.forEach(function (h, i) { if (h && !col.hasOwnProperty(h)) col[h] = i; });
+    if (!col.hasOwnProperty('Date')) return out;
+    var lastRow = rs.sheet.getLastRow();
+    if (lastRow < 2) return out;
+    var values = rs.sheet.getRange(2, 1, lastRow - 1, rs.header.length).getValues();
+    var num = function (v) { return Number(v) || 0; };
+    for (var r = 0; r < values.length; r++) {
+      var row = values[r];
+      var dateStr = normDate(row[col.Date]);
+      if (!isValidDate(dateStr)) continue;
+      if (onlyDates && !onlyDates[dateStr]) continue;
+      out.rows++;
+      var next = computeReportGroupsForDate(ctx, dateStr);
+      if (!next) { out.skipped++; continue; }
+      var cells = [];
+      var delta = 0;
+      REPORT_GROUP_COLUMNS.forEach(function (h) {
+        var oldV = col.hasOwnProperty(h) ? num(row[col[h]]) : 0;
+        delta += next[h] - oldV;
+        if (oldV !== next[h]) cells.push([h, oldV, next[h]]);
+      });
+      if (!cells.length) continue;
+      var storedTotal = col.hasOwnProperty('Total') ? row[col.Total] : '';
+      var oldTotal = num(storedTotal);
+      var newTotal;
+      if (storedTotal === '' || storedTotal === null || isNaN(Number(storedTotal))) {
+        newTotal = 0;
+        REPORT_GROUP_COLUMNS.forEach(function (h) { newTotal += next[h]; });
+        ['Children', 'Tanauan', 'Other Outreach'].forEach(function (h) { if (col.hasOwnProperty(h)) newTotal += num(row[col[h]]); });
+      } else {
+        newTotal = oldTotal + delta;
+      }
+      if (newTotal !== oldTotal) cells.push(['Total', oldTotal, newTotal]);
+      out.changed++;
+      out.details.push(dateStr + ' (row ' + (r + 2) + '): ' + cells.map(function (x) { return x[0] + ' ' + x[1] + ' -> ' + x[2]; }).join(', '));
+      if (!dryRun) {
+        cells.forEach(function (x) { rs.sheet.getRange(r + 2, col[x[0]] + 1).setValue(x[2]); });
+      }
+    }
+    return out;
+  } finally {
+    if (lock) lock.releaseLock();
+  }
+}
+
+/**
+ * Recomputes the Reports rows for every date a member attended. Called by
+ * updateMember() after a birthday or manual group change. Never throws.
+ *
+ * @param {string} memberId
+ * @returns {number} Rows changed
+ */
+function recomputeReportsForMember(memberId) {
+  try {
+    SpreadsheetApp.flush();
+    var res = recomputeReportRows({ memberId: memberId });
+    if (res.changed) Logger.log('recomputeReportsForMember ' + memberId + ': ' + res.details.join(' | '));
+    return res.changed;
+  } catch (err) {
+    logError('recomputeReportsForMember ' + memberId, err);
+    return 0;
+  }
+}
+
+/**
+ * Editor helper: logs what recomputeAllReports() would change, writes nothing.
+ *
+ * @returns {string} Summary
+ */
+function previewRecomputeReports() {
+  var res = recomputeReportRows({ dryRun: true });
+  res.details.forEach(function (d) { Logger.log(d); });
+  var msg = 'previewRecomputeReports: ' + res.changed + ' of ' + res.rows + ' report rows would change, ' + res.skipped + ' skipped (no check-ins in Attendance).';
+  Logger.log(msg);
+  return msg;
+}
+
+/**
+ * Editor helper: run once to backfill every Reports row with current member
+ * classification. Safe to run again; unchanged rows are not written.
+ *
+ * @returns {string} Summary
+ */
+function recomputeAllReports() {
+  var res = recomputeReportRows({});
+  res.details.forEach(function (d) { Logger.log(d); });
+  var msg = 'recomputeAllReports: updated ' + res.changed + ' of ' + res.rows + ' report rows, ' + res.skipped + ' skipped (no check-ins in Attendance).';
+  Logger.log(msg);
+  return msg;
 }
 
 

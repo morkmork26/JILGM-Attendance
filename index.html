@@ -235,6 +235,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 .sb-sec{font-size:10px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-secondary);margin:14px 0 6px}
 .sb-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .sb-grid.two{grid-template-columns:repeat(2,1fr)}
+.sb-grid.one{grid-template-columns:1fr}
 .sb-tile{background:var(--raised);border:1px solid var(--card-border);border-radius:10px;padding:8px 6px;text-align:center;min-width:0}
 .sb-tile .l{font-size:10px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sb-tile .v{font-size:18px;font-weight:700;margin-top:2px}
@@ -729,7 +730,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 </div>
 <div class="settings-section">
 <h4>About</h4>
-<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.9.0</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent);cursor:pointer" id="whatsNewBtn">What's New</span></div>
+<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.9.1</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent);cursor:pointer" id="whatsNewBtn">What's New</span></div>
 
 </div>
 </div>
@@ -805,9 +806,9 @@ let hash=0;for(let i=0;i<name.length;i++)hash=name.charCodeAt(i)+((hash<<5)-hash
 return colors[Math.abs(hash)%colors.length];
 }
 function getInitials(name){return name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)}
-function getAge(birthday){
+function getAge(birthday,asOf){
 if(!birthday)return null;
-const b=new Date(birthday+'T00:00:00');const now=new Date();
+const b=new Date(birthday+'T00:00:00');const now=asOf?new Date(asOf+'T00:00:00'):new Date();
 let age=now.getFullYear()-b.getFullYear();
 const m=now.getMonth()-b.getMonth();
 if(m<0||(m===0&&now.getDate()<b.getDate()))age--;
@@ -817,8 +818,21 @@ return age;
 const MANUAL_GROUPS=['Children','Youth','YPro','Mothers','Fathers'];
 function validManualGroup(v){return MANUAL_GROUPS.includes(v)?v:''}
 function isManualGroup(member){return getAge(member.birthday)===null&&!!validManualGroup(member.manualGroup)}
-function getAgeGroup(member){
-const age=getAge(member.birthday);
+// Manual groups saved here but not yet confirmed by the server (a backend without the ManualGroup column drops them).
+// Re-applied on every member sync so Reports keep counting the right group, and re-sent once the server can store them.
+const MG_PENDING_KEY='jilgm_mg_pending';const mgResent=new Set();
+function getMgPending(){try{const p=JSON.parse(localStorage.getItem(MG_PENDING_KEY)||'{}');return p&&typeof p==='object'?p:{}}catch(e){return{}}}
+function setMgPending(p){try{if(Object.keys(p).length)localStorage.setItem(MG_PENDING_KEY,JSON.stringify(p));else localStorage.removeItem(MG_PENDING_KEY)}catch(e){}}
+function noteMgPending(id,group){const p=getMgPending();const g=validManualGroup(group);if(g)p[id]=g;else delete p[id];setMgPending(p)}
+function confirmMgPending(id,group,json){if(json&&json.success&&json.data&&json.data.manualGroup!==undefined&&validManualGroup(json.data.manualGroup)===validManualGroup(group)){const p=getMgPending();if(p[id]!==undefined){delete p[id];setMgPending(p)}}}
+function applyMgPending(list,url){const p=getMgPending();let dirty=false;
+for(const id of Object.keys(p)){const m=list.find(x=>x.id===id);const want=validManualGroup(p[id]);
+if(!m||m.birthday||!want||m.manualGroup===want){delete p[id];dirty=true;continue}
+const serverHasField=m.manualGroup!==undefined;m.manualGroup=want;
+if(serverHasField&&url&&!mgResent.has(id)){mgResent.add(id);fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'updateMember',id,manualGroup:want}))).then(r=>r.json()).then(j=>confirmMgPending(id,want,j)).catch(()=>{})}}
+if(dirty)setMgPending(p);return list}
+function getAgeGroup(member,asOf){
+const age=getAge(member.birthday,asOf);
 if(age===null)return validManualGroup(member.manualGroup)||'Unknown';
 if(age<=12)return 'Children';
 if(age<=21)return 'Youth';
@@ -830,11 +844,12 @@ return 'YPro';
 // Single classifier shared by computeBreakdown and the Members group filter, so they can never disagree.
 // Returns 'o:<Outreach>' | 'new' | 'Youth' | 'YPro' | 'Mothers' | 'Fathers' | 'kid' | 'unk'.
 // isNew defaults to the Members tab rule (membershipStatus); the report passes its first check-in rule.
+// asOf (YYYY-MM-DD) takes the age on a past report date, matching the server recompute of the Reports sheet.
 const MEMBER_AGE_GROUPS=['Youth','YPro','Mothers','Fathers'];
-function memberGroup(m,isNew){
+function memberGroup(m,isNew,asOf){
 if(m.outreach&&m.outreach!=='Sto. Tomas')return 'o:'+m.outreach;
 if(isNew?isNew(m):m.membershipStatus==='First Time Guest')return 'new';
-const g=getAgeGroup(m);
+const g=getAgeGroup(m,asOf);
 return g==='Children'?'kid':MEMBER_AGE_GROUPS.includes(g)?g:'unk';
 }
 function createAvatar(member,size=''){
@@ -1653,6 +1668,7 @@ const json=await res.json();
 if(json.success&&json.data&&json.data.id){
 const oldId=member.id;
 member.id=json.data.id;member.addedLocally=false;
+if(member.manualGroup){noteMgPending(member.id,member.manualGroup);confirmMgPending(member.id,member.manualGroup,json)}
 if(oldId!==member.id)await dbDelete('members',oldId);
 await dbPut('members',member);
 allMembers.push(member);
@@ -1670,8 +1686,8 @@ closeModal();showToast('Member saved locally');updateCounter();renderMemberList(
 await dbPut('members',member);
 const idx=allMembers.findIndex(m=>m.id===existing.id);if(idx>=0)allMembers[idx]=member;
 closeModal();showToast('Member updated');updateCounter();renderMemberList();
-if(url){const payload={action:'updateMember',...member,classes:member.classes?member.classes.join(', '):''};
-try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify(payload)))}catch(e){}}
+if(url){const payload={action:'updateMember',...member,classes:member.classes?member.classes.join(', '):''};noteMgPending(member.id,member.birthday?'':member.manualGroup);
+try{const res=await fetch(url+'?data='+encodeURIComponent(JSON.stringify(payload)));try{confirmMgPending(member.id,member.manualGroup,await res.json())}catch(e){}}catch(e){}}
 }
 }
 
@@ -1888,7 +1904,7 @@ const seen=new Set();const checkedIn=rows.map(a=>allMembers.find(m=>m.id===a.mem
 const first={};for(const a of isToday?allAtt.concat(todayAttendance):allAtt){if(!first[a.memberId]||a.date<first[a.memberId])first[a.memberId]=a.date}
 const isNew=m=>m.membershipStatus==='First Time Guest'&&first[m.id]===date;
 const outreachGroups={};const counts={Youth:0,YPro:0,Mothers:0,Fathers:0};const groupOf={};const newMembers=[],unclassifiedMembers=[],scannedKids=[];
-checkedIn.forEach(m=>{const g=memberGroup(m,isNew);if(g.startsWith('o:')){outreachGroups[m.outreach]=(outreachGroups[m.outreach]||0)+1;return}groupOf[m.id]=g;if(g==='new')newMembers.push(m);else if(g==='kid')scannedKids.push(m);else if(g==='unk')unclassifiedMembers.push(m);else counts[g]++});
+checkedIn.forEach(m=>{const g=memberGroup(m,isNew,date);if(g.startsWith('o:')){outreachGroups[m.outreach]=(outreachGroups[m.outreach]||0)+1;return}groupOf[m.id]=g;if(g==='new')newMembers.push(m);else if(g==='kid')scannedKids.push(m);else if(g==='unk')unclassifiedMembers.push(m);else counts[g]++});
 const childrenRaw=await getSetting('children_'+date);const childNum=parseInt(childrenRaw)||0;const childrenEntered=childrenRaw!==null&&childrenRaw!==undefined&&String(childrenRaw).trim()!=='';
 const oRes=await resolveOutreachGroups(outreachGroups,date);const tan=oRes.detail.Tanauan;
 const otherOutreachTotal=Object.entries(oRes.final).filter(([n])=>!MANUAL_OUTREACHES.includes(n)).reduce((a,[,b])=>a+b,0);const outreachTotal=otherOutreachTotal+tan.used;
@@ -1942,7 +1958,7 @@ if(b.isEmpty){const isLive=d===today();const alt=[...sbList].reverse().find(x=>x
 el.innerHTML=`<div class="sb-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 15h6"/></svg><div class="t">${isLive?'No check-ins yet today':'No attendance recorded'}</div><div class="s">${isLive?'Counts appear here as members are scanned and the children headcount is entered.':'No check-ins, children headcount or Tanauan count were found for '+sbLong(d)+'. Only Sundays synced to this device (server history covers the last 10 weeks) can be shown.'}</div>${alt?`<button type="button" class="btn btn-outline" style="padding:8px 16px;font-size:12px" id="sbJump">Go to ${sbShort(alt)}</button>`:''}</div>`;
 const j=document.getElementById('sbJump');if(j)j.addEventListener('click',()=>selectSunday(alt));return}
 const tile=(l,v,h,cls)=>`<div class="sb-tile${cls?' '+cls:''}"><div class="l">${l}</div><div class="v">${v}</div>${h?`<div class="h">${h}</div>`:''}</div>`;
-const seg=[['Members',b.adultTotal,'var(--accent)'],['First-time',b.newCount,'var(--success)'],['Unclassified',b.unclassified,'var(--text-secondary)'],['Outreach',b.outreachTotal,'var(--accent2)'],['Children',b.childNum,'var(--warning)']].filter(s=>s[1]>0);
+const seg=[['Members',b.adultTotal,'var(--accent)'],['First-time',b.newCount,'var(--success)'],['Outreach',b.outreachTotal,'var(--accent2)'],['Children',b.childNum,'var(--warning)']].filter(s=>s[1]>0);
 const occ=b.occasions.length?b.occasions.map(o=>`<span class="sb-pill">${sbEsc(o)}</span>`).join(''):'<span class="sb-pill">No check-ins recorded</span>';
 const tan=b.tan;const tanH='Scanned '+tan.scanned+' \u00b7 '+(tan.manual===null?'no manual':'manual '+tan.manual)+(tan.manual!==null&&tan.manual>tan.scanned?' (used)':'');
 const others=Object.entries(b.outreachGroups).filter(([n])=>!MANUAL_OUTREACHES.includes(n)).sort((x,y)=>y[1]-x[1]).map(([n,c])=>tile(sbEsc(n),c,'scanned','out')).join('');
@@ -1952,7 +1968,7 @@ const names=[...b.checkedIn].sort((x,y)=>x.name.localeCompare(y.name)).map(m=>{c
 el.innerHTML=`<div class="sb-hero"><div style="min-width:0"><div class="sb-sec" style="margin:0">Occasion</div><div class="sb-occ">${occ}</div></div><div><div class="sb-total">${b.grand}</div><div class="sb-total-l">Grand total</div></div></div>`
 +(seg.length?`<div class="sb-stack" role="img" aria-label="${seg.map(s=>s[0]+' '+s[1]).join(', ')}">${seg.map(s=>`<span style="flex-grow:${s[1]};background:${s[2]}"></span>`).join('')}</div><div class="sb-legend">${seg.map(s=>`<span><i style="background:${s[2]}"></i>${s[0]}<b>${s[1]}</b></span>`).join('')}</div>`:'')
 +`<div class="sb-layout"><div><div class="sb-sec">Sto. Tomas by age group</div><div class="sb-grid">${tile('Youth',b.counts.Youth)}${tile('YPro',b.counts.YPro)}${tile('Mothers',b.counts.Mothers)}${tile('Fathers',b.counts.Fathers)}</div>`
-+`<div class="sb-sec">Guests and unclassified</div><div class="sb-grid two">${tile('First-time guests',b.newCount,'first check-in',b.newCount?'ok':'')}${tile('Unclassified',b.unclassified,'no birthday on file')}</div></div>`
++`<div class="sb-sec">Guests</div><div class="sb-grid one">${tile('First-time guests',b.newCount,'first check-in',b.newCount?'ok':'')}</div></div>`
 +`<div><div class="sb-sec">Outreach</div><div class="sb-grid two">${tile('Tanauan',tan.used,tanH,'out')}${others}</div>`
 +`<div class="sb-sec">Children</div><div class="sb-grid two">${b.childrenEntered?tile('Children headcount',b.childNum,'entered manually'):tile('Children headcount','Not entered','no headcount saved','warn')}${tile('People scanned',b.checkedIn.length,'unique check-ins')}</div></div></div>`
 +`<div class="sb-note">${formula}${b.scannedKids.length?'<br>'+b.scannedKids.length+' scanned member'+(b.scannedKids.length===1?'':'s')+' aged 12 or under '+(b.scannedKids.length===1?'is':'are')+' covered by the children headcount and not added again.':''}</div>`
@@ -2103,6 +2119,7 @@ try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify(item.payload)));a
 const r=await fetch(url+'?action=getMembers');
 const json=await r.json();
 if(json.success&&json.data){
+applyMgPending(json.data,url);
 await dbClear('members');
 for(const m of json.data)await dbPut('members',m);
 allMembers=json.data;
@@ -2403,6 +2420,7 @@ try{
 const r2=await fetch(url+'?action=getMembers');
 const json2=await r2.json();
 if(json2.success&&json2.data){
+applyMgPending(json2.data,url);
 await dbClear('members');
 for(const m of json2.data)await dbPut('members',m);
 allMembers=json2.data;
@@ -2526,8 +2544,9 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 
 // === APP VERSION & CHANGELOG ===
 function initCollapse(cardId,headId,key){const card=document.getElementById(cardId),head=document.getElementById(headId);if(!card||!head||head.dataset.bound)return;head.dataset.bound='1';const apply=c=>{card.classList.toggle('mb-collapsed',c);head.setAttribute('aria-expanded',String(!c))};let saved=null;try{saved=localStorage.getItem(key)}catch(err){}apply(saved!=='0');const toggle=()=>{const c=!card.classList.contains('mb-collapsed');apply(c);try{localStorage.setItem(key,c?'1':'0')}catch(err){}};head.addEventListener('click',toggle);head.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ev.preventDefault();toggle()}})}
-const APP_VERSION='1.9.0';
+const APP_VERSION='1.9.1';
 const CHANGELOG=[
+{version:'1.9.1',date:'October 26, 2026',changes:[{type:'Fix',text:'Fixing a member\'s birthday or manual group now re-counts all of their past Sundays under the right group in Reports and the Reports sheet'},{type:'Fix',text:'Manual groups are kept on this device until the server can store them, then sent again automatically'},{type:'Improve',text:'Past Sundays use each member\'s age on that day'},{type:'Improve',text:'Sunday Breakdown no longer shows an Unclassified tile or bar; Total still includes everyone'}]},
 {version:'1.9.0',date:'October 20, 2026',changes:[{type:'New',text:'Group filter next to Not Here in Quick Tap and Search: Youth, YPro, Mothers, Fathers, Children, First-time guests and Unclassified with live counts'},{type:'Improve',text:'Ministry and Outreach filters are now compact dropdown menus with live member counts'},{type:'Improve',text:'Outreach list is built from your member data instead of a fixed list'},{type:'Improve',text:'Check-in filters combine with All/Not Here and search, and are remembered separately for Quick Tap and Search'}]},
 {version:'1.8.9',date:'October 20, 2026',changes:[{type:'New',text:'Manual Group option on Add/Edit Member for members with no birthday (Children, Youth, YPro, Mothers, Fathers)'},{type:'Improve',text:'Manual group feeds Reports, Sunday Breakdown, Send Report and Members group chips; a birthday always takes priority'},{type:'Improve',text:'Member details show a Manual tag; Missing Birthday list and CSV export include the manual group'},{type:'Fix',text:'Settings version label now always matches the installed version'}]},
 {version:'1.8.8',date:'October 20, 2026',changes:[{type:'Improve',text:'Refreshed light theme: soft paper surfaces, crisp ink text and clearer borders'},{type:'Improve',text:'Richer dark theme with clear card depth, brighter secondary text and tuned status colors'},{type:'Improve',text:'All text and buttons meet WCAG AA contrast in both themes'},{type:'Improve',text:'Phone status bar color follows the selected theme'},{type:'Fix',text:'Scanner prompt, changelog badges and occasion chips now readable in light mode'}]},
