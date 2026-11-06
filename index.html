@@ -58,8 +58,19 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 16px;position:relative;transition:all 0.2s}
 .nav-item svg{width:22px;height:22px;stroke:var(--text-secondary);fill:none;stroke-width:1.8;transition:all 0.2s}
 .nav-item span{font-size:10px;color:var(--text-secondary);font-weight:500;transition:color 0.2s}
-.nav-item.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:32px;height:3px;border-radius:0 0 3px 3px;background:var(--gold);animation:navSlideIn 0.25s ease}
-@keyframes navSlideIn{from{opacity:0;width:0}to{opacity:1;width:32px}}
+.bottom-nav{overflow:hidden}
+.nav-item{z-index:1;-webkit-tap-highlight-color:transparent;background:none;border:none}
+.nav-ind,.nav-bar{position:absolute;left:0;pointer-events:none;will-change:transform,width}
+.nav-ind{top:0;height:34px;border-radius:17px;background:var(--accent-t);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 18%,transparent);transition:transform 0.5s cubic-bezier(0.34,1.4,0.64,1),width 0.35s cubic-bezier(0.22,1,0.36,1);z-index:0}
+.nav-bar{top:0;height:3px;border-radius:0 0 3px 3px;background:var(--gold);box-shadow:0 0 10px color-mix(in srgb,var(--gold) 60%,transparent);transition:transform 0.42s cubic-bezier(0.22,1,0.36,1) 0.04s,width 0.42s cubic-bezier(0.22,1,0.36,1);z-index:2}
+.nav-item svg{transition:stroke 0.25s,transform 0.35s cubic-bezier(0.34,1.56,0.64,1)}
+.nav-item.active svg{transform:translateY(-1px) scale(1.08)}
+.nav-item.active span{font-weight:700;letter-spacing:0.2px}
+.nav-item:active svg{transform:scale(0.86);transition-duration:0.1s}
+.nav-item.pop svg{animation:navPop 0.5s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes navPop{0%{transform:scale(0.8)}45%{transform:translateY(-3px) scale(1.18)}100%{transform:translateY(-1px) scale(1.08)}}
+.nav-ind.no-anim,.nav-bar.no-anim{transition:none}
+@media(prefers-reduced-motion:reduce){.nav-ind,.nav-bar,.nav-item svg{transition:none}.nav-item.pop svg{animation:none}}
 .nav-item.active svg{stroke:var(--accent)}
 .nav-item.active span{color:var(--text)}
 .mode-pills{display:flex;background:var(--card);border-radius:12px;padding:4px;margin-bottom:16px;position:sticky;top:0;z-index:10;border:1px solid var(--card-border);flex-shrink:0;transition:transform 0.3s ease,opacity 0.3s ease}
@@ -742,7 +753,7 @@ body.light{--toast-bg:#1f232b;--toast-fg:#f6f4ee;--toast-bd:#1f232b;--toast-mute
 </div>
 <div class="settings-section">
 <h4>About</h4>
-<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.9.10</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent);cursor:pointer" id="whatsNewBtn">What's New</span></div>
+<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.9.11</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent);cursor:pointer" id="whatsNewBtn">What's New</span></div>
 
 </div>
 </div>
@@ -754,6 +765,7 @@ body.light{--toast-bg:#1f232b;--toast-fg:#f6f4ee;--toast-bd:#1f232b;--toast-mute
 
 <button class="dt-toggle dt-toggle-bot" id="dtToggleBot" onclick="toggleDesktopNav()" title="Toggle navigation"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
 <nav class="bottom-nav">
+<span class="nav-ind no-anim" aria-hidden="true"></span><span class="nav-bar no-anim" aria-hidden="true"></span>
 <button class="nav-item active" data-tab="tabCheckin">
 <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
 <span>Check-In</span>
@@ -1106,6 +1118,7 @@ const tabEl=document.getElementById(tabId);tabEl.classList.add('active');
 if(!viaSwipe){tabEl.classList.add('tab-fade');tabEl.addEventListener('animationend',()=>tabEl.classList.remove('tab-fade'),{once:true})}
 document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
 document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+if(typeof navActivated==='function')navActivated();
 currentTab=tabId;
 const fab=document.getElementById('fab');
 fab.style.display=tabId==='tabMembers'?'flex':'none';
@@ -1117,7 +1130,13 @@ if(tabId!=='tabCheckin'){if(qrScanner){try{qrScanner.stop()}catch(e){}}if(earlyS
 if(tabId==='tabCheckin'&&currentMode==='qr'){setTimeout(()=>startQR(),100)}
 }
 
-document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>switchTab(n.dataset.tab)));
+document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>{if(n.dataset.tab!==currentTab&&navigator.vibrate)navigator.vibrate(6);switchTab(n.dataset.tab)}));
+function moveNavInd(){const nav=document.querySelector('.bottom-nav'),a=nav&&nav.querySelector('.nav-item.active');if(!a)return;const ind=nav.querySelector('.nav-ind'),bar=nav.querySelector('.nav-bar'),ic=a.querySelector('svg');const nr=nav.getBoundingClientRect(),ar=a.getBoundingClientRect(),sr=ic.getBoundingClientRect();
+const iw=Math.max(56,sr.width+34),bw=28;ind.style.width=iw+'px';ind.style.top=(sr.top-nr.top-6)+'px';ind.style.transform='translateX('+(ar.left-nr.left+(ar.width-iw)/2)+'px)';
+bar.style.width=bw+'px';bar.style.transform='translateX('+(ar.left-nr.left+(ar.width-bw)/2)+'px)'}
+let navPrev=null;function navActivated(){const a=document.querySelector('.nav-item.active');if(a&&navPrev&&a!==navPrev){a.classList.remove('pop');void a.offsetWidth;a.classList.add('pop');setTimeout(()=>a.classList.remove('pop'),520)}navPrev=a;moveNavInd()}
+window.addEventListener('resize',moveNavInd);
+requestAnimationFrame(()=>{navActivated();requestAnimationFrame(()=>document.querySelectorAll('.nav-ind,.nav-bar').forEach(e=>e.classList.remove('no-anim')))});
 
 function switchMode(mode){
 qtHidePop();if(typeof ciClose==='function')ciClose(false);currentMode=mode;
@@ -2617,8 +2636,9 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 
 // === APP VERSION & CHANGELOG ===
 function initCollapse(cardId,headId,key){const card=document.getElementById(cardId),head=document.getElementById(headId);if(!card||!head||head.dataset.bound)return;head.dataset.bound='1';const apply=c=>{card.classList.toggle('mb-collapsed',c);head.setAttribute('aria-expanded',String(!c))};let saved=null;try{saved=localStorage.getItem(key)}catch(err){}apply(saved!=='0');const toggle=()=>{const c=!card.classList.contains('mb-collapsed');apply(c);try{localStorage.setItem(key,c?'1':'0')}catch(err){}};head.addEventListener('click',toggle);head.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ev.preventDefault();toggle()}})}
-const APP_VERSION='1.9.10';
+const APP_VERSION='1.9.11';
 const CHANGELOG=[
+{version:'1.9.11',date:'November 7, 2026',changes:[{type:'Improve',text:'Redesigned bottom navigation: a soft highlight glides to the selected tab with a springy motion, a gold bar trails along the top, and the icon pops when selected'},{type:'Improve',text:'Tab buttons press in when tapped, with a light vibration on change'}]},
 {version:'1.9.10',date:'November 7, 2026',changes:[{type:'Fix',text:'Swiping between tabs works anywhere on Members; a sideways-scrolling row only takes the swipe while it can still scroll that way'}]},
 {version:'1.9.9',date:'November 7, 2026',changes:[{type:'Improve',text:'Redesigned notifications: a calm dark bar with a clear icon for success, warning, error and info, no more colored stripe or progress line'},{type:'Improve',text:'Notifications can be dismissed with the close button or a swipe down, and errors stay on screen longer'}]},
 {version:'1.9.8',date:'November 7, 2026',changes:[{type:'Fix',text:'Updates now load right away: the app checks for a new version on open and reloads itself once it is installed'}]},
