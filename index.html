@@ -291,10 +291,17 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 .streak-dots .dot{width:12px;height:12px;border-radius:50%}
 .streak-dots .dot.present{background:var(--success)}
 .streak-dots .dot.absent{background:var(--track)}
-.toast{position:fixed;bottom:calc(var(--nav-h) + 16px);left:50%;transform:translateX(-50%) translateY(100px);background:var(--raised);color:var(--text);box-shadow:var(--sh-3);border:1px solid var(--card-border);border-radius:12px;padding:12px 20px;font-size:14px;font-weight:500;z-index:99999;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1),opacity 0.3s;display:flex;align-items:center;gap:10px;max-width:90vw;opacity:0;pointer-events:none}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
-.toast .toast-progress{position:absolute;bottom:0;left:0;height:3px;border-radius:0 0 12px 12px;background:var(--accent);opacity:0.6;animation:toastProgress 3s linear forwards}
-@keyframes toastProgress{from{width:100%}to{width:0}}
+.toast{position:fixed;left:12px;right:12px;bottom:calc(var(--nav-h) + 12px);margin:0 auto;max-width:420px;display:flex;align-items:flex-start;gap:12px;padding:13px 14px 13px 16px;background:var(--toast-bg);color:var(--toast-fg);border:1px solid var(--toast-bd);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.18),0 2px 6px rgba(0,0,0,0.10);font-size:14px;font-weight:500;line-height:1.4;z-index:99999;opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity 0.18s ease,transform 0.22s cubic-bezier(0.2,0.8,0.2,1)}
+.toast.show{opacity:1;transform:none;pointer-events:auto}
+.toast .toast-ic{flex:none;width:18px;height:18px;margin-top:1px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.toast[data-type="success"] .toast-ic{color:var(--toast-ok)}.toast[data-type="error"] .toast-ic{color:var(--toast-err)}.toast[data-type="warning"] .toast-ic{color:var(--toast-warn)}.toast[data-type="info"] .toast-ic{color:var(--toast-mute)}
+.toast #toastMsg{flex:1;min-width:0;overflow-wrap:anywhere}
+.toast .toast-x{flex:none;margin:-4px -6px -4px 0;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--toast-mute);font-size:18px;line-height:1}
+.toast .toast-x:active{background:rgba(127,127,127,0.18)}
+:root,.qr-overlay{--toast-bg:#2a2d35;--toast-fg:#f1efe8;--toast-bd:#3a3e48;--toast-mute:#a9abb2;--toast-ok:#86cf9f;--toast-err:#f19a91;--toast-warn:#e6b36e}
+body.light{--toast-bg:#1f232b;--toast-fg:#f6f4ee;--toast-bd:#1f232b;--toast-mute:#b4b6bc;--toast-ok:#8fd3a6;--toast-err:#f4a39a;--toast-warn:#e9bb7a}
+@media(min-width:1024px){.toast{left:auto;right:24px;bottom:24px;margin:0}}
+@media(prefers-reduced-motion:reduce){.toast{transition:opacity 0.15s;transform:none}}
 .qr-scanner{width:100%;max-width:300px;margin:0 auto;border-radius:var(--radius);overflow:hidden;position:relative;background:#000;box-shadow:0 0 0 2px var(--ring),var(--sh-3)}
 .qr-scanner::before{content:'';position:absolute;inset:0;border-radius:var(--radius);border:2px solid var(--accent);opacity:0.75;z-index:10;pointer-events:none}
 .qr-scanner .scan-region,.qr-scanner .corner-bl,.qr-scanner .corner-br{display:none}
@@ -735,7 +742,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 </div>
 <div class="settings-section">
 <h4>About</h4>
-<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.9.8</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent);cursor:pointer" id="whatsNewBtn">What's New</span></div>
+<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.9.9</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent);cursor:pointer" id="whatsNewBtn">What's New</span></div>
 
 </div>
 </div>
@@ -776,7 +783,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 
 <div class="qr-overlay" id="qrOverlay"></div>
 
-<div class="toast" id="toast"><span id="toastMsg"></span><div class="toast-progress"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite" data-type="success"><svg class="toast-ic" id="toastIc" viewBox="0 0 24 24" aria-hidden="true"></svg><span id="toastMsg"></span><button type="button" class="toast-x" id="toastX" aria-label="Dismiss">&times;</button></div>
 
 <link rel="preload" href="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" as="script">
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" onload="if(earlyStream)startQRScanner()"></script>
@@ -883,12 +890,20 @@ const DEMO_MEMBERS=[];
 
 
 let toastTimer=null;
+const TOAST_IC={success:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',error:'<circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/>',warning:'<path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.5v.01"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.5v.01"/>'};
+function hideToast(){const t=document.getElementById('toast');if(toastTimer)clearTimeout(toastTimer);toastTimer=null;t.classList.remove('show')}
 function showToast(msg,type='success'){
-const t=document.getElementById('toast');const m=document.getElementById('toastMsg');
-m.textContent=msg;t.style.borderLeft=`3px solid var(--${type})`;
+if(!TOAST_IC[type])type='info';
+const t=document.getElementById('toast');
+document.getElementById('toastMsg').textContent=msg;document.getElementById('toastIc').innerHTML=TOAST_IC[type];
+t.dataset.type=type;t.setAttribute('role',type==='error'?'alert':'status');t.setAttribute('aria-live',type==='error'?'assertive':'polite');
 if(toastTimer)clearTimeout(toastTimer);
-t.classList.add('show');toastTimer=setTimeout(()=>{t.classList.remove('show');toastTimer=null},3000);
+t.classList.remove('show');void t.offsetWidth;t.classList.add('show');
+const ms=type==='error'?5000:type==='warning'?4000:Math.min(5000,2400+msg.length*30);
+toastTimer=setTimeout(hideToast,ms);
 }
+document.getElementById('toastX').addEventListener('click',hideToast);
+(function(){const t=document.getElementById('toast');let y0=null;t.addEventListener('touchstart',e=>{y0=e.touches[0].clientY},{passive:true});t.addEventListener('touchend',e=>{if(y0!==null&&e.changedTouches[0].clientY-y0>24)hideToast();y0=null},{passive:true})})();
 
 let activeSheetSelect=null;
 function openBottomSheet(title,options,currentVal,onSelect){
@@ -1693,7 +1708,7 @@ function closeModal(){document.getElementById('modalOverlay').classList.remove('
 
 async function saveMember(existing){
 const name=document.getElementById('memName').value.trim();if(!name){showToast('Name is required','error');return}
-if(existing){const typed=await customPrompt(`To confirm edit, type "${existing.name}"`,{title:'Confirm Edit',okText:'Save',placeholder:existing.name});if(!typed||typed.trim().toLowerCase()!==existing.name.toLowerCase()){showToast('Edit cancelled','warning');return}}
+if(existing){const typed=await customPrompt(`To confirm edit, type "${existing.name}"`,{title:'Confirm Edit',okText:'Save',placeholder:existing.name});if(!typed||typed.trim().toLowerCase()!==existing.name.toLowerCase()){showToast('Edit cancelled','info');return}}
 const bdayVal=document.getElementById('memBday').value;
 if(bdayVal){const bdayAge=getAge(bdayVal);const bdayYear=new Date(bdayVal+'T00:00:00').getFullYear();
 if(bdayAge!==null&&bdayAge>120){showToast('Birthday year '+bdayYear+' seems incorrect (age would be '+bdayAge+')','error');return}
@@ -2358,7 +2373,7 @@ if(!url){askUrl('Enter the Script URL from admin');return}
 }
 await setSetting('scriptUrl',url);
 const deviceId=getDeviceId();
-showToast('Registering...','warning');
+showToast('Registering...','info');
 const res=await fetch(url+'?action=registerDevice&deviceId='+encodeURIComponent(deviceId)+'&name='+encodeURIComponent(name),{redirect:'follow'});
 const text=await res.text();
 let json;
@@ -2600,8 +2615,9 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 
 // === APP VERSION & CHANGELOG ===
 function initCollapse(cardId,headId,key){const card=document.getElementById(cardId),head=document.getElementById(headId);if(!card||!head||head.dataset.bound)return;head.dataset.bound='1';const apply=c=>{card.classList.toggle('mb-collapsed',c);head.setAttribute('aria-expanded',String(!c))};let saved=null;try{saved=localStorage.getItem(key)}catch(err){}apply(saved!=='0');const toggle=()=>{const c=!card.classList.contains('mb-collapsed');apply(c);try{localStorage.setItem(key,c?'1':'0')}catch(err){}};head.addEventListener('click',toggle);head.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ev.preventDefault();toggle()}})}
-const APP_VERSION='1.9.8';
+const APP_VERSION='1.9.9';
 const CHANGELOG=[
+{version:'1.9.9',date:'November 7, 2026',changes:[{type:'Improve',text:'Redesigned notifications: a calm dark bar with a clear icon for success, warning, error and info, no more colored stripe or progress line'},{type:'Improve',text:'Notifications can be dismissed with the close button or a swipe down, and errors stay on screen longer'}]},
 {version:'1.9.8',date:'November 7, 2026',changes:[{type:'Fix',text:'Updates now load right away: the app checks for a new version on open and reloads itself once it is installed'}]},
 {version:'1.9.7',date:'November 7, 2026',changes:[{type:'Fix',text:'Swiping left on Check-in no longer leaves a blank screen when moving between QR Scan, Quick Tap and Search'},{type:'Improve',text:'Smoother swipe navigation: quick flicks switch pages, the next page glides in, the mode pill follows your finger, and edges stretch softly when there is nothing further'},{type:'Improve',text:'Mode pills stay in place while you swipe between check-in modes'}]},
 {version:'1.9.6',date:'November 7, 2026',changes:[{type:'New',text:'Pull down from the top of any tab to refresh attendance, members and reports'}]},
@@ -2768,7 +2784,7 @@ if(url)try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'s
 async function setActiveOccasion(name){
 if(isSunday()&&name!=='Sunday Service'){
 const typed=await customPrompt(`Today is Sunday. To switch to "${name}", type CONFIRM below:`,{title:'Sunday Override',okText:'Switch',placeholder:'Type CONFIRM'});
-if(!typed||typed.trim().toUpperCase()!=='CONFIRM'){showToast('Occasion not changed','warning');return}
+if(!typed||typed.trim().toUpperCase()!=='CONFIRM'){showToast('Occasion not changed','info');return}
 }
 currentOccasion=name;
 await setSetting('activeOccasion',name);
