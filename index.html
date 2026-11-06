@@ -735,7 +735,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 </div>
 <div class="settings-section">
 <h4>About</h4>
-<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.9.7</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent);cursor:pointer" id="whatsNewBtn">What's New</span></div>
+<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.9.8</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent);cursor:pointer" id="whatsNewBtn">What's New</span></div>
 
 </div>
 </div>
@@ -2600,8 +2600,9 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 
 // === APP VERSION & CHANGELOG ===
 function initCollapse(cardId,headId,key){const card=document.getElementById(cardId),head=document.getElementById(headId);if(!card||!head||head.dataset.bound)return;head.dataset.bound='1';const apply=c=>{card.classList.toggle('mb-collapsed',c);head.setAttribute('aria-expanded',String(!c))};let saved=null;try{saved=localStorage.getItem(key)}catch(err){}apply(saved!=='0');const toggle=()=>{const c=!card.classList.contains('mb-collapsed');apply(c);try{localStorage.setItem(key,c?'1':'0')}catch(err){}};head.addEventListener('click',toggle);head.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ev.preventDefault();toggle()}})}
-const APP_VERSION='1.9.7';
+const APP_VERSION='1.9.8';
 const CHANGELOG=[
+{version:'1.9.8',date:'November 7, 2026',changes:[{type:'Fix',text:'Updates now load right away: the app checks for a new version on open and reloads itself once it is installed'}]},
 {version:'1.9.7',date:'November 7, 2026',changes:[{type:'Fix',text:'Swiping left on Check-in no longer leaves a blank screen when moving between QR Scan, Quick Tap and Search'},{type:'Improve',text:'Smoother swipe navigation: quick flicks switch pages, the next page glides in, the mode pill follows your finger, and edges stretch softly when there is nothing further'},{type:'Improve',text:'Mode pills stay in place while you swipe between check-in modes'}]},
 {version:'1.9.6',date:'November 7, 2026',changes:[{type:'New',text:'Pull down from the top of any tab to refresh attendance, members and reports'}]},
 {version:'1.9.5',date:'November 7, 2026',changes:[{type:'Improve',text:'App now opens on Quick Tap instead of QR Scan; the camera only starts when you switch to QR Scan'}]},
@@ -2854,7 +2855,11 @@ updateOccasionBanner();
 renderOccasionTags(occasions);
 }
 
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
+if('serviceWorker' in navigator){
+const hadCtrl=!!navigator.serviceWorker.controller;let swReloaded=false;
+navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!hadCtrl||swReloaded)return;swReloaded=true;location.reload()});
+navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>{window._swReg=reg;document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{})})}).catch(()=>{});
+}
 
 (function(){
 const content=document.querySelector('.content'),ind=document.getElementById('ptr');
@@ -2870,7 +2875,7 @@ try{
 const url=await getSetting('scriptUrl');
 if(!navigator.onLine){showToast('Offline. Showing saved data','warning')}
 else if(!url){showToast('Set the Script URL in Settings first','warning')}
-else{lastMemberSync=0;await autoSync();
+else{if(window._swReg)window._swReg.update().catch(()=>{});lastMemberSync=0;await autoSync();
 if(currentTab==='tabCheckin'&&currentMode==='search'){const si=document.getElementById('searchInput');if(si)si.dispatchEvent(new Event('input'))}
 if(currentTab==='tabMembers')renderMemberList();
 if(currentTab==='tabReports')await renderReports();
