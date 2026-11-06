@@ -44,6 +44,23 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 *{scrollbar-width:none;-ms-overflow-style:none}
 *::-webkit-scrollbar{display:none}
 .tab-content.active{display:flex;flex-direction:column}
+#topLoader{position:fixed;top:0;left:0;right:0;height:2.5px;z-index:100000;pointer-events:none;opacity:0;transition:opacity 0.35s ease}
+#topLoader.on{opacity:1}
+#topLoader i{position:absolute;inset:0;overflow:hidden;transform-origin:left center;transform:scaleX(0);border-radius:0 2px 2px 0;background:linear-gradient(90deg,var(--gold),var(--accent2));box-shadow:0 0 10px var(--gold-b)}
+#topLoader.on i{animation:tlGrow 9s cubic-bezier(0.08,0.7,0.15,1) forwards}
+#topLoader i::after{content:'';position:absolute;top:0;bottom:0;width:35%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.75),transparent);animation:tlShine 1.2s ease-in-out infinite}
+#topLoader.done i{animation:none;transform:scaleX(1);transition:transform 0.2s ease}
+@keyframes tlGrow{to{transform:scaleX(0.9)}}
+@keyframes tlShine{from{left:-35%}to{left:100%}}
+.is-busy{position:relative;pointer-events:none}
+.is-busy>*:not(.busy-spin){visibility:hidden}
+.is-busy{color:transparent!important}
+.busy-spin{position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid color-mix(in srgb,var(--busy-c,var(--accent)) 22%,transparent);border-top-color:var(--busy-c,var(--accent));animation:busySpin 0.7s linear infinite}
+@keyframes busySpin{to{transform:rotate(360deg)}}
+.skel{display:inline-block;vertical-align:middle;height:12px;border-radius:7px;background:linear-gradient(90deg,var(--card-border) 0%,var(--raised) 50%,var(--card-border) 100%);background-size:220% 100%;animation:skel 1.4s ease-in-out infinite}
+.skel-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+@keyframes skel{from{background-position:120% 0}to{background-position:-120% 0}}
+@media(prefers-reduced-motion:reduce){#topLoader i::after,.skel{animation:none}.busy-spin{animation-duration:1.6s}#topLoader.on i{animation:none;transform:scaleX(0.6)}}
 .tab-content.tab-fade{animation:fadeIn 0.3s ease}
 @media(prefers-reduced-motion:reduce){.tab-content.tab-fade{animation:none}}
 .ptr{position:fixed;top:64px;left:50%;z-index:150;width:40px;height:40px;margin-left:-20px;border-radius:50%;background:var(--raised);border:1px solid var(--card-border);box-shadow:var(--sh-2);display:flex;align-items:center;justify-content:center;transform:translateY(-56px);opacity:0;pointer-events:none}
@@ -424,10 +441,16 @@ body.light{--toast-bg:#1f232b;--toast-fg:#f6f4ee;--toast-bd:#1f232b;--toast-mute
 .splash-icon img{display:block;width:100%;height:100%;object-fit:cover;transform:scale(1.4)}
 .splash-word{font-family:'Libre Caslon Text',Georgia,'Times New Roman',serif;font-size:38px;font-weight:700;letter-spacing:0.3px;line-height:1.1}
 @keyframes splashIn{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.splash-icon{animation:none}}
+.splash-ring{animation:ringBreath 2.6s ease-in-out infinite}
+.splash-arc{position:absolute;width:132px;height:132px;border-radius:50%;border:1.5px solid transparent;border-top-color:#d9b866;border-right-color:rgba(217,184,102,0.35);animation:arcSpin 1.4s cubic-bezier(0.5,0.15,0.5,0.85) infinite;filter:drop-shadow(0 0 4px rgba(217,184,102,0.55))}
+#splashProgress{position:relative;overflow:hidden}
+#splashProgress::after{content:"";position:absolute;top:0;bottom:0;width:50px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.85),transparent);animation:tlShine 1.3s ease-in-out infinite}
+@keyframes ringBreath{0%,100%{transform:scale(1);opacity:0.55}50%{transform:scale(1.05);opacity:1}}
+@keyframes arcSpin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.splash-icon,.splash-ring,.splash-arc,#splashProgress::after{animation:none}}
 </style>
 <div style="position:relative;display:flex;align-items:center;justify-content:center;width:150px;height:150px">
-<div class="splash-ring"></div>
+<div class="splash-ring"></div><div class="splash-arc"></div>
 <div class="splash-icon"><img src="logo.jpg" alt="Jesus Is Lord Global Ministry seal"></div>
 </div>
 <div style="margin-top:22px;display:flex"><span class="splash-word" style="color:#ecebe6">Flock</span><span class="splash-word" style="color:#d9b866">Track</span></div>
@@ -633,9 +656,9 @@ body.light{--toast-bg:#1f232b;--toast-fg:#f6f4ee;--toast-bd:#1f232b;--toast-mute
 <div class="chart mb-collapsed" id="sundayCard">
 <div class="chart-title mb-head" id="sundayToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="sundayBody">Sunday Breakdown<span class="mb-sum" id="sundaySummary">Pick a Sunday</span><span class="mb-chev" aria-hidden="true">&#9660;</span></div>
 <div class="mb-body" id="sundayBody"><div>
-<div class="sb-nav"><button type="button" class="sb-arrow" id="sbPrev" aria-label="Previous Sunday"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><div class="sb-label" aria-live="polite"><div class="d" id="sbDate">Loading...</div><div class="s" id="sbSub">Weekly history</div></div><button type="button" class="sb-arrow" id="sbNext" aria-label="Next Sunday"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button></div>
-<div class="sb-chips" id="sbChips" role="listbox" aria-label="Choose a Sunday"><span class="sb-chip">Loading...</span></div>
-<div id="sundayBreakdown"><p class="sb-note" style="text-align:center">Loading breakdown...</p></div>
+<div class="sb-nav"><button type="button" class="sb-arrow" id="sbPrev" aria-label="Previous Sunday"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><div class="sb-label" aria-live="polite"><div class="d" id="sbDate"><span class="skel" style="width:132px;height:16px"></span></div><div class="s" id="sbSub">Weekly history</div></div><button type="button" class="sb-arrow" id="sbNext" aria-label="Next Sunday"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button></div>
+<div class="sb-chips" id="sbChips" role="listbox" aria-label="Choose a Sunday"><span class="skel" style="width:70px;height:32px;border-radius:16px;margin-right:6px"></span><span class="skel" style="width:70px;height:32px;border-radius:16px;margin-right:6px"></span><span class="skel" style="width:70px;height:32px;border-radius:16px;margin-right:6px"></span><span class="skel" style="width:70px;height:32px;border-radius:16px"></span></div>
+<div id="sundayBreakdown"><div aria-label="Loading breakdown"><div class="skel-row"><span class="skel" style="width:110px"></span><span class="skel" style="width:28px"></span></div><div class="skel-row"><span class="skel" style="width:84px"></span><span class="skel" style="width:28px"></span></div><div class="skel-row"><span class="skel" style="width:124px"></span><span class="skel" style="width:28px"></span></div><div class="skel-row"><span class="skel" style="width:96px"></span><span class="skel" style="width:28px"></span></div></div></div>
 </div></div>
 </div>
 <div class="chart mb-collapsed" id="followUpCard" style="border-color:var(--warning-t);display:none">
@@ -1082,6 +1105,26 @@ resolve({type:'first',count:1});
 }});
 }
 
+(function(){
+const bar=document.createElement('div');bar.id='topLoader';bar.setAttribute('aria-hidden','true');bar.innerHTML='<i></i>';document.body.appendChild(bar);
+let n=0,lastTap=0,tapBtn=null,hideT=0,showT=0;
+document.addEventListener('pointerdown',e=>{lastTap=Date.now();tapBtn=e.target&&e.target.closest?e.target.closest('button,.btn'):null},true);
+function busyOn(b){if(b.classList.contains('is-busy'))return;b.style.setProperty('--busy-c',getComputedStyle(b).color);const sp=document.createElement('span');sp.className='busy-spin';b.appendChild(sp);b.classList.add('is-busy');b.setAttribute('aria-busy','true')}
+function busyOff(b){b.classList.remove('is-busy');b.removeAttribute('aria-busy');const sp=b.querySelector(':scope>.busy-spin');if(sp)sp.remove()}
+const nativeFetch=window.fetch.bind(window);
+window.fetch=function(input,init){
+const url=String(input&&input.url?input.url:input);
+if(!url.includes('script.google.com')||Date.now()-lastTap>1500)return nativeFetch(input,init);
+n++;
+const b=tapBtn&&document.contains(tapBtn)&&!tapBtn.classList.contains('nav-item')?tapBtn:null;
+if(b){b._busyN=(b._busyN||0)+1;busyOn(b)}
+clearTimeout(hideT);bar.classList.remove('done');
+if(n===1)showT=setTimeout(()=>bar.classList.add('on'),150);
+const done=()=>{n=Math.max(0,n-1);if(b&&!(b._busyN=Math.max(0,(b._busyN||1)-1)))busyOff(b);if(n)return;clearTimeout(showT);
+if(bar.classList.contains('on')){bar.classList.add('done');hideT=setTimeout(()=>bar.classList.remove('on','done'),500)}};
+return nativeFetch(input,init).then(r=>{done();return r},e=>{done();throw e});
+};
+})();
 let currentTab='tabCheckin';let currentMode='tap';let qrScanner=null;let allMembers=[];let todayAttendance=[];
 var qtLP={t:null,hide:null,x:0,y:0,lp:false,shown:false,pop:null};
 function qtHidePop(){if(!qtLP)return;clearTimeout(qtLP.hide);qtLP.hide=null;if(qtLP.pop)qtLP.pop.classList.remove('show');qtLP.shown=false}
@@ -2167,7 +2210,7 @@ await setSetting('scriptUrl',url);
 document.getElementById('scriptUrl').disabled=true;
 document.getElementById('testConnection').style.display='none';
 document.getElementById('unlockUrlBtn').style.display='inline-block';
-const status=document.getElementById('connectionStatus');status.textContent='Testing...';status.style.color='var(--text-secondary)';
+const status=document.getElementById('connectionStatus');status.innerHTML='<span class="busy-spin" style="position:relative;display:inline-block;left:0;top:0;margin:0 8px -3px 0;width:13px;height:13px"></span>Testing connection';status.style.color='var(--text-secondary)';
 try{const r=await fetch(url+'?action=getMembers',{redirect:'follow'});const t=await r.text();let j;try{j=JSON.parse(t)}catch(pe){throw new Error('Not JSON: '+t.substring(0,100))}
 if(j.success!==false){status.textContent='Connected! Reloading...';status.style.color='var(--success)';setTimeout(()=>location.reload(),1000)}
 else throw new Error('success=false')}
