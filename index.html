@@ -54,22 +54,19 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 @keyframes ptrSpin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.ptr.anim{transition:opacity 0.2s}.ptr.loading svg{animation-duration:2s}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--glass);border-top:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-around;z-index:100}
-.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 16px;position:relative;transition:all 0.2s}
-.nav-item svg{width:22px;height:22px;stroke:var(--text-secondary);fill:none;stroke-width:1.8;transition:all 0.2s}
-.nav-item span{font-size:10px;color:var(--text-secondary);font-weight:500;transition:color 0.2s}
-.bottom-nav{overflow:hidden;-webkit-backdrop-filter:saturate(1.4) blur(18px);backdrop-filter:saturate(1.4) blur(18px)}
-.nav-item{z-index:1;-webkit-tap-highlight-color:transparent;background:none;border:none;gap:5px}
-.nav-ind{position:absolute;left:0;top:0;width:60px;height:32px;border-radius:16px;background:var(--fill-a);box-shadow:0 4px 12px -4px color-mix(in srgb,var(--fill-a) 70%,transparent);pointer-events:none;will-change:transform;transition:transform 0.42s cubic-bezier(0.32,0.72,0,1);z-index:0}
-.nav-item svg{transition:stroke 0.3s ease,transform 0.3s cubic-bezier(0.32,0.72,0,1)}
-.nav-item span{transition:color 0.3s ease}
-.nav-item.active svg{stroke:var(--on-fill)}
-.nav-item.active span{color:var(--text);font-weight:600}
-.nav-item:active svg{transform:scale(0.9)}
-.nav-ind.no-anim{transition:none}
-@media(prefers-reduced-motion:reduce){.nav-ind,.nav-item svg,.nav-item span{transition:none}}
-.nav-item.active svg{stroke:var(--accent)}
-.nav-item.active span{color:var(--text)}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--bg);border-top:0.5px solid var(--card-border);display:flex;align-items:stretch;justify-content:space-around;z-index:100}
+.nav-item{flex:1;display:flex;align-items:center;justify-content:center;padding:0;position:relative;background:none;border:none;-webkit-tap-highlight-color:transparent;cursor:pointer}
+.nav-item span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.nav-item svg{width:26px;height:26px;stroke:var(--text);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;transition:transform 0.15s ease}
+.nav-item .ic-on{display:none}
+.nav-item.active .ic-off{display:none}
+.nav-item.active .ic-on{display:block;animation:igPop 0.28s cubic-bezier(0.3,0.7,0.4,1.4)}
+.ic-on .solid{fill:var(--text);stroke:var(--text)}
+.ic-on .knock{stroke:var(--bg);fill:none;stroke-width:2.2}
+.ic-on .hole{fill:var(--bg);stroke:none}
+.nav-item:active svg{transform:scale(0.86)}
+@keyframes igPop{0%{transform:scale(0.82)}100%{transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.nav-item.active .ic-on{animation:none}.nav-item svg{transition:none}}
 .mode-pills{display:flex;background:var(--card);border-radius:12px;padding:4px;margin-bottom:16px;position:sticky;top:0;z-index:10;border:1px solid var(--card-border);flex-shrink:0;transition:transform 0.3s ease,opacity 0.3s ease}
 .mode-pills.hidden-scroll{transform:translateY(-100%);opacity:0;pointer-events:none}
 .mode-pill{flex:1;text-align:center;padding:10px 8px;font-size:13px;font-weight:600;border-radius:10px;transition:all 0.3s;z-index:1;position:relative}
@@ -762,21 +759,20 @@ body.light{--toast-bg:#1f232b;--toast-fg:#f6f4ee;--toast-bd:#1f232b;--toast-mute
 
 <button class="dt-toggle dt-toggle-bot" id="dtToggleBot" onclick="toggleDesktopNav()" title="Toggle navigation"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
 <nav class="bottom-nav">
-<span class="nav-ind no-anim" aria-hidden="true"></span>
-<button class="nav-item active" data-tab="tabCheckin">
-<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+<button class="nav-item active" data-tab="tabCheckin" aria-label="Check-In">
+<svg class="ic-off" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5.5"/><path d="M8 12.3l2.9 2.9L16.3 9.6"/></svg><svg class="ic-on" viewBox="0 0 24 24"><rect class="solid" x="3" y="3" width="18" height="18" rx="5.5"/><path class="knock" d="M8 12.3l2.9 2.9L16.3 9.6"/></svg>
 <span>Check-In</span>
 </button>
-<button class="nav-item" data-tab="tabMembers">
-<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+<button class="nav-item" data-tab="tabMembers" aria-label="Members">
+<svg class="ic-off" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.6"/><path d="M2.6 20.2c0-3.7 2.9-6.2 6.4-6.2s6.4 2.5 6.4 6.2z"/><path d="M15.8 4.7a3.6 3.6 0 010 6.7M18.2 14.5c2 .8 3.3 2.8 3.3 5.7"/></svg><svg class="ic-on" viewBox="0 0 24 24"><circle class="solid" cx="9" cy="8" r="3.6"/><path class="solid" d="M2.6 20.2c0-3.7 2.9-6.2 6.4-6.2s6.4 2.5 6.4 6.2z"/><path d="M15.8 4.7a3.6 3.6 0 010 6.7M18.2 14.5c2 .8 3.3 2.8 3.3 5.7" style="stroke-width:2.3"/></svg>
 <span>Members</span>
 </button>
-<button class="nav-item" data-tab="tabReports">
-<svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+<button class="nav-item" data-tab="tabReports" aria-label="Reports">
+<svg class="ic-off" viewBox="0 0 24 24"><rect x="3.5" y="12" width="4" height="8.5" rx="1.3"/><rect x="10" y="3.5" width="4" height="17" rx="1.3"/><rect x="16.5" y="8.5" width="4" height="12" rx="1.3"/></svg><svg class="ic-on" viewBox="0 0 24 24"><rect class="solid" x="3.5" y="12" width="4" height="8.5" rx="1.3"/><rect class="solid" x="10" y="3.5" width="4" height="17" rx="1.3"/><rect class="solid" x="16.5" y="8.5" width="4" height="12" rx="1.3"/></svg>
 <span>Reports</span>
 </button>
-<button class="nav-item" data-tab="tabSettings">
-<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68 1.65 1.65 0 0010 3.17V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+<button class="nav-item" data-tab="tabSettings" aria-label="Settings">
+<svg class="ic-off" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68 1.65 1.65 0 0010 3.17V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg><svg class="ic-on" viewBox="0 0 24 24"><path class="solid" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68 1.65 1.65 0 0010 3.17V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/><circle class="hole" cx="12" cy="12" r="3.2"/></svg>
 <span>Settings</span>
 </button>
 </nav>
@@ -1115,7 +1111,6 @@ const tabEl=document.getElementById(tabId);tabEl.classList.add('active');
 if(!viaSwipe){tabEl.classList.add('tab-fade');tabEl.addEventListener('animationend',()=>tabEl.classList.remove('tab-fade'),{once:true})}
 document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
 document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
-if(typeof navActivated==='function')navActivated();
 currentTab=tabId;
 const fab=document.getElementById('fab');
 fab.style.display=tabId==='tabMembers'?'flex':'none';
@@ -1128,11 +1123,6 @@ if(tabId==='tabCheckin'&&currentMode==='qr'){setTimeout(()=>startQR(),100)}
 }
 
 document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>{if(n.dataset.tab!==currentTab&&navigator.vibrate)navigator.vibrate(6);switchTab(n.dataset.tab)}));
-function moveNavInd(){const nav=document.querySelector('.bottom-nav'),a=nav&&nav.querySelector('.nav-item.active');if(!a)return;const ind=nav.querySelector('.nav-ind'),ic=a.querySelector('svg');const nr=nav.getBoundingClientRect(),ar=a.getBoundingClientRect(),sr=ic.getBoundingClientRect();
-ind.style.top=Math.round(sr.top-nr.top+sr.height/2-16)+'px';ind.style.transform='translateX('+Math.round(ar.left-nr.left+(ar.width-60)/2)+'px)'}
-function navActivated(){moveNavInd()}
-window.addEventListener('resize',moveNavInd);
-requestAnimationFrame(()=>{moveNavInd();requestAnimationFrame(()=>{const e=document.querySelector('.nav-ind');if(e)e.classList.remove('no-anim')})});
 
 function switchMode(mode){
 qtHidePop();if(typeof ciClose==='function')ciClose(false);currentMode=mode;
