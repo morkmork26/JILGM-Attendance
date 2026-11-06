@@ -491,13 +491,13 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 <span style="background:var(--fill-a);color:var(--on-fill);padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600" id="occasionLabel"></span>
 </div>
 <div class="mode-pills" id="modePills">
-<div class="pill-slider" id="pillSlider" style="width:33.33%"></div>
-<div class="mode-pill active" data-mode="qr">QR Scan</div>
-<div class="mode-pill" data-mode="tap">Quick Tap</div>
+<div class="pill-slider" id="pillSlider" style="width:33.33%;transform:translateX(100%)"></div>
+<div class="mode-pill" data-mode="qr">QR Scan</div>
+<div class="mode-pill active" data-mode="tap">Quick Tap</div>
 <div class="mode-pill" data-mode="search">Search</div>
 </div>
 
-<div id="modeQR">
+<div id="modeQR" style="display:none">
 <div class="qr-scanner">
 <div id="qr-reader"></div>
 <div class="scan-region"></div>
@@ -515,7 +515,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 </div>
 </div>
 
-<div id="modeTap" style="display:none">
+<div id="modeTap">
 <div class="filter-bar">
 <button type="button" class="fd-btn" id="tapMinistryBtn" data-fd-mode="tap" data-fd-dim="ministry" aria-haspopup="listbox" aria-expanded="false"><span class="fd-lbl">All Ministries</span><svg class="fd-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
 <button type="button" class="fd-btn" id="tapOutreachBtn" data-fd-mode="tap" data-fd-dim="outreach" aria-haspopup="listbox" aria-expanded="false"><span class="fd-lbl">All Outreaches</span><svg class="fd-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
@@ -725,7 +725,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 </div>
 <div class="settings-section">
 <h4>About</h4>
-<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.9.4</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent);cursor:pointer" id="whatsNewBtn">What's New</span></div>
+<div class="settings-row"><div><div class="label">FlockTrack</div><div class="sublabel" id="appVersionLabel">v1.9.5</div></div><span class="feature-toggle" style="font-size:11px;color:var(--accent);cursor:pointer" id="whatsNewBtn">What's New</span></div>
 
 </div>
 </div>
@@ -1049,7 +1049,7 @@ resolve({type:'first',count:1});
 }});
 }
 
-let currentTab='tabCheckin';let currentMode='qr';let qrScanner=null;let allMembers=[];let todayAttendance=[];
+let currentTab='tabCheckin';let currentMode='tap';let qrScanner=null;let allMembers=[];let todayAttendance=[];
 var qtLP={t:null,hide:null,x:0,y:0,lp:false,shown:false,pop:null};
 function qtHidePop(){if(!qtLP)return;clearTimeout(qtLP.hide);qtLP.hide=null;if(qtLP.pop)qtLP.pop.classList.remove('show');qtLP.shown=false}
 function qtShowPop(item){const m=allMembers.find(x=>x.id===item.dataset.id);if(!m)return false;
@@ -2367,7 +2367,6 @@ else if(ss==='Blocked'){clearInterval(poll);showAccessGate('blocked')}
 return;
 }
 splashProgress(60);
-startQR();
 allMembers=await dbGet('members');await loadTodayAttendance();
 splashProgress(75);
 checkInactiveMembers();
@@ -2552,8 +2551,9 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 
 // === APP VERSION & CHANGELOG ===
 function initCollapse(cardId,headId,key){const card=document.getElementById(cardId),head=document.getElementById(headId);if(!card||!head||head.dataset.bound)return;head.dataset.bound='1';const apply=c=>{card.classList.toggle('mb-collapsed',c);head.setAttribute('aria-expanded',String(!c))};let saved=null;try{saved=localStorage.getItem(key)}catch(err){}apply(saved!=='0');const toggle=()=>{const c=!card.classList.contains('mb-collapsed');apply(c);try{localStorage.setItem(key,c?'1':'0')}catch(err){}};head.addEventListener('click',toggle);head.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ev.preventDefault();toggle()}})}
-const APP_VERSION='1.9.4';
+const APP_VERSION='1.9.5';
 const CHANGELOG=[
+{version:'1.9.5',date:'November 7, 2026',changes:[{type:'Improve',text:'App now opens on Quick Tap instead of QR Scan; the camera only starts when you switch to QR Scan'}]},
 {version:'1.9.4',date:'November 7, 2026',changes:[{type:'Improve',text:'Needs Follow-Up section temporarily hidden from Reports'}]},
 {version:'1.9.3',date:'November 7, 2026',changes:[{type:'Improve',text:'New Sanctuary look based on the church\'s navy and gold seal colors, in both dark and light themes'},{type:'Improve',text:'Removed the purple and cyan gradients and glows for clean, solid colors and soft shadows'},{type:'Improve',text:'Classic serif FlockTrack wordmark'},{type:'Improve',text:'Splash screen now shows the church seal'},{type:'Improve',text:'Calmer, earthy avatar colors that stay readable in both themes'}]},
 {version:'1.9.2',date:'October 27, 2026',changes:[{type:'Fix',text:'Device registration no longer fails with an "Unexpected token <" error; a bad Script URL is now detected and you can re-enter it on the registration screen'},{type:'Improve',text:'Script URLs are cleaned up automatically (missing https://, extra spaces or text after /exec)'}]},
