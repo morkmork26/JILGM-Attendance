@@ -16,7 +16,7 @@
 /* Theme tokens ("Sanctuary"): brand navy #123a7a and seal gold #b8963e on warm ink (dark) or warm paper (light). No gradients or colored glows. Dark (default) surface elevation bg < card < raised. The .qr-overlay scrim is always dark, so it re-declares the dark set. */
 :root,.qr-overlay{color-scheme:dark;--bg:#14161c;--card:#1b1e25;--raised:#23262e;--card-border:#2f333c;--border-ui:#6b707b;--text:#ecebe6;--text-secondary:#a9abb2;--accent:#8fb0e8;--accent2:#d9b866;--gold:#c9a550;--gold-t:rgba(217,184,102,0.12);--gold-b:rgba(217,184,102,0.45);--wordmark:#ecebe6;--bar:#6d8fcc;--success:#7cc495;--warning:#e3a861;--error:#ef8e85;--fill-a:#3a6cc6;--fill-b:#2f5eb4;--success-fill:#2e7547;--error-fill:#b03a33;--on-fill:#fff;--accent-t:rgba(143,176,232,0.12);--success-t:rgba(124,196,149,0.12);--warning-t:rgba(227,168,97,0.12);--error-t:rgba(239,142,133,0.12);--sb-tint:rgba(143,176,232,0.07);--ring:rgba(143,176,232,0.32);--glow:rgba(0,0,0,0.32);--hover:rgba(255,255,255,0.05);--track:rgba(255,255,255,0.09);--glass:#1b1e25;--header-bg:#1b1e25;--panel-bg:#14161c;--overlay:rgba(6,7,10,0.66);--sh-1:0 1px 2px rgba(0,0,0,0.28);--sh-2:0 2px 8px rgba(0,0,0,0.30),0 1px 2px rgba(0,0,0,0.20);--sh-3:0 14px 36px rgba(0,0,0,0.45),0 3px 8px rgba(0,0,0,0.25);--aura1:transparent;--aura2:transparent;--radius:16px;--nav-h:64px;--header-h:56px}
 /* Light: warm paper surfaces, ink text, navy accent, antique gold, AA status colors */
-body.light{color-scheme:light;--bg:#f6f4ee;--card:#fbfaf6;--raised:#ffffff;--card-border:#e2ddd0;--border-ui:#8a8475;--text:#1c1f26;--text-secondary:#5a5d66;--accent:#123a7a;--accent2:#7a5c17;--gold:#a8872f;--gold-t:rgba(184,150,62,0.14);--gold-b:rgba(184,150,62,0.55);--wordmark:#123a7a;--bar:#123a7a;--success:#2c6a3c;--warning:#8a4b0a;--error:#a3302a;--fill-a:#123a7a;--fill-b:#0c2b5e;--success-fill:#2c6a3c;--error-fill:#a3302a;--accent-t:rgba(18,58,122,0.08);--success-t:rgba(44,106,60,0.10);--warning-t:rgba(138,75,10,0.10);--error-t:rgba(163,48,42,0.09);--sb-tint:rgba(18,58,122,0.05);--ring:rgba(18,58,122,0.24);--glow:rgba(28,31,38,0.12);--hover:rgba(28,31,38,0.05);--track:#e6e1d4;--glass:#fbfaf6;--header-bg:#fbfaf6;--panel-bg:#f6f4ee;--overlay:rgba(28,31,38,0.42);--sh-1:0 1px 2px rgba(28,31,38,0.05),0 1px 3px rgba(28,31,38,0.04);--sh-2:0 2px 8px rgba(28,31,38,0.07),0 1px 2px rgba(28,31,38,0.05);--sh-3:0 12px 32px rgba(28,31,38,0.14),0 2px 6px rgba(28,31,38,0.06);--aura1:transparent;--aura2:transparent}
+body.light{color-scheme:light;--bg:#f3f3f0;--card:#fafaf8;--raised:#ffffff;--card-border:#deded8;--border-ui:#83837c;--text:#1c1f26;--text-secondary:#5a5d66;--accent:#123a7a;--accent2:#7a5c17;--gold:#a8872f;--gold-t:rgba(184,150,62,0.14);--gold-b:rgba(184,150,62,0.55);--wordmark:#123a7a;--bar:#123a7a;--success:#2c6a3c;--warning:#8a4b0a;--error:#a3302a;--fill-a:#123a7a;--fill-b:#0c2b5e;--success-fill:#2c6a3c;--error-fill:#a3302a;--accent-t:rgba(18,58,122,0.08);--success-t:rgba(44,106,60,0.10);--warning-t:rgba(138,75,10,0.10);--error-t:rgba(163,48,42,0.09);--sb-tint:rgba(18,58,122,0.05);--ring:rgba(18,58,122,0.24);--glow:rgba(28,31,38,0.12);--hover:rgba(28,31,38,0.05);--track:#e3e3dd;--glass:#fafaf8;--header-bg:#fafaf8;--panel-bg:#f3f3f0;--overlay:rgba(28,31,38,0.42);--sh-1:0 1px 2px rgba(28,31,38,0.05),0 1px 3px rgba(28,31,38,0.04);--sh-2:0 2px 8px rgba(28,31,38,0.07),0 1px 2px rgba(28,31,38,0.05);--sh-3:0 12px 32px rgba(28,31,38,0.14),0 2px 6px rgba(28,31,38,0.06);--aura1:transparent;--aura2:transparent}
 /* --grad kept as an alias for older inline styles; it is a solid fill now */
 body,.qr-overlay{--grad:var(--fill-a)}
 ::selection{background:var(--ring);color:var(--text)}
@@ -58,19 +58,16 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 16px;position:relative;transition:all 0.2s}
 .nav-item svg{width:22px;height:22px;stroke:var(--text-secondary);fill:none;stroke-width:1.8;transition:all 0.2s}
 .nav-item span{font-size:10px;color:var(--text-secondary);font-weight:500;transition:color 0.2s}
-.bottom-nav{overflow:hidden}
-.nav-item{z-index:1;-webkit-tap-highlight-color:transparent;background:none;border:none}
-.nav-ind,.nav-bar{position:absolute;left:0;pointer-events:none;will-change:transform,width}
-.nav-ind{top:0;height:34px;border-radius:17px;background:var(--accent-t);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 18%,transparent);transition:transform 0.5s cubic-bezier(0.34,1.4,0.64,1),width 0.35s cubic-bezier(0.22,1,0.36,1);z-index:0}
-.nav-bar{top:0;height:3px;border-radius:0 0 3px 3px;background:var(--gold);box-shadow:0 0 10px color-mix(in srgb,var(--gold) 60%,transparent);transition:transform 0.42s cubic-bezier(0.22,1,0.36,1) 0.04s,width 0.42s cubic-bezier(0.22,1,0.36,1);z-index:2}
-.nav-item svg{transition:stroke 0.25s,transform 0.35s cubic-bezier(0.34,1.56,0.64,1)}
-.nav-item.active svg{transform:translateY(-1px) scale(1.08)}
-.nav-item.active span{font-weight:700;letter-spacing:0.2px}
-.nav-item:active svg{transform:scale(0.86);transition-duration:0.1s}
-.nav-item.pop svg{animation:navPop 0.5s cubic-bezier(0.34,1.56,0.64,1)}
-@keyframes navPop{0%{transform:scale(0.8)}45%{transform:translateY(-3px) scale(1.18)}100%{transform:translateY(-1px) scale(1.08)}}
-.nav-ind.no-anim,.nav-bar.no-anim{transition:none}
-@media(prefers-reduced-motion:reduce){.nav-ind,.nav-bar,.nav-item svg{transition:none}.nav-item.pop svg{animation:none}}
+.bottom-nav{overflow:hidden;-webkit-backdrop-filter:saturate(1.4) blur(18px);backdrop-filter:saturate(1.4) blur(18px)}
+.nav-item{z-index:1;-webkit-tap-highlight-color:transparent;background:none;border:none;gap:5px}
+.nav-ind{position:absolute;left:0;top:0;width:60px;height:32px;border-radius:16px;background:var(--fill-a);box-shadow:0 4px 12px -4px color-mix(in srgb,var(--fill-a) 70%,transparent);pointer-events:none;will-change:transform;transition:transform 0.42s cubic-bezier(0.32,0.72,0,1);z-index:0}
+.nav-item svg{transition:stroke 0.3s ease,transform 0.3s cubic-bezier(0.32,0.72,0,1)}
+.nav-item span{transition:color 0.3s ease}
+.nav-item.active svg{stroke:var(--on-fill)}
+.nav-item.active span{color:var(--text);font-weight:600}
+.nav-item:active svg{transform:scale(0.9)}
+.nav-ind.no-anim{transition:none}
+@media(prefers-reduced-motion:reduce){.nav-ind,.nav-item svg,.nav-item span{transition:none}}
 .nav-item.active svg{stroke:var(--accent)}
 .nav-item.active span{color:var(--text)}
 .mode-pills{display:flex;background:var(--card);border-radius:12px;padding:4px;margin-bottom:16px;position:sticky;top:0;z-index:10;border:1px solid var(--card-border);flex-shrink:0;transition:transform 0.3s ease,opacity 0.3s ease}
@@ -765,7 +762,7 @@ body.light{--toast-bg:#1f232b;--toast-fg:#f6f4ee;--toast-bd:#1f232b;--toast-mute
 
 <button class="dt-toggle dt-toggle-bot" id="dtToggleBot" onclick="toggleDesktopNav()" title="Toggle navigation"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
 <nav class="bottom-nav">
-<span class="nav-ind no-anim" aria-hidden="true"></span><span class="nav-bar no-anim" aria-hidden="true"></span>
+<span class="nav-ind no-anim" aria-hidden="true"></span>
 <button class="nav-item active" data-tab="tabCheckin">
 <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
 <span>Check-In</span>
@@ -1131,12 +1128,11 @@ if(tabId==='tabCheckin'&&currentMode==='qr'){setTimeout(()=>startQR(),100)}
 }
 
 document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>{if(n.dataset.tab!==currentTab&&navigator.vibrate)navigator.vibrate(6);switchTab(n.dataset.tab)}));
-function moveNavInd(){const nav=document.querySelector('.bottom-nav'),a=nav&&nav.querySelector('.nav-item.active');if(!a)return;const ind=nav.querySelector('.nav-ind'),bar=nav.querySelector('.nav-bar'),ic=a.querySelector('svg');const nr=nav.getBoundingClientRect(),ar=a.getBoundingClientRect(),sr=ic.getBoundingClientRect();
-const iw=Math.max(56,sr.width+34),bw=28;ind.style.width=iw+'px';ind.style.top=(sr.top-nr.top-6)+'px';ind.style.transform='translateX('+(ar.left-nr.left+(ar.width-iw)/2)+'px)';
-bar.style.width=bw+'px';bar.style.transform='translateX('+(ar.left-nr.left+(ar.width-bw)/2)+'px)'}
-let navPrev=null;function navActivated(){const a=document.querySelector('.nav-item.active');if(a&&navPrev&&a!==navPrev){a.classList.remove('pop');void a.offsetWidth;a.classList.add('pop');setTimeout(()=>a.classList.remove('pop'),520)}navPrev=a;moveNavInd()}
+function moveNavInd(){const nav=document.querySelector('.bottom-nav'),a=nav&&nav.querySelector('.nav-item.active');if(!a)return;const ind=nav.querySelector('.nav-ind'),ic=a.querySelector('svg');const nr=nav.getBoundingClientRect(),ar=a.getBoundingClientRect(),sr=ic.getBoundingClientRect();
+ind.style.top=Math.round(sr.top-nr.top+sr.height/2-16)+'px';ind.style.transform='translateX('+Math.round(ar.left-nr.left+(ar.width-60)/2)+'px)'}
+function navActivated(){moveNavInd()}
 window.addEventListener('resize',moveNavInd);
-requestAnimationFrame(()=>{navActivated();requestAnimationFrame(()=>document.querySelectorAll('.nav-ind,.nav-bar').forEach(e=>e.classList.remove('no-anim')))});
+requestAnimationFrame(()=>{moveNavInd();requestAnimationFrame(()=>{const e=document.querySelector('.nav-ind');if(e)e.classList.remove('no-anim')})});
 
 function switchMode(mode){
 qtHidePop();if(typeof ciClose==='function')ciClose(false);currentMode=mode;
@@ -2638,7 +2634,6 @@ if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.erro
 function initCollapse(cardId,headId,key){const card=document.getElementById(cardId),head=document.getElementById(headId);if(!card||!head||head.dataset.bound)return;head.dataset.bound='1';const apply=c=>{card.classList.toggle('mb-collapsed',c);head.setAttribute('aria-expanded',String(!c))};let saved=null;try{saved=localStorage.getItem(key)}catch(err){}apply(saved!=='0');const toggle=()=>{const c=!card.classList.contains('mb-collapsed');apply(c);try{localStorage.setItem(key,c?'1':'0')}catch(err){}};head.addEventListener('click',toggle);head.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '||ev.key==='Spacebar'){ev.preventDefault();toggle()}})}
 const APP_VERSION='1.9.11';
 const CHANGELOG=[
-{version:'1.9.11',date:'November 7, 2026',changes:[{type:'Improve',text:'Redesigned bottom navigation: a soft highlight glides to the selected tab with a springy motion, a gold bar trails along the top, and the icon pops when selected'},{type:'Improve',text:'Tab buttons press in when tapped, with a light vibration on change'}]},
 {version:'1.9.10',date:'November 7, 2026',changes:[{type:'Fix',text:'Swiping between tabs works anywhere on Members; a sideways-scrolling row only takes the swipe while it can still scroll that way'}]},
 {version:'1.9.9',date:'November 7, 2026',changes:[{type:'Improve',text:'Redesigned notifications: a calm dark bar with a clear icon for success, warning, error and info, no more colored stripe or progress line'},{type:'Improve',text:'Notifications can be dismissed with the close button or a swipe down, and errors stay on screen longer'}]},
 {version:'1.9.8',date:'November 7, 2026',changes:[{type:'Fix',text:'Updates now load right away: the app checks for a new version on open and reloads itself once it is installed'}]},
