@@ -155,6 +155,11 @@ function doGet(e) {
         return respond(getAttendanceHistory(weeks));
       }
 
+      case "getFeedback": {
+        const fs = SpreadsheetApp.openById(SHEET_ID).getSheetByName('Feedback');
+        if (!fs) return respond({ success: true, data: [] });
+        return respond({ success: true, data: fs.getDataRange().getDisplayValues() });
+      }
       case "getSharedSettings":
         return respond(getSharedSettings());
 
