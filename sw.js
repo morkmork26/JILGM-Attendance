@@ -1,4 +1,4 @@
-const CACHE='jilgm-v100';
+const CACHE='jilgm-v101';
 const CORE_ASSETS=['./','./index.html','./logo.jpg','./icon-192.png','./icon-512.png'];
 const CDN_ASSETS=['https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js','https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js'];
 self.addEventListener('install',e=>{
@@ -8,7 +8,7 @@ return c.addAll(CORE_ASSETS.map(u=>new Request(u,{cache:'reload'})));
 }));
 self.skipWaiting();
 });
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE&&k!=='jilgm-photos').map(k=>caches.delete(k)))));self.clients.claim()});
 function netFirst(req){
 const net=fetch(req,{cache:'no-cache'}).then(r=>{if(r.ok){const c=r.clone();caches.open(CACHE).then(x=>x.put('./',c))}return r});
 const fallback=()=>caches.match('./').then(r=>r||caches.match('./index.html'));
@@ -18,6 +18,7 @@ return Promise.race([net.catch(fallback),timer]).then(r=>r||net);
 self.addEventListener('fetch',e=>{
 if(e.request.url.includes('script.google.com')||e.request.method==='POST'){e.respondWith(fetch(e.request));return}
 if(e.request.mode==='navigate'){e.respondWith(netFirst(e.request));return}
+if(e.request.url.startsWith('https://lh3.googleusercontent.com/d/')){e.respondWith(caches.open('jilgm-photos').then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(res.ok||res.type==='opaque')c.put(e.request,res.clone());return res}))));return}
 e.respondWith(caches.match(e.request).then(r=>{
 if(r)return r;
 return fetch(e.request).then(response=>{

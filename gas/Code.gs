@@ -61,6 +61,57 @@ function normManualGroup(v) {
  * 0-based index of the ManualGroup column in the Members sheet, or -1 when absent.
  * With create=true a missing header is appended after the last used column.
  */
+const PHOTO_HEADER = "Photo";
+function getPhotoCol(sheet, create) {
+  const lastCol = Math.max(sheet.getLastColumn(), 1);
+  const header  = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  for (let i = 0; i < header.length; i++) {
+    if (String(header[i]).trim().toLowerCase() === PHOTO_HEADER.toLowerCase()) return i;
+  }
+  if (!create) return -1;
+  sheet.getRange(1, lastCol + 1).setValue(PHOTO_HEADER).setFontWeight("bold");
+  return lastCol;
+}
+
+/**
+ * Admin-only: sets or removes a member profile photo.
+ * body: { memberId, deviceId, image?: dataURL (jpeg), remove?: true }
+ * Stores the Drive file id in the "Photo" column.
+ */
+function setMemberPhoto(body) {
+  const memberId = String(body.memberId || "").trim();
+  if (!memberId) throw new Error("memberId is required");
+  if (!isAdminDevice(String(body.deviceId || ""))) return { success: false, error: "Admin device required" };
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const sheet = getSheet(SHEET_MEMBERS);
+    const ids = sheet.getRange(2, COL_MEM.ID + 1, Math.max(sheet.getLastRow() - 1, 1), 1).getValues();
+    let row = -1;
+    for (let i = 0; i < ids.length; i++) { if (String(ids[i][0]).trim() === memberId) { row = i + 2; break; } }
+    if (row < 0) throw new Error("Member not found: " + memberId);
+    const col = getPhotoCol(sheet, true) + 1;
+    const cell = sheet.getRange(row, col);
+    const oldId = String(cell.getValue() || "").trim();
+    let newId = "";
+    if (!body.remove) {
+      const b64 = String(body.image || "").replace(/^data:image\/\w+;base64,/, "");
+      if (!b64 || b64.length > 2000000) throw new Error("Invalid image");
+      const blob = Utilities.newBlob(Utilities.base64Decode(b64), "image/jpeg", memberId + "_" + Date.now() + ".jpg");
+      const folders = DriveApp.getFoldersByName("ChurchApp_Photos");
+      const folder = folders.hasNext() ? folders.next() : DriveApp.createFolder("ChurchApp_Photos");
+      const file = folder.createFile(blob);
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      newId = file.getId();
+    }
+    cell.setValue(newId);
+    if (oldId) { try { DriveApp.getFileById(oldId).setTrashed(true); } catch (e) {} }
+    return { success: true, data: { memberId: memberId, photo: newId } };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 function getManualGroupCol(sheet, create) {
   if (manualGroupColCache !== null && (manualGroupColCache >= 0 || !create)) return manualGroupColCache;
   const lastCol = Math.max(sheet.getLastColumn(), 1);
@@ -260,6 +311,9 @@ function doPost(e) {
       case "bulkSync":
         return respond(bulkSync(body));
 
+      case "setMemberPhoto":
+        return respond(setMemberPhoto(body));
+
       case "resendQR":
         return respond(resendQR(body));
 
@@ -323,7 +377,8 @@ function getMembers() {
   const rows  = getDataRows(sheet);
 
   const mgCol = getManualGroupCol(sheet, false);
-  const members = rows.map(row => rowToMember(row, mgCol));
+  const phCol = getPhotoCol(sheet, false);
+  const members = rows.map(row => { const m = rowToMember(row, mgCol); m.photo = phCol >= 0 ? String(row[phCol] || "").trim() : ""; return m; });
   return { success: true, data: members };
 }
 
