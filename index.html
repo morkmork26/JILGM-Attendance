@@ -58,6 +58,8 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 .busy-spin{position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid color-mix(in srgb,var(--busy-c,var(--accent)) 22%,transparent);border-top-color:var(--busy-c,var(--accent));animation:busySpin 0.7s linear infinite}
 @keyframes busySpin{to{transform:rotate(360deg)}}
 .skel{display:inline-block;vertical-align:middle;height:12px;border-radius:7px;background:linear-gradient(90deg,var(--card-border) 0%,var(--raised) 50%,var(--card-border) 100%);background-size:220% 100%;animation:skel 1.4s ease-in-out infinite}
+.just-added{animation:justAdded 2.4s ease}
+@keyframes justAdded{0%,30%{box-shadow:0 0 0 2px var(--gold),0 0 18px var(--gold-b);background:var(--gold-t)}100%{box-shadow:none}}
 .skel-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
 @keyframes skel{from{background-position:120% 0}to{background-position:-120% 0}}
 @media(prefers-reduced-motion:reduce){#topLoader i::after,.skel{animation:none}.busy-spin{animation-duration:1.6s}#topLoader.on i{animation:none;transform:scaleX(0.6)}}
@@ -1647,9 +1649,17 @@ document.querySelectorAll('.fd-btn[data-fd-mode]').forEach(b=>{
 b.addEventListener('click',e=>{e.stopPropagation();ciOpen(b)});
 b.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(ciPop.btn!==b)ciOpen(b)}})});
 
+let tapRankCache={at:0,rank:{}};
+async function tapActivityRank(){
+if(Date.now()-tapRankCache.at<60000)return tapRankCache.rank;
+const cut=new Date();cut.setDate(cut.getDate()-84);const cs=cut.getFullYear()+'-'+String(cut.getMonth()+1).padStart(2,'0')+'-'+String(cut.getDate()).padStart(2,'0');
+const seen={},rank={};
+try{(await dbGet('attendance')).forEach(a=>{if(!a||!a.memberId||!a.date||a.date<cs)return;const k=a.memberId+'|'+a.date;if(seen[k])return;seen[k]=1;rank[a.memberId]=(rank[a.memberId]||0)+1})}catch(e){}
+tapRankCache={at:Date.now(),rank};return rank}
 async function renderAvatarGrid(){
 const st=ciSyncButtons('tap');
-const filtered=ciApply(allMembers,st,ciOpts('tap'));
+const rank=await tapActivityRank();
+const filtered=ciApply(allMembers,st,ciOpts('tap')).slice().sort((a,b)=>(rank[b.id]||0)-(rank[a.id]||0)||String(a.name||'').localeCompare(String(b.name||'')));
 document.getElementById('tapCount').textContent=`Showing ${filtered.length} ${filtered.length===1?'member':'members'}${st.cls!=='all'?' in '+mgLabel(st.cls):''}`;
 const grid=document.getElementById('avatarGrid');
 grid.innerHTML=filtered.map(m=>{
@@ -1760,8 +1770,17 @@ function closeModal(){document.getElementById('modalOverlay').classList.remove('
 
 
 
+let memberSaving=false;
 async function saveMember(existing){
+if(memberSaving)return;
+const btn=document.getElementById('saveMember');
+const lock=on=>{memberSaving=on;if(!btn)return;btn.disabled=on;btn.classList.toggle('is-saving',on);if(on){btn.dataset.label=btn.textContent;btn.innerHTML='<span class="busy-spin" style="position:relative;display:inline-block;left:0;top:0;margin:0 8px -3px 0;width:14px;height:14px;--busy-c:currentColor"></span>Saving'}else if(btn.dataset.label){btn.textContent=btn.dataset.label}};
+lock(true);
+try{await saveMemberInner(existing)}finally{if(document.contains(btn))lock(false);else memberSaving=false}
+}
+async function saveMemberInner(existing){
 const name=document.getElementById('memName').value.trim();if(!name){showToast('Name is required','error');return}
+if(!existing){const dup=allMembers.find(m=>String(m.name||'').trim().toLowerCase()===name.toLowerCase());if(dup&&!await customConfirm(`"${dup.name}" is already in the member list. Add another member with the same name?`,{title:'Possible Duplicate',okText:'Add Anyway'}))return}
 if(existing){const typed=await customPrompt(`To confirm edit, type "${existing.name}"`,{title:'Confirm Edit',okText:'Save',placeholder:existing.name});if(!typed||typed.trim().toLowerCase()!==existing.name.toLowerCase()){showToast('Edit cancelled','info');return}}
 const bdayVal=document.getElementById('memBday').value;
 if(bdayVal){const bdayAge=getAge(bdayVal);const bdayYear=new Date(bdayVal+'T00:00:00').getFullYear();
@@ -1785,16 +1804,16 @@ if(member.manualGroup){noteMgPending(member.id,member.manualGroup);confirmMgPend
 if(oldId!==member.id)await dbDelete('members',oldId);
 await dbPut('members',member);
 allMembers.push(member);
-closeModal();showToast('Member added');updateCounter();renderMemberList();
-}else{allMembers.push(member);showToast(json.error||'Failed to add member','error')}
+closeModal();showToast('Member added: '+member.name);updateCounter();renderMemberList();flashNewMember(member.id);
+}else{await dbDelete('members',member.id);showToast(json.error||'Failed to add member. Please try again','error')}
 }catch(e){
 allMembers.push(member);
 await dbPut('pendingSync',{action:'addMember',payload,createdAt:Date.now()});
-closeModal();showToast('Member saved offline');updateCounter();renderMemberList()}
+closeModal();showToast('Member saved offline: '+member.name);updateCounter();renderMemberList();flashNewMember(member.id)}
 }else if(!existing){
 await dbPut('members',member);
 allMembers.push(member);
-closeModal();showToast('Member saved locally');updateCounter();renderMemberList();
+closeModal();showToast('Member saved locally: '+member.name);updateCounter();renderMemberList();flashNewMember(member.id);
 }else{
 await dbPut('members',member);
 const idx=allMembers.findIndex(m=>m.id===existing.id);if(idx>=0)allMembers[idx]=member;
@@ -1804,6 +1823,7 @@ try{const res=await fetch(url+'?data='+encodeURIComponent(JSON.stringify(payload
 }
 }
 
+function flashNewMember(id){tapRankCache.at=0;setTimeout(()=>{const el=document.querySelector('#memberList [data-id="'+id+'"]');if(!el)return;el.scrollIntoView({block:'center',behavior:'smooth'});el.classList.add('just-added');setTimeout(()=>el.classList.remove('just-added'),2600)},120)}
 document.getElementById('fab').addEventListener('click',()=>showModal('member'));
 
 // === MEMBERS GROUP FILTER (chips AND search, status, ministry, outreach) ===
