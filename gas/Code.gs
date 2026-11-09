@@ -160,6 +160,14 @@ function doGet(e) {
         if (!fs) return respond({ success: true, data: [] });
         return respond({ success: true, data: fs.getDataRange().getDisplayValues() });
       }
+      case "setFeedbackStatus": {
+        const fsh = SpreadsheetApp.openById(SHEET_ID).getSheetByName('Feedback');
+        const row = parseInt(e.parameter.row, 10);
+        const status = String(e.parameter.status || '').slice(0, 40);
+        if (!fsh || !row || row < 2 || row > fsh.getLastRow() || !status) return respond({ success: false, error: 'invalid row or status' });
+        fsh.getRange(row, 5).setValue(status);
+        return respond({ success: true, data: { row: row, status: status } });
+      }
       case "getSharedSettings":
         return respond(getSharedSettings());
 
