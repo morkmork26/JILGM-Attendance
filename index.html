@@ -96,14 +96,23 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 .np-toggle{height:28px;padding:0 12px;border-radius:14px;border:1px solid var(--card-border);background:var(--card);color:var(--text-secondary);font-size:12px;font-weight:600}
 .np-toggle.active{background:var(--fill-a);border-color:var(--fill-a);color:var(--on-fill)}
 @media(prefers-reduced-motion:reduce){.pk-card,.ps-sheet,.cr-ov,.pk-back{transition:opacity 0.2s}}
-#topLoader{position:fixed;top:0;left:0;right:0;height:2.5px;z-index:100000;pointer-events:none;opacity:0;transition:opacity 0.35s ease}
-#topLoader.on{opacity:1}
-#topLoader i{position:absolute;inset:0;overflow:hidden;transform-origin:left center;transform:scaleX(0);border-radius:0 2px 2px 0;background:linear-gradient(90deg,var(--gold),var(--accent2));box-shadow:0 0 10px var(--gold-b)}
-#topLoader.on i{animation:tlGrow 9s cubic-bezier(0.08,0.7,0.15,1) forwards}
-#topLoader i::after{content:'';position:absolute;top:0;bottom:0;width:35%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.75),transparent);animation:tlShine 1.2s ease-in-out infinite}
-#topLoader.done i{animation:none;transform:scaleX(1);transition:transform 0.2s ease}
-@keyframes tlGrow{to{transform:scaleX(0.9)}}
 @keyframes tlShine{from{left:-35%}to{left:100%}}
+@property --na{syntax:'<angle>';inherits:false;initial-value:0deg}
+.nav-glow{position:absolute;inset:0;border-radius:999px;pointer-events:none;padding:1.6px;background:conic-gradient(from var(--na),transparent 0deg,transparent 200deg,rgba(217,184,102,0.22) 270deg,#d9b866 335deg,#fff4d2 352deg,transparent 360deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;filter:drop-shadow(0 0 4px rgba(217,184,102,0.75));opacity:0;transition:opacity 0.35s;z-index:2}
+.nav-glow.on{opacity:1;animation:naSpin 1.5s linear infinite}
+.nav-glow.done{background:#d9b866;animation:naDone 0.9s ease forwards}
+@keyframes naSpin{to{--na:360deg}}
+@keyframes naDone{0%{opacity:1}100%{opacity:0}}
+.ld-island{position:fixed;top:calc(10px + env(safe-area-inset-top));left:50%;transform:translate(-50%,-180%);z-index:100001;height:36px;max-width:calc(100vw - 32px);padding:0 15px 0 11px;border-radius:18px;background:rgba(16,18,24,0.88);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);color:#ecebe6;display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;white-space:nowrap;pointer-events:none;box-shadow:0 12px 30px -10px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.08);transition:transform 0.5s cubic-bezier(0.2,0.9,0.25,1.15)}
+.ld-island.show{transform:translate(-50%,0)}
+.ld-island .tx{overflow:hidden;text-overflow:ellipsis}
+.ld-island .busy-spin{position:relative;left:0;top:0;margin:0;width:15px;height:15px;flex-shrink:0;--busy-c:#d9b866}
+.ld-island .ok,.ld-island .bad{width:17px;height:17px;border-radius:50%;flex-shrink:0;display:none;align-items:center;justify-content:center;animation:igPop 0.3s cubic-bezier(0.3,0.7,0.4,1.4)}
+.ld-island .ok{background:#d9b866}.ld-island .bad{background:#e0645a}
+.ld-island .ok svg,.ld-island .bad svg{width:11px;height:11px;stroke:#14161c;stroke-width:3.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ld-island .bad svg{stroke:#fff}
+.ld-island.done .busy-spin,.ld-island.fail .busy-spin{display:none}
+.ld-island.done .ok,.ld-island.fail .bad{display:flex}
 .is-busy{position:relative;pointer-events:none}
 .is-busy>*:not(.busy-spin){visibility:hidden}
 .is-busy{color:transparent!important}
@@ -114,7 +123,7 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 @keyframes justAdded{0%,30%{box-shadow:0 0 0 2px var(--gold),0 0 18px var(--gold-b);background:var(--gold-t)}100%{box-shadow:none}}
 .skel-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
 @keyframes skel{from{background-position:120% 0}to{background-position:-120% 0}}
-@media(prefers-reduced-motion:reduce){#topLoader i::after,.skel{animation:none}.busy-spin{animation-duration:1.6s}#topLoader.on i{animation:none;transform:scaleX(0.6)}}
+@media(prefers-reduced-motion:reduce){.skel{animation:none}.busy-spin{animation-duration:1.6s}.nav-glow.on{animation-duration:4s}.ld-island{transition:opacity 0.2s}}
 .tab-content.tab-fade{animation:fadeIn 0.3s ease}
 @media(prefers-reduced-motion:reduce){.tab-content.tab-fade{animation:none}}
 .ptr{position:fixed;top:64px;left:50%;z-index:150;width:40px;height:40px;margin-left:-20px;border-radius:50%;background:var(--raised);border:1px solid var(--card-border);box-shadow:var(--sh-2);display:flex;align-items:center;justify-content:center;transform:translateY(-56px);opacity:0;pointer-events:none}
@@ -1166,23 +1175,32 @@ resolve({type:'first',count:1});
 }
 
 (function(){
-const bar=document.createElement('div');bar.id='topLoader';bar.setAttribute('aria-hidden','true');bar.innerHTML='<i></i>';document.body.appendChild(bar);
-let n=0,lastTap=0,tapBtn=null,hideT=0,showT=0;
+const ACT={addMember:['Adding member','Member added'],updateMember:['Saving changes','Saved'],deleteMember:['Deleting member','Deleted'],setMemberPhoto:['Saving photo','Photo saved'],registerDevice:['Requesting access','Request sent'],updateDeviceStatus:['Updating device','Updated'],saveSetting:['Saving','Saved'],sendReport:['Sending report','Report sent'],submitFeedback:['Sending','Sent'],resendQR:['Sending QR code','QR code sent'],setOccasion:['Saving occasion','Saved'],bulkSync:['Syncing','Synced']};
+const QUIET={checkIn:1,removeCheckIn:1};
+let lastTap=0,tapBtn=null,glowN=0,glowT=0,glowEl=null,isl=null,islN=0,islT=0;
 document.addEventListener('pointerdown',e=>{lastTap=Date.now();tapBtn=e.target&&e.target.closest?e.target.closest('button,.btn'):null},true);
+function glow(){if(glowEl&&document.contains(glowEl))return glowEl;const n=document.querySelector('.bottom-nav');if(!n)return null;glowEl=document.createElement('i');glowEl.className='nav-glow';glowEl.setAttribute('aria-hidden','true');n.appendChild(glowEl);return glowEl}
+function glowStart(){const g=glow();if(!g)return;glowN++;clearTimeout(glowT);if(glowN===1)glowT=setTimeout(()=>{g.classList.remove('done');g.classList.add('on')},150)}
+function glowEnd(){const g=glow();if(!g)return;glowN=Math.max(0,glowN-1);if(glowN)return;clearTimeout(glowT);if(g.classList.contains('on')){g.classList.remove('on');void g.offsetWidth;g.classList.add('done');glowT=setTimeout(()=>g.classList.remove('done'),950)}}
+function island(){if(isl&&document.contains(isl))return isl;isl=document.createElement('div');isl.className='ld-island';isl.setAttribute('role','status');isl.setAttribute('aria-live','polite');
+isl.innerHTML='<span class="busy-spin"></span><span class="ok"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span><span class="bad"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></span><span class="tx"></span>';document.body.appendChild(isl);return isl}
+function islStart(label){const i=island();islN++;clearTimeout(islT);i.classList.remove('done','fail');i.querySelector('.tx').textContent=label+'\u2026';void i.offsetWidth;i.classList.add('show')}
+function islEnd(ok,label){const i=island();islN=Math.max(0,islN-1);if(islN)return;i.classList.toggle('done',ok);i.classList.toggle('fail',!ok);i.querySelector('.tx').textContent=ok?label:'Not saved. Try again';navigator.vibrate&&navigator.vibrate(ok?8:[20,40,20]);islT=setTimeout(()=>i.classList.remove('show'),ok?1300:2600)}
 function busyOn(b){if(b.classList.contains('is-busy'))return;b.style.setProperty('--busy-c',getComputedStyle(b).color);const sp=document.createElement('span');sp.className='busy-spin';b.appendChild(sp);b.classList.add('is-busy');b.setAttribute('aria-busy','true')}
 function busyOff(b){b.classList.remove('is-busy');b.removeAttribute('aria-busy');const sp=b.querySelector(':scope>.busy-spin');if(sp)sp.remove()}
+function actionOf(url,init){try{const u=new URL(url,location.href);let a=u.searchParams.get('action');if(!a&&u.searchParams.get('data')){a=(JSON.parse(u.searchParams.get('data'))||{}).action}if(!a&&init&&typeof init.body==='string'){a=(JSON.parse(init.body)||{}).action}return a||''}catch(e){return ''}}
 const nativeFetch=window.fetch.bind(window);
 window.fetch=function(input,init){
 const url=String(input&&input.url?input.url:input);
 if(!url.includes('script.google.com')||Date.now()-lastTap>1500)return nativeFetch(input,init);
-n++;
+const act=actionOf(url,init);if(QUIET[act])return nativeFetch(input,init);
+const lab=ACT[act];
 const b=tapBtn&&document.contains(tapBtn)&&!tapBtn.classList.contains('nav-item')?tapBtn:null;
 if(b){b._busyN=(b._busyN||0)+1;busyOn(b)}
-clearTimeout(hideT);bar.classList.remove('done');
-if(n===1)showT=setTimeout(()=>bar.classList.add('on'),150);
-const done=()=>{n=Math.max(0,n-1);if(b&&!(b._busyN=Math.max(0,(b._busyN||1)-1)))busyOff(b);if(n)return;clearTimeout(showT);
-if(bar.classList.contains('on')){bar.classList.add('done');hideT=setTimeout(()=>bar.classList.remove('on','done'),500)}};
-return nativeFetch(input,init).then(r=>{done();return r},e=>{done();throw e});
+if(lab)islStart(lab[0]);else glowStart();
+let ended=false;
+const end=ok=>{if(ended)return;ended=true;if(b&&!(b._busyN=Math.max(0,(b._busyN||1)-1)))busyOff(b);if(lab)islEnd(ok,lab[1]);else glowEnd()};
+return nativeFetch(input,init).then(r=>{if(lab){r.clone().json().then(j=>end(!!(j&&j.success!==false)),()=>end(r.ok))}else end(true);return r},e=>{end(false);throw e});
 };
 })();
 let currentTab='tabCheckin';let currentMode='tap';let qrScanner=null;let allMembers=[];let todayAttendance=[];
@@ -1266,7 +1284,7 @@ const photo=j.data.photo||'';
 if(photo){await new Promise(r=>{const i=new Image();i.onload=i.onerror=r;i.src=photoSrc({photo},160)})}
 const t=allMembers.find(x=>x.id===m.id);if(t)t.photo=photo;m.photo=photo;
 try{const all=await dbGet('members');const rec=all.find(x=>x.id===m.id);if(rec){rec.photo=photo;await dbPut('members',rec)}}catch(e){}
-refreshPhotoViews(m);showToast(photo?'Photo saved':'Photo removed');return true}
+refreshPhotoViews(m);return true}
 catch(e){showToast('Could not save photo: '+e.message,'error');return false}}
 function refreshPhotoViews(m){if(typeof renderAvatarGrid==='function'&&currentMode==='tap')renderAvatarGrid();if(typeof renderMemberList==='function')renderMemberList();const b=document.getElementById('memPhotoBtn');if(b&&b.dataset.id===m.id)b.innerHTML=mpInner(m)}
 async function pickPhoto(m,local){
