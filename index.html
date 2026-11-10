@@ -98,11 +98,13 @@ input,select,textarea{font-family:inherit;color:var(--text);background:transpare
 @media(prefers-reduced-motion:reduce){.pk-card,.ps-sheet,.cr-ov,.pk-back{transition:opacity 0.2s}}
 @keyframes tlShine{from{left:-35%}to{left:100%}}
 @property --na{syntax:'<angle>';inherits:false;initial-value:0deg}
-.nav-glow{position:absolute;inset:0;border-radius:999px;pointer-events:none;padding:1.6px;background:conic-gradient(from var(--na),transparent 0deg,transparent 200deg,rgba(217,184,102,0.22) 270deg,#d9b866 335deg,#fff4d2 352deg,transparent 360deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;filter:drop-shadow(0 0 4px rgba(217,184,102,0.75));opacity:0;transition:opacity 0.35s;z-index:2}
-.nav-glow.on{opacity:1;animation:naSpin 1.5s linear infinite}
-.nav-glow.done{background:#d9b866;animation:naDone 0.9s ease forwards}
+.nav-glow{--ng:#e2bf63;--ng2:#fff3cc;--ngs:rgba(226,191,99,0.85);position:absolute;inset:-1px;border-radius:999px;pointer-events:none;padding:2.4px;background:conic-gradient(from var(--na),transparent 0deg,transparent 150deg,rgba(226,191,99,0.18) 220deg,rgba(226,191,99,0.55) 290deg,var(--ng) 335deg,var(--ng2) 352deg,transparent 360deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;filter:drop-shadow(0 0 5px var(--ngs)) drop-shadow(0 0 12px rgba(226,191,99,0.35));opacity:0;transition:opacity 0.35s;z-index:2}
+body.light .nav-glow{--ng:#b8902f;--ng2:#e9c766;--ngs:rgba(184,144,47,0.7)}
+.bottom-nav:has(.nav-glow.on){box-shadow:0 12px 32px -8px rgba(0,0,0,0.28),0 2px 6px rgba(0,0,0,0.08),inset 0 1px 0 var(--navg-hi),0 0 24px -4px rgba(226,191,99,0.32)}
+.nav-glow.on{opacity:1;animation:naSpin 1.25s linear infinite}
+.nav-glow.done{background:var(--ng);animation:naDone 1s ease forwards}
 @keyframes naSpin{to{--na:360deg}}
-@keyframes naDone{0%{opacity:1}100%{opacity:0}}
+@keyframes naDone{0%{opacity:1}35%{opacity:1}100%{opacity:0}}
 .ld-island{position:fixed;top:calc(10px + env(safe-area-inset-top));left:50%;transform:translate(-50%,-180%);z-index:100001;height:36px;max-width:calc(100vw - 32px);padding:0 15px 0 11px;border-radius:18px;background:rgba(16,18,24,0.88);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);color:#ecebe6;display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;white-space:nowrap;pointer-events:none;box-shadow:0 12px 30px -10px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.08);transition:transform 0.5s cubic-bezier(0.2,0.9,0.25,1.15)}
 .ld-island.show{transform:translate(-50%,0)}
 .ld-island .tx{overflow:hidden;text-overflow:ellipsis}
