@@ -1179,6 +1179,7 @@ const ACT={addMember:['Adding member','Member added'],updateMember:['Saving chan
 const QUIET={checkIn:1,removeCheckIn:1};
 let lastTap=0,tapBtn=null,glowN=0,glowT=0,glowEl=null,isl=null,islN=0,islT=0;
 document.addEventListener('pointerdown',e=>{lastTap=Date.now();tapBtn=e.target&&e.target.closest?e.target.closest('button,.btn'):null},true);
+['pointerup','touchend'].forEach(t=>document.addEventListener(t,()=>{lastTap=Date.now()},{capture:true,passive:true}));
 function glow(){if(glowEl&&document.contains(glowEl))return glowEl;const n=document.querySelector('.bottom-nav');if(!n)return null;glowEl=document.createElement('i');glowEl.className='nav-glow';glowEl.setAttribute('aria-hidden','true');n.appendChild(glowEl);return glowEl}
 function glowStart(){const g=glow();if(!g)return;glowN++;clearTimeout(glowT);if(glowN===1)glowT=setTimeout(()=>{g.classList.remove('done');g.classList.add('on')},150)}
 function glowEnd(){const g=glow();if(!g)return;glowN=Math.max(0,glowN-1);if(glowN)return;clearTimeout(glowT);if(g.classList.contains('on')){g.classList.remove('on');void g.offsetWidth;g.classList.add('done');glowT=setTimeout(()=>g.classList.remove('done'),950)}}
