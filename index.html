@@ -8,6 +8,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>FlockTrack</title>
 <link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" as="image" href="seal.png">
+<style>html{background:#14161c}</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&display=swap" rel="stylesheet">
@@ -487,25 +491,31 @@ body.light{--toast-bg:#1f232b;--toast-fg:#f6f4ee;--toast-bd:#1f232b;--toast-mute
 <div id="splashScreen" style="position:fixed;inset:0;background:#14161c;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;transition:opacity 0.4s">
 <style>
 .splash-ring{width:132px;height:132px;border-radius:50%;position:absolute;border:1px solid rgba(217,184,102,0.28)}
-.splash-icon{width:104px;height:104px;border-radius:50%;overflow:hidden;background:#fff;box-shadow:0 0 0 1.5px rgba(217,184,102,0.65),0 10px 28px rgba(0,0,0,0.45);animation:splashIn 0.7s ease-out both}
-.splash-icon img{display:block;width:100%;height:100%;object-fit:cover;transform:scale(1.4)}
+.splash-icon{position:relative;width:104px;height:104px;border-radius:50%;transform:translateY(var(--dy,0px)) scale(1.5);animation:splashLift 0.75s cubic-bezier(0.3,0.9,0.25,1) 0.18s forwards}
+.splash-icon::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 1.5px rgba(217,184,102,0.6),0 12px 30px rgba(0,0,0,0.5);opacity:0;animation:splashFade 0.5s ease 0.6s forwards}
+.splash-icon img{display:block;width:100%;height:100%;border-radius:50%}
+.splash-late{opacity:0;animation:splashFade 0.55s ease 0.55s forwards}
+@keyframes splashLift{to{transform:none}}
+@keyframes splashFade{to{opacity:1}}
 .splash-word{font-family:'Libre Caslon Text',Georgia,'Times New Roman',serif;font-size:38px;font-weight:700;letter-spacing:0.3px;line-height:1.1}
 @keyframes splashIn{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:none}}
-.splash-ring{animation:ringBreath 2.6s ease-in-out infinite}
-.splash-arc{position:absolute;width:132px;height:132px;border-radius:50%;border:1.5px solid transparent;border-top-color:#d9b866;border-right-color:rgba(217,184,102,0.35);animation:arcSpin 1.4s cubic-bezier(0.5,0.15,0.5,0.85) infinite;filter:drop-shadow(0 0 4px rgba(217,184,102,0.55))}
+.splash-ring{opacity:0;animation:splashFade 0.5s ease 0.65s forwards,ringBreath 2.6s ease-in-out 1.15s infinite}
+.splash-arc{opacity:0;position:absolute;width:132px;height:132px;border-radius:50%;border:1.5px solid transparent;border-top-color:#d9b866;border-right-color:rgba(217,184,102,0.35);animation:arcSpin 1.4s cubic-bezier(0.5,0.15,0.5,0.85) infinite;filter:drop-shadow(0 0 4px rgba(217,184,102,0.55))}
 #splashProgress{position:relative;overflow:hidden}
 #splashProgress::after{content:"";position:absolute;top:0;bottom:0;width:50px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.85),transparent);animation:tlShine 1.3s ease-in-out infinite}
 @keyframes ringBreath{0%,100%{transform:scale(1);opacity:0.55}50%{transform:scale(1.05);opacity:1}}
 @keyframes arcSpin{to{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){.splash-icon,.splash-ring,.splash-arc,#splashProgress::after{animation:none}}
+.splash-arc.on{opacity:1;transition:opacity 0.5s}
+@media(prefers-reduced-motion:reduce){.splash-icon,.splash-ring,.splash-arc,.splash-late,#splashProgress::after{animation:none;transform:none;opacity:1}}
 </style>
 <div style="position:relative;display:flex;align-items:center;justify-content:center;width:150px;height:150px">
 <div class="splash-ring"></div><div class="splash-arc"></div>
-<div class="splash-icon"><img src="logo.jpg" alt="Jesus Is Lord Global Ministry seal"></div>
+<div class="splash-icon" id="splashIcon"><img src="seal.png" alt="Jesus Is Lord Global Ministry seal" decoding="sync"></div>
 </div>
-<div style="margin-top:22px;display:flex"><span class="splash-word" style="color:#ecebe6">Flock</span><span class="splash-word" style="color:#d9b866">Track</span></div>
-<div style="margin-top:30px;width:140px;height:2px;background:rgba(255,255,255,0.10);border-radius:2px;overflow:hidden"><div id="splashProgress" style="height:100%;width:0%;background:#c9a550;border-radius:2px;transition:width 0.3s ease"></div></div>
-<div style="position:absolute;bottom:50px;font-size:11px;color:rgba(236,235,230,0.6);letter-spacing:1.5px;font-weight:500;text-transform:uppercase">Jesus Is Lord Global Ministry</div>
+<script>(function(){var i=document.getElementById('splashIcon');if(!i)return;var r=i.getBoundingClientRect();i.style.setProperty('--dy',Math.round(window.innerHeight/2-(r.top+r.height/2))+'px');setTimeout(function(){var a=document.querySelector('.splash-arc');if(a)a.classList.add('on')},650)})();</script>
+<div class="splash-late" style="margin-top:22px;display:flex"><span class="splash-word" style="color:#ecebe6">Flock</span><span class="splash-word" style="color:#d9b866">Track</span></div>
+<div class="splash-late" style="margin-top:30px;width:140px;height:2px;background:rgba(255,255,255,0.10);border-radius:2px;overflow:hidden"><div id="splashProgress" style="height:100%;width:0%;background:#c9a550;border-radius:2px;transition:width 0.3s ease"></div></div>
+<div class="splash-late" style="position:absolute;bottom:50px;font-size:11px;color:rgba(236,235,230,0.6);letter-spacing:1.5px;font-weight:500;text-transform:uppercase">Jesus Is Lord Global Ministry</div>
 </div>
 
 <!-- Bottom Sheet -->

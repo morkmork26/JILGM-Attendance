@@ -1,5 +1,5 @@
-const CACHE='jilgm-v101';
-const CORE_ASSETS=['./','./index.html','./logo.jpg','./icon-192.png','./icon-512.png'];
+const CACHE='jilgm-v102';
+const CORE_ASSETS=['./','./index.html','./logo.jpg','./seal.png','./favicon.png','./apple-touch-icon.png','./icon-any-192.png','./icon-any-512.png','./icon-192.png','./icon-512.png'];
 const CDN_ASSETS=['https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js','https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js'];
 self.addEventListener('install',e=>{
 e.waitUntil(caches.open(CACHE).then(c=>{
