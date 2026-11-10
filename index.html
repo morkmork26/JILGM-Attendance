@@ -105,16 +105,29 @@ body.light .nav-glow{--ng:#b8902f;--ng2:#e9c766;--ngs:rgba(184,144,47,0.7)}
 .nav-glow.done{background:var(--ng);animation:naDone 1s ease forwards}
 @keyframes naSpin{to{--na:360deg}}
 @keyframes naDone{0%{opacity:1}35%{opacity:1}100%{opacity:0}}
-.ld-island{position:fixed;top:calc(10px + env(safe-area-inset-top));left:50%;transform:translate(-50%,-180%);z-index:100001;height:36px;max-width:calc(100vw - 32px);padding:0 15px 0 11px;border-radius:18px;background:rgba(16,18,24,0.88);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);color:#ecebe6;display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;white-space:nowrap;pointer-events:none;box-shadow:0 12px 30px -10px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.08);transition:transform 0.5s cubic-bezier(0.2,0.9,0.25,1.15)}
+.ld-island{position:fixed;top:calc(10px + env(safe-area-inset-top));left:50%;transform:translate(-50%,-180%);z-index:100001;height:38px;max-width:calc(100vw - 28px);padding:0 15px 0 10px;border-radius:19px;background:rgba(16,18,24,0.9);-webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3);color:#ecebe6;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;letter-spacing:0.1px;white-space:nowrap;overflow:hidden;pointer-events:none;box-shadow:0 12px 30px -10px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.08);transition:transform 0.5s cubic-bezier(0.2,0.9,0.25,1.15),width 0.38s cubic-bezier(0.3,0.8,0.3,1),box-shadow 0.3s}
 .ld-island.show{transform:translate(-50%,0)}
-.ld-island .tx{overflow:hidden;text-overflow:ellipsis}
-.ld-island .busy-spin{position:relative;left:0;top:0;margin:0;width:15px;height:15px;flex-shrink:0;--busy-c:#d9b866}
-.ld-island .ok,.ld-island .bad{width:17px;height:17px;border-radius:50%;flex-shrink:0;display:none;align-items:center;justify-content:center;animation:igPop 0.3s cubic-bezier(0.3,0.7,0.4,1.4)}
-.ld-island .ok{background:#d9b866}.ld-island .bad{background:#e0645a}
-.ld-island .ok svg,.ld-island .bad svg{width:11px;height:11px;stroke:#14161c;stroke-width:3.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ld-island.offline{box-shadow:0 12px 30px -10px rgba(0,0,0,0.6),0 0 0 1px rgba(227,168,97,0.35)}
+.ld-island.fail{box-shadow:0 12px 30px -10px rgba(0,0,0,0.6),0 0 0 1px rgba(224,100,90,0.4)}
+.ld-island .tx{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.ld-island .st-ic{position:relative;width:18px;height:18px;flex-shrink:0}
+.ld-island .st-ic>span{position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0.3);transition:opacity 0.22s ease,transform 0.38s cubic-bezier(0.3,0.7,0.4,1.5)}
+.ld-island .st-ic>.busy-spin{inset:1.5px;width:auto;height:auto;margin:0;left:auto;top:auto;transform:none;transition:opacity 0.2s ease;--busy-c:#d9b866}
+.ld-island.working .st-ic>.busy-spin{opacity:1}
+.ld-island .ok{background:#d9b866}.ld-island .off{background:#e3a861}.ld-island .bad{background:#e0645a}
+.ld-island.done .ok,.ld-island.offline .off,.ld-island.fail .bad{opacity:1;transform:none}
+.ld-island .st-ic svg{width:11px;height:11px;fill:none;stroke:#14161c;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.ld-island .off svg{width:12px;height:12px;stroke-width:2.4}
 .ld-island .bad svg{stroke:#fff}
-.ld-island.done .busy-spin,.ld-island.fail .busy-spin{display:none}
-.ld-island.done .ok,.ld-island.fail .bad{display:flex}
+.ld-island .st-face{display:flex;flex-shrink:0}
+.ld-island .st-face:empty{display:none}
+.ld-island .st-av{width:22px;height:22px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;box-shadow:0 0 0 1.5px rgba(217,184,102,0.55)}
+.ld-island .st-av img{width:100%;height:100%;object-fit:cover}
+.ld-island .st-undo{display:none;flex-shrink:0;height:38px;margin:0 -15px 0 2px;padding:0 15px 0 12px;border:none;border-left:1px solid rgba(255,255,255,0.14);background:none;color:#e2bf63;font-size:13px;font-weight:700;letter-spacing:0.2px}
+.ld-island .st-undo:active{background:rgba(255,255,255,0.06)}
+.ld-island.has-undo{pointer-events:auto}
+.ld-island.has-undo .st-undo{display:block}
+@media(prefers-reduced-motion:reduce){.ld-island{transition:opacity 0.2s}.ld-island .st-ic>span{transition:opacity 0.2s}}
 .is-busy{position:relative;pointer-events:none}
 .is-busy>*:not(.busy-spin){visibility:hidden}
 .is-busy{color:transparent!important}
@@ -1176,19 +1189,47 @@ resolve({type:'first',count:1});
 }});
 }
 
+const ST=(function(){
+let el=null,gen=0,mode='idle',hideT=0,lastFinish=0,undoFn=null,expireFn=null;
+const HOLD={done:1400,offline:2600,fail:3000};
+function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c])}
+function node(){if(el&&document.contains(el))return el;el=document.createElement('div');el.className='ld-island';el.setAttribute('role','status');el.setAttribute('aria-live','polite');
+el.innerHTML='<span class="st-ic"><span class="busy-spin"></span><span class="ok"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span><span class="off"><svg viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/></svg></span><span class="bad"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></span></span><span class="st-face"></span><span class="tx"></span><button type="button" class="st-undo">Undo</button>';
+el.querySelector('.st-undo').addEventListener('click',e=>{e.stopPropagation();const f=undoFn;undoFn=null;expireFn=null;el.classList.remove('has-undo');if(f)f()});
+document.body.appendChild(el);return el}
+function face(m){if(!m)return '';const ph=typeof photoSrc==='function'?photoSrc(m,64):'';
+return '<span class="st-av" style="background:'+(typeof getAvatarColor==='function'?getAvatarColor(m.name||''):'#123a7a')+'">'+(ph?'<img src="'+ph+'" alt="">':esc(typeof getInitials==='function'?getInitials(m.name||'?'):'?'))+'</span>'}
+function morph(apply){const n=node();const shown=n.classList.contains('show');const w0=n.offsetWidth;apply(n);
+if(!shown){n.style.width='';return}
+n.style.width='auto';const w1=n.offsetWidth;n.style.width=w0+'px';void n.offsetWidth;n.style.width=w1+'px';
+clearTimeout(n._wt);n._wt=setTimeout(()=>{n.style.width=''},420)}
+function settleUndo(){if(expireFn){const f=expireFn;expireFn=null;undoFn=null;try{f()}catch(e){}}}
+function show(){const n=node();clearTimeout(hideT);if(!n.classList.contains('show')){void n.offsetWidth;n.classList.add('show')}}
+function hide(ms){clearTimeout(hideT);hideT=setTimeout(()=>{settleUndo();const n=node();n.classList.remove('show','has-undo');mode='idle'},ms)}
+function work(text,o){o=o||{};settleUndo();gen++;mode='work';
+morph(n=>{n.className='ld-island'+(n.classList.contains('show')?' show':'')+' working';n.querySelector('.st-face').innerHTML=face(o.member);n.querySelector('.tx').textContent=text+'\u2026'});
+show();return gen}
+function update(text){if(mode!=='work')return;morph(n=>{n.querySelector('.tx').textContent=text+'\u2026'})}
+function finish(kind,text,o){o=o||{};gen++;mode=kind;lastFinish=Date.now();settleUndo();
+morph(n=>{n.className='ld-island'+(n.classList.contains('show')?' show':'')+' '+kind+(o.undo?' has-undo':'');
+if(o.member!==undefined)n.querySelector('.st-face').innerHTML=face(o.member);n.querySelector('.tx').textContent=text});
+show();if(navigator.vibrate)navigator.vibrate(kind==='fail'?[20,40,20]:8);
+if(o.undo){undoFn=o.undo.fn;expireFn=o.undo.onExpire||null;hide(o.undo.ms||5000)}else hide(HOLD[kind]||1500);return gen}
+function finishIf(g,kind,text){if(g===gen&&mode==='work')finish(kind,text)}
+return {work,update,finish,finishIf,get mode(){return mode},get recent(){return Date.now()-lastFinish<900},flush:settleUndo};
+})();
+function notify(msg,kind,o){ST.finish(kind==='fail'||kind==='error'?'fail':kind==='offline'||kind==='warning'?'offline':'done',msg,o)}
+window.addEventListener('pagehide',()=>ST.flush());
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')ST.flush()});
 (function(){
-const ACT={addMember:['Adding member','Member added'],updateMember:['Saving changes','Saved'],deleteMember:['Deleting member','Deleted'],setMemberPhoto:['Saving photo','Photo saved'],registerDevice:['Requesting access','Request sent'],updateDeviceStatus:['Updating device','Updated'],saveSetting:['Saving','Saved'],sendReport:['Sending report','Report sent'],submitFeedback:['Sending','Sent'],resendQR:['Sending QR code','QR code sent'],setOccasion:['Saving occasion','Saved'],bulkSync:['Syncing','Synced']};
+const ACT={addMember:['Adding member','Member added'],updateMember:['Saving changes','Saved'],deleteMember:['Deleting member','Deleted'],setMemberPhoto:['Saving photo','Photo saved'],registerDevice:['Requesting access','Request sent'],updateDeviceStatus:['Updating device','Updated'],saveSetting:['Saving','Saved'],sendReport:['Sending report','Report sent'],submitFeedback:['Sending feedback','Sent'],resendQR:['Sending QR code','QR code sent'],setOccasion:['Saving occasion','Saved'],bulkSync:['Syncing','Synced']};
 const QUIET={checkIn:1,removeCheckIn:1};
-let lastTap=0,tapBtn=null,glowN=0,glowT=0,glowEl=null,isl=null,islN=0,islT=0;
+let lastTap=0,tapBtn=null,glowN=0,glowT=0,glowEl=null;
 document.addEventListener('pointerdown',e=>{lastTap=Date.now();tapBtn=e.target&&e.target.closest?e.target.closest('button,.btn'):null},true);
 ['pointerup','touchend'].forEach(t=>document.addEventListener(t,()=>{lastTap=Date.now()},{capture:true,passive:true}));
 function glow(){if(glowEl&&document.contains(glowEl))return glowEl;const n=document.querySelector('.bottom-nav');if(!n)return null;glowEl=document.createElement('i');glowEl.className='nav-glow';glowEl.setAttribute('aria-hidden','true');n.appendChild(glowEl);return glowEl}
 function glowStart(){const g=glow();if(!g)return;glowN++;clearTimeout(glowT);if(glowN===1)glowT=setTimeout(()=>{g.classList.remove('done');g.classList.add('on')},150)}
-function glowEnd(){const g=glow();if(!g)return;glowN=Math.max(0,glowN-1);if(glowN)return;clearTimeout(glowT);if(g.classList.contains('on')){g.classList.remove('on');void g.offsetWidth;g.classList.add('done');glowT=setTimeout(()=>g.classList.remove('done'),950)}}
-function island(){if(isl&&document.contains(isl))return isl;isl=document.createElement('div');isl.className='ld-island';isl.setAttribute('role','status');isl.setAttribute('aria-live','polite');
-isl.innerHTML='<span class="busy-spin"></span><span class="ok"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span><span class="bad"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></span><span class="tx"></span>';document.body.appendChild(isl);return isl}
-function islStart(label){const i=island();islN++;clearTimeout(islT);i.classList.remove('done','fail');i.querySelector('.tx').textContent=label+'\u2026';void i.offsetWidth;i.classList.add('show')}
-function islEnd(ok,label){const i=island();islN=Math.max(0,islN-1);if(islN)return;i.classList.toggle('done',ok);i.classList.toggle('fail',!ok);i.querySelector('.tx').textContent=ok?label:'Not saved. Try again';navigator.vibrate&&navigator.vibrate(ok?8:[20,40,20]);islT=setTimeout(()=>i.classList.remove('show'),ok?1300:2600)}
+function glowEnd(){const g=glow();if(!g)return;glowN=Math.max(0,glowN-1);if(glowN)return;clearTimeout(glowT);if(g.classList.contains('on')){g.classList.remove('on');void g.offsetWidth;g.classList.add('done');glowT=setTimeout(()=>g.classList.remove('done'),1000)}}
 function busyOn(b){if(b.classList.contains('is-busy'))return;b.style.setProperty('--busy-c',getComputedStyle(b).color);const sp=document.createElement('span');sp.className='busy-spin';b.appendChild(sp);b.classList.add('is-busy');b.setAttribute('aria-busy','true')}
 function busyOff(b){b.classList.remove('is-busy');b.removeAttribute('aria-busy');const sp=b.querySelector(':scope>.busy-spin');if(sp)sp.remove()}
 function actionOf(url,init){try{const u=new URL(url,location.href);let a=u.searchParams.get('action');if(!a&&u.searchParams.get('data')){a=(JSON.parse(u.searchParams.get('data'))||{}).action}if(!a&&init&&typeof init.body==='string'){a=(JSON.parse(init.body)||{}).action}return a||''}catch(e){return ''}}
@@ -1200,9 +1241,10 @@ const act=actionOf(url,init);if(QUIET[act])return nativeFetch(input,init);
 const lab=ACT[act];
 const b=tapBtn&&document.contains(tapBtn)&&!tapBtn.classList.contains('nav-item')?tapBtn:null;
 if(b){b._busyN=(b._busyN||0)+1;busyOn(b)}
-if(lab)islStart(lab[0]);else glowStart();
+let tok=0,useGlow=false;
+if(lab){if(ST.mode!=='work'&&!ST.recent)tok=ST.work(lab[0])}else if(ST.mode!=='work'){useGlow=true;glowStart()}
 let ended=false;
-const end=ok=>{if(ended)return;ended=true;if(b&&!(b._busyN=Math.max(0,(b._busyN||1)-1)))busyOff(b);if(lab)islEnd(ok,lab[1]);else glowEnd()};
+const end=ok=>{if(ended)return;ended=true;if(b&&!(b._busyN=Math.max(0,(b._busyN||1)-1)))busyOff(b);if(useGlow)glowEnd();if(tok)setTimeout(()=>ST.finishIf(tok,ok?'done':'fail',ok?lab[1]:'Not saved. Try again'),650)};
 return nativeFetch(input,init).then(r=>{if(lab){r.clone().json().then(j=>end(!!(j&&j.success!==false)),()=>end(r.ok))}else end(true);return r},e=>{end(false);throw e});
 };
 })();
@@ -1280,15 +1322,16 @@ b.disabled=true;b.innerHTML='<span class="busy-spin" style="position:relative;di
 const ok=await onUse(data);if(ok)close(data);else{b.disabled=false;b.textContent='Use Photo'}})})}
 async function uploadPhoto(m,data){
 const url=await getSetting('scriptUrl');if(!url){showToast('Set the Script URL in Settings first','warning');return false}
-if(!navigator.onLine){showToast('You are offline. Connect to save the photo','warning');return false}
+if(!navigator.onLine){notify('Offline. Photo not saved','offline',{member:m});return false}
+ST.work(data?'Saving photo':'Removing photo',{member:m});
 try{const res=await fetch(url,{method:'POST',body:JSON.stringify({action:'setMemberPhoto',memberId:m.id,deviceId:getDeviceId(),image:data||undefined,remove:data?undefined:true})});
 const j=await res.json();if(!j.success)throw new Error(j.error||'Upload failed');
 const photo=j.data.photo||'';
 if(photo){await new Promise(r=>{const i=new Image();i.onload=i.onerror=r;i.src=photoSrc({photo},160)})}
 const t=allMembers.find(x=>x.id===m.id);if(t)t.photo=photo;m.photo=photo;
 try{const all=await dbGet('members');const rec=all.find(x=>x.id===m.id);if(rec){rec.photo=photo;await dbPut('members',rec)}}catch(e){}
-refreshPhotoViews(m);return true}
-catch(e){showToast('Could not save photo: '+e.message,'error');return false}}
+refreshPhotoViews(m);notify(photo?'Photo saved':'Photo removed','done',{member:m});return true}
+catch(e){notify('Photo not saved: '+e.message,'fail',{member:m});return false}}
 function refreshPhotoViews(m){if(typeof renderAvatarGrid==='function'&&currentMode==='tap')renderAvatarGrid();if(typeof renderMemberList==='function')renderMemberList();const b=document.getElementById('memPhotoBtn');if(b&&b.dataset.id===m.id)b.innerHTML=mpInner(m)}
 async function pickPhoto(m,local){
 if(!IS_ADMIN)return;
@@ -1964,6 +2007,7 @@ const url=await getSetting('scriptUrl');
 if(!existing&&url){
 await dbPut('members',member);
 const payload={action:'addMember',...member,classes:member.classes?member.classes.join(', '):''};
+ST.work('Adding '+member.name,{member});
 try{const res=await fetch(url+'?data='+encodeURIComponent(JSON.stringify(payload)));
 const json=await res.json();
 if(json.success&&json.data&&json.data.id){
@@ -1973,24 +2017,27 @@ if(member.manualGroup){noteMgPending(member.id,member.manualGroup);confirmMgPend
 if(oldId!==member.id)await dbDelete('members',oldId);
 await dbPut('members',member);
 allMembers.push(member);
-closeModal();showToast('Member added: '+member.name);updateCounter();renderMemberList();flashNewMember(member.id);
+closeModal();notify(member.name+' added','done',{member});updateCounter();renderMemberList();flashNewMember(member.id);
 if(memPhotoPending.data){const pd=memPhotoPending.data;memPhotoPending.data=null;uploadPhoto(member,pd)}
-}else{await dbDelete('members',member.id);showToast(json.error||'Failed to add member. Please try again','error')}
+}else{await dbDelete('members',member.id);notify(json.error||'Member not added. Try again','fail',{member})}
 }catch(e){
 allMembers.push(member);
 await dbPut('pendingSync',{action:'addMember',payload,createdAt:Date.now()});
 if(memPhotoPending.data){memPhotoPending.data=null;setTimeout(()=>showToast('Add the photo again once online','warning'),1600)}
-closeModal();showToast('Member saved offline: '+member.name);updateCounter();renderMemberList();flashNewMember(member.id)}
+closeModal();notify(member.name+' saved offline, will sync','offline',{member});updateCounter();renderMemberList();flashNewMember(member.id)}
 }else if(!existing){
 await dbPut('members',member);
 allMembers.push(member);
-closeModal();showToast('Member saved locally: '+member.name);updateCounter();renderMemberList();flashNewMember(member.id);
+closeModal();notify(member.name+' saved on this phone','offline',{member});updateCounter();renderMemberList();flashNewMember(member.id);
 }else{
 await dbPut('members',member);
 const idx=allMembers.findIndex(m=>m.id===existing.id);if(idx>=0)allMembers[idx]=member;
-closeModal();showToast('Member updated');updateCounter();renderMemberList();
-if(url){const payload={action:'updateMember',...member,classes:member.classes?member.classes.join(', '):''};noteMgPending(member.id,member.birthday?'':member.manualGroup);
-try{const res=await fetch(url+'?data='+encodeURIComponent(JSON.stringify(payload)));try{confirmMgPending(member.id,member.manualGroup,await res.json())}catch(e){}}catch(e){}}
+closeModal();updateCounter();renderMemberList();
+if(!url){notify(member.name+' updated on this phone','offline',{member})}
+else{const payload={action:'updateMember',...member,classes:member.classes?member.classes.join(', '):''};noteMgPending(member.id,member.birthday?'':member.manualGroup);
+ST.work('Saving '+member.name,{member});
+try{const res=await fetch(url+'?data='+encodeURIComponent(JSON.stringify(payload)));let uj=null;try{uj=await res.json();confirmMgPending(member.id,member.manualGroup,uj)}catch(e){}
+if(uj&&uj.success===false)notify(uj.error||'Update not saved','fail',{member});else notify(member.name+' updated','done',{member})}catch(e){notify('Saved on this phone only. Not synced','offline',{member})}}
 }
 }
 
@@ -2080,7 +2127,7 @@ setTimeout(()=>{
 if(typeof QRCode!=='undefined')new QRCode(document.getElementById('memberQRCode'),{text:member.id,width:120,height:120});
 document.getElementById('editMemberBtn').addEventListener('click',()=>{panel.classList.remove('open');showModal('member',member)});
 document.getElementById('showQRBtn').addEventListener('click',()=>{const overlay=document.getElementById('qrOverlay');overlay.innerHTML='<div class="result" style="background:var(--card);padding:32px;border-radius:16px;text-align:center"><h3 style="margin-bottom:16px">'+member.name+'</h3><div id="qrPopupDisplay"></div><button class="btn btn-outline" style="margin-top:16px" onclick="document.getElementById(\'qrOverlay\').classList.remove(\'show\');if(navStack[navStack.length-1]===\'qrOverlay\'){navPop();history.back()}">Close</button></div>';overlay.classList.add('show');navPush('qrOverlay');setTimeout(()=>{new QRCode(document.getElementById('qrPopupDisplay'),{text:member.id,width:200,height:200,colorDark:'#ffffff',colorLight:'#1a1a2e'})},50)});
-document.getElementById('resendQRBtn').addEventListener('click',async()=>{const url=await getSetting('scriptUrl');if(!url){showToast('No sync URL configured','warning');return}try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'resendQR',memberId:member.id,memberName:member.name,phone:member.phone})));showToast('QR resent to '+member.name)}catch(e){showToast('Failed to resend QR','error')}});
+document.getElementById('resendQRBtn').addEventListener('click',async()=>{const url=await getSetting('scriptUrl');if(!url){showToast('No sync URL configured','warning');return}try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'resendQR',memberId:member.id,memberName:member.name,phone:member.phone})));notify('QR code sent to '+member.name,'done',{member})}catch(e){notify('QR code not sent','fail',{member})}});
 document.getElementById('deleteMemberBtn').addEventListener('click',()=>{
 const overlay=document.getElementById('modalOverlay');const content=document.getElementById('modalContent');
 content.innerHTML=`<div class="modal-header"><h3>Delete Member</h3><button class="modal-close" id="closeModal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
@@ -2097,12 +2144,15 @@ input.addEventListener('input',()=>{
 const match=input.value.trim().toLowerCase()===member.name.toLowerCase();
 btn.style.opacity=match?'1':'0.5';btn.style.pointerEvents=match?'auto':'none';
 });
-btn.addEventListener('click',async()=>{
-btn.style.opacity='0.5';btn.style.pointerEvents='none';btn.textContent='Deleting...';
-await dbDelete('members',member.id);allMembers=allMembers.filter(m=>m.id!==member.id);
-const delUrl=await getSetting('scriptUrl');
-if(delUrl)fetch(delUrl+'?data='+encodeURIComponent(JSON.stringify({action:'deleteMember',id:member.id}))).catch(()=>dbPut('pendingSync',{action:'deleteMember',payload:{action:'deleteMember',id:member.id},createdAt:Date.now()}));
-closeModal();panel.classList.remove('open');renderMemberList();updateCounter();showToast('Member deleted');
+btn.addEventListener('click',()=>{
+btn.style.opacity='0.5';btn.style.pointerEvents='none';
+allMembers=allMembers.filter(m=>m.id!==member.id);
+closeModal();panel.classList.remove('open');renderMemberList();updateCounter();if(currentMode==='tap')renderAvatarGrid();
+let settled=false;
+const commit=async()=>{if(settled)return;settled=true;await dbDelete('members',member.id);const delUrl=await getSetting('scriptUrl');
+if(delUrl)fetch(delUrl+'?data='+encodeURIComponent(JSON.stringify({action:'deleteMember',id:member.id}))).catch(()=>dbPut('pendingSync',{action:'deleteMember',payload:{action:'deleteMember',id:member.id},createdAt:Date.now()}))};
+const restore=()=>{if(settled)return;settled=true;if(!allMembers.some(m=>m.id===member.id))allMembers.push(member);renderMemberList();updateCounter();if(currentMode==='tap')renderAvatarGrid();notify(member.name+' restored','done',{member})};
+notify(member.name+' deleted','done',{member,undo:{ms:5000,fn:restore,onExpire:commit}});
 });
 },50);
 });
@@ -2419,7 +2469,9 @@ if(!url){showToast('No sync URL configured','warning');dot.classList.remove('syn
 try{
 let synced=0;
 const pending=await dbGet('pendingSync');
+ST.work(pending.length?'Syncing 0 of '+pending.length:'Syncing');let si=0;
 for(const item of pending){
+si++;if(pending.length>1)ST.update('Syncing '+si+' of '+pending.length);
 try{await fetch(url+'?data='+encodeURIComponent(JSON.stringify(item.payload)));await dbDelete('pendingSync',item.id);synced++}catch(e){continue}
 }
 const r=await fetch(url+'?action=getMembers');
@@ -2442,8 +2494,8 @@ todayAttendance.push(rec);
 }
 updateCounter();
 await setSetting('lastSynced',new Date().toLocaleString());
-showToast(`Synced! ${allMembers.length} members, ${todayAttendance.length} checked in`);loadSettings();renderAvatarGrid();
-}catch(e){showToast('Sync failed, try again','error')}
+notify(`Synced \u00b7 ${allMembers.length} members, ${todayAttendance.length} checked in`,'done');loadSettings();renderAvatarGrid();
+}catch(e){notify('Sync failed. Try again','fail')}
 finally{dot.classList.remove('syncing')}
 });
 
@@ -2461,7 +2513,7 @@ if(!name){showToast('Enter a ministry name','error');return}
 const list=await getMinistries();
 if(list.includes(name)){showToast('Already exists','warning');return}
 list.push(name);await saveMinistries(list);renderMinistryTags();
-input.value='';showToast(`"${name}" added`);
+input.value='';notify(`${name} added`,'done');
 });
 
 document.getElementById('memberMinistryFilter').addEventListener('change',renderMemberList);
@@ -2474,7 +2526,7 @@ await setSetting('children_'+today(),val);
 document.getElementById('statChildren').textContent=val;
 const url=await getSetting('scriptUrl');
 if(url)fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'saveSetting',key:'children_'+today(),value:val}))).catch(()=>{});
-showToast('Children count saved');
+notify('Children count saved','done');
 });
 document.getElementById('saveTanauanBtn').addEventListener('click',async()=>{
 const raw=document.getElementById('tanauanInput').value;
@@ -2484,7 +2536,7 @@ await saveManualOutreach('Tanauan',today(),val===null?'':String(val));
 const allAtt=await dbGet('attendance');
 const res=await resolveOutreachGroups(scannedOutreachToday(allAtt,today()),today());
 renderTanauanStat(res.detail.Tanauan);
-showToast(val===null?'Tanauan manual count cleared':'Tanauan count saved ('+res.detail.Tanauan.used+' used in report)');
+notify(val===null?'Tanauan count cleared':'Tanauan count saved \u00b7 '+res.detail.Tanauan.used+' in report','done');
 });
 
 
@@ -2536,7 +2588,7 @@ const json=await res.json();
 if(json.success&&json.data){
 renderPendingList(json.data);
 }
-}catch(e){showToast('Failed to load pending devices','error')}
+}catch(e){notify('Could not load pending devices','fail')}
 try{
 const res2=await fetch(url+'?action=getAllDevices&deviceId='+encodeURIComponent(getDeviceId()));
 const json2=await res2.json();
@@ -2587,10 +2639,10 @@ const json=await res.json();
 if(json.success){
 const el=document.getElementById('dev-'+targetDeviceId);
 if(el){el.style.transition='all 0.3s';el.style.opacity='0';el.style.transform='translateX(20px)';setTimeout(()=>el.remove(),300)}
-showToast('Device '+status.toLowerCase());
+notify('Device '+status.toLowerCase(),'done');
 setTimeout(loadPendingDevices,400);
-}else{showToast(json.error||'Failed','error')}
-}catch(e){showToast('Network error','error')}
+}else{notify(json.error||'Device not updated','fail')}
+}catch(e){notify('Network error. Device not updated','fail')}
 }
 
 function showAccessGate(state){
@@ -2619,11 +2671,10 @@ if(!url){askUrl('Enter the Script URL from admin');return}
 }
 await setSetting('scriptUrl',url);
 const deviceId=getDeviceId();
-showToast('Registering...','info');
 const res=await fetch(url+'?action=registerDevice&deviceId='+encodeURIComponent(deviceId)+'&name='+encodeURIComponent(name),{redirect:'follow'});
 const text=await res.text();
 let json;
-try{json=JSON.parse(text)}catch(pe){gateUrlInput.value=url;askUrl('Server did not respond correctly. Check the Script URL with admin, then tap Request Access again');return}
+try{json=JSON.parse(text)}catch(pe){notify('Server did not respond correctly','fail');gateUrlInput.value=url;askUrl('Server did not respond correctly. Check the Script URL with admin, then tap Request Access again');return}
 if(json.success&&json.data){
 await setSetting('deviceStatus',json.data.status);
 if(json.data.status==='Approved'){hideAccessGate();location.reload();return}
@@ -2634,8 +2685,8 @@ const ss=typeof sd==='object'?sd.status:sd;
 if(ss==='Approved'){clearInterval(poll);hideAccessGate();location.reload()}
 else if(ss==='Blocked'){clearInterval(poll);showAccessGate('blocked')}
 },5000);
-}else{showToast(json.error||'Registration failed','error')}
-}catch(e){showToast('Error: '+e.message,'error')}
+}else{notify(json.error||'Request not sent','fail')}
+}catch(e){notify('Request not sent: '+e.message,'fail')}
 });
 
 const splashStart=Date.now();
@@ -2854,8 +2905,8 @@ const report={action:'sendReport',date:todayStr,occasion:currentOccasion,outreac
 try{
 const r=await fetch(url+'?data='+encodeURIComponent(JSON.stringify(report)));
 const json=await r.json();
-if(json.success){closeModal();showToast('Report sent!')}else{showToast(json.error||'Failed to send','error')}
-}catch(e){showToast('Network error, try again','error')}
+if(json.success){closeModal();notify('Report sent','done')}else{notify(json.error||'Report not sent','fail')}
+}catch(e){notify('Network error. Report not sent','fail')}
 });
 },50);
 });
@@ -3088,7 +3139,7 @@ document.getElementById('addOccasionBtn').addEventListener('click',async()=>{
 const input=document.getElementById('newOccasionInput');
 const name=input.value.trim();if(!name)return;
 const list=await getOccasions();if(list.includes(name)){showToast('Already exists','warning');return}
-list.push(name);await saveOccasions(list);input.value='';showToast(`"${name}" added`);
+list.push(name);await saveOccasions(list);input.value='';notify(`${name} added`,'done');
 });
 
 // === ADMIN APPROVALS ===
@@ -3105,8 +3156,8 @@ const userEmail=await getSetting('userEmail')||'anonymous';
 try{
 await fetch(url+'?data='+encodeURIComponent(JSON.stringify({action:'submitFeedback',category,message:msg,userEmail})));
 document.getElementById('feedbackMsg').value='';
-showToast('Feedback sent! Thank you.');
-}catch(e){showToast('Failed to send feedback','error')}
+notify('Feedback sent. Thank you','done');
+}catch(e){notify('Feedback not sent','fail')}
 });
 
 // === INIT UPDATES ===
@@ -3137,15 +3188,15 @@ async function doRefresh(){
 busy=true;ind.classList.add('anim','loading');ind.classList.remove('ready');ind.style.transform='translateY(14px)';ind.style.opacity='1';svg.style.transform='';
 try{
 const url=await getSetting('scriptUrl');
-if(!navigator.onLine){showToast('Offline. Showing saved data','warning')}
+if(!navigator.onLine){notify('Offline. Showing saved data','offline')}
 else if(!url){showToast('Set the Script URL in Settings first','warning')}
 else{if(window._swReg)window._swReg.update().catch(()=>{});lastMemberSync=0;await autoSync();
 if(currentTab==='tabCheckin'&&currentMode==='search'){const si=document.getElementById('searchInput');if(si)si.dispatchEvent(new Event('input'))}
 if(currentTab==='tabMembers')renderMemberList();
 if(currentTab==='tabReports')await renderReports();
 if(currentTab==='tabSettings'){loadSettings();renderAdminCheckins();renderUnclassified();if(typeof loadPendingDevices==='function')loadPendingDevices()}
-showToast('Up to date')}
-}catch(e){showToast('Refresh failed','error')}
+notify('Up to date','done')}
+}catch(e){notify('Refresh failed','fail')}
 busy=false;reset();
 }
 content.addEventListener('touchstart',e=>{
