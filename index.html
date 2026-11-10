@@ -491,7 +491,7 @@ body.light{--toast-bg:#1f232b;--toast-fg:#f6f4ee;--toast-bd:#1f232b;--toast-mute
 <div id="splashScreen" style="position:fixed;inset:0;background:#14161c;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;transition:opacity 0.4s">
 <style>
 .splash-ring{width:132px;height:132px;border-radius:50%;position:absolute;border:1px solid rgba(217,184,102,0.28)}
-.splash-icon{position:relative;width:104px;height:104px;border-radius:50%;transform:translateY(var(--dy,0px)) scale(1.5);animation:splashLift 0.75s cubic-bezier(0.3,0.9,0.25,1) 0.18s forwards}
+.splash-icon{position:relative;width:104px;height:104px;border-radius:50%;transform:translateY(var(--dy,0px)) scale(var(--ds,1.5));animation:splashLift 0.75s cubic-bezier(0.3,0.9,0.25,1) 0.18s forwards}
 .splash-icon::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 1.5px rgba(217,184,102,0.6),0 12px 30px rgba(0,0,0,0.5);opacity:0;animation:splashFade 0.5s ease 0.6s forwards}
 .splash-icon img{display:block;width:100%;height:100%;border-radius:50%}
 .splash-late{opacity:0;animation:splashFade 0.55s ease 0.55s forwards}
@@ -512,7 +512,7 @@ body.light{--toast-bg:#1f232b;--toast-fg:#f6f4ee;--toast-bd:#1f232b;--toast-mute
 <div class="splash-ring"></div><div class="splash-arc"></div>
 <div class="splash-icon" id="splashIcon"><img src="seal.png" alt="Jesus Is Lord Global Ministry seal" decoding="sync"></div>
 </div>
-<script>(function(){var i=document.getElementById('splashIcon');if(!i)return;var r=i.getBoundingClientRect();i.style.setProperty('--dy',Math.round(window.innerHeight/2-(r.top+r.height/2))+'px');setTimeout(function(){var a=document.querySelector('.splash-arc');if(a)a.classList.add('on')},650)})();</script>
+<script>(function(){var i=document.getElementById('splashIcon');if(!i)return;var ua=navigator.userAgent,and=/Android/i.test(ua),px=0;try{px=+localStorage.getItem('jilgm_splash_px')||0}catch(e){}if(!px)px=and?160:120;var vw=Math.min(window.innerWidth,window.innerHeight);px=Math.min(px,vw*0.6);i.style.setProperty('--ds',(px/104).toFixed(3));var r=i.getBoundingClientRect();i.style.setProperty('--dy',Math.round(window.innerHeight/2-(r.top+r.height/2))+'px');if(and&&navigator.userAgentData&&navigator.userAgentData.getHighEntropyValues){navigator.userAgentData.getHighEntropyValues(['platformVersion']).then(function(v){var mj=parseInt(v.platformVersion,10);if(mj)try{localStorage.setItem('jilgm_splash_px',mj>=12?'160':'128')}catch(e){}}).catch(function(){})}setTimeout(function(){var a=document.querySelector('.splash-arc');if(a)a.classList.add('on')},650)})();</script>
 <div class="splash-late" style="margin-top:22px;display:flex"><span class="splash-word" style="color:#ecebe6">Flock</span><span class="splash-word" style="color:#d9b866">Track</span></div>
 <div class="splash-late" style="margin-top:30px;width:140px;height:2px;background:rgba(255,255,255,0.10);border-radius:2px;overflow:hidden"><div id="splashProgress" style="height:100%;width:0%;background:#c9a550;border-radius:2px;transition:width 0.3s ease"></div></div>
 <div class="splash-late" style="position:absolute;bottom:50px;font-size:11px;color:rgba(236,235,230,0.6);letter-spacing:1.5px;font-weight:500;text-transform:uppercase">Jesus Is Lord Global Ministry</div>
